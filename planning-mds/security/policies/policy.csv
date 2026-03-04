@@ -27,7 +27,7 @@
 #     The matrix grants both to DistributionUser, DistributionManager, RelationshipManager, Admin.
 #     Underwriter receives read only — no list/search access.
 #
-# Roles: DistributionUser, DistributionManager, Underwriter, RelationshipManager, ProgramManager, Admin
+# Roles: DistributionUser, DistributionManager, Underwriter, RelationshipManager, ProgramManager, Admin, BrokerUser
 # ExternalUser — no policy lines; implicit DENY on all resources (InternalOnly rule, §3).
 #
 # Open Questions (see authorization-matrix.md §4) — rows omitted until resolved:
@@ -260,3 +260,22 @@ p, Underwriter,         timeline_event, read, true
 p, RelationshipManager, timeline_event, read, true
 p, ProgramManager,      timeline_event, read, true
 p, Admin,               timeline_event, read, true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# §2.10 BrokerUser (Phase 1 Delta — F0009)
+# BrokerUser is external and read-first in Phase 1.
+# Scope + field filtering constraints are enforced at query/response layer:
+#   - broker scope resolves from authenticated email -> exactly one active broker
+#   - default deny if 0 or >1 broker matches
+#   - InternalOnly fields omitted server-side
+# Source: authorization-matrix.md §2.10, F0009-S0004.
+# ─────────────────────────────────────────────────────────────────────────────
+
+p, BrokerUser, broker,            read,   true
+p, BrokerUser, broker,            search, true
+p, BrokerUser, contact,           read,   true
+p, BrokerUser, dashboard_kpi,     read,   true
+p, BrokerUser, dashboard_pipeline, read,  true
+p, BrokerUser, dashboard_nudge,   read,   true
+p, BrokerUser, timeline_event,    read,   true
+p, BrokerUser, task,              read,   true

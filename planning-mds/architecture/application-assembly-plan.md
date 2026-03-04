@@ -6,12 +6,12 @@
 
 ## Purpose
 
-Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation without blocking dependencies, while keeping F0001 (Dashboard) and F0002 (Broker Relationship Management) aligned to the approved architecture and contracts.
+Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation without blocking dependencies, while keeping F0001 (Dashboard), F0002 (Broker Relationship Management), and F0009 (Authentication + Role-Based Login) aligned to the approved architecture and contracts.
 
 ## Scope
 
 - Modules: BrokerRelationship, Submission, Renewal, TaskManagement, TimelineAudit, IdentityAuthorization, Dashboard
-- Features in scope: F0001, F0002 (MVP)
+- Features in scope: F0001, F0002 (MVP), F0009 (Phase 1 auth hardening + broker boundary pilot)
 - Out of scope: External portal, analytics/insights beyond F0001/F0002, deployment hardening
 - **F0003 Task Write Endpoints:** Out of scope for this implementation pass. Task write endpoints (`POST /api/tasks`, `PUT /api/tasks/{taskId}`, `DELETE /api/tasks/{taskId}`) are not registered and return HTTP 404. Dashboard (F0001) only reads tasks. Test data for the My Tasks and Nudge widgets will be provided via a dev seed migration. The story index lists F0003-S0001, F0003-S0002, and F0003-S0003 as MVP priority for future activation, not for this pass.
 
@@ -20,6 +20,8 @@ Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation
 - `planning-mds/BLUEPRINT.md` (Phase A complete)
 - `planning-mds/api/nebula-api.yaml` (OpenAPI contract)
 - `planning-mds/security/authorization-matrix.md` and `planning-mds/security/policies/policy.csv`
+- `planning-mds/features/F0009-authentication-and-role-based-login/IMPLEMENTATION-CONTRACT.md`
+- `planning-mds/features/F0009-authentication-and-role-based-login/BROKER-VISIBILITY-MATRIX.md`
 - `planning-mds/architecture/SOLUTION-PATTERNS.md`
 - JSON Schemas in `planning-mds/schemas/`
 - ADRs in `planning-mds/architecture/decisions/`
@@ -37,6 +39,7 @@ Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation
 **Frontend**
 - Scaffold app shell, routing, auth gate, error boundaries.
 - Apply design tokens and base layout components.
+- Add auth route shell (`/login`, `/auth/callback`, `/unauthorized`).
 
 **QA/DevOps**
 - Baseline test harness (unit + integration) and CI validation gate alignment.
@@ -68,6 +71,21 @@ Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation
 **Checkpoint C:**
 - Contract validation passes; all endpoints return correct shape for dummy data.
 
+### 3.5) F0009 Auth and Boundary Delta
+
+**Backend**
+- Align BrokerUser rows in `policy.csv` with matrix section 2.10.
+- Implement broker scope resolver (`email` => exactly one active broker).
+- Enforce BrokerVisible/InternalOnly response shaping for BrokerUser.
+
+**Frontend**
+- Implement OIDC code + PKCE flow (`oidc-client-ts`).
+- Enforce deterministic route guard behavior for unauthenticated, 401, and 403 outcomes.
+- Implement role-based landing resolution and precedence.
+
+**Checkpoint C‑F0009:**
+- End-to-end login + callback + BrokerUser boundary validations pass.
+
 ### 4) Feature Assembly (F0001 + F0002)
 
 Follow the feature assembly plan to build complete vertical slices.
@@ -89,7 +107,7 @@ Follow the feature assembly plan to build complete vertical slices.
 
 ## Exit Criteria (Phase C)
 
-- All F0001 and F0002 stories pass acceptance criteria.
+- All F0001, F0002, and F0009 stories pass acceptance criteria.
 - API contract validation passes.
-- ABAC enforcement verified with basic integration tests.
+- ABAC enforcement verified with integration tests, including BrokerUser phase-1 rules.
 - UI renders core flows without fallback errors.

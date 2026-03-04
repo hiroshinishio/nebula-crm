@@ -9,106 +9,63 @@
 ## User Story
 
 **As a** broker user
-**I want** to sign in and view only broker-appropriate data
-**So that** I can collaborate without exposure to internal-only information
-
-## Context & Background
-
-Broker login is a new external-access capability. Existing policy artifacts focus on internal roles and require explicit BrokerUser rules plus strict deny defaults.
+**I want** to sign in and see only broker-authorized data
+**So that** I cannot access internal-only or cross-broker information
 
 ## Acceptance Criteria
 
 - **Given** `broker001@example.local` signs in with `BrokerUser`
-- **When** authorized pages load
-- **Then** only broker-visible screens, actions, and data are available
+- **When** broker pages load
+- **Then** only BrokerVisible routes/actions/data are available
 
-- **Given** broker user attempts internal-only routes or APIs
-- **When** authorization is evaluated
-- **Then** access is denied and no restricted payload is returned
+- **Given** BrokerUser requests internal-only route/API
+- **When** authorization evaluates
+- **Then** access is denied and restricted payload is not returned
 
-- **Given** data contains mixed visibility fields
-- **When** broker-visible responses are generated
-- **Then** internal-only attributes are omitted or masked server-side
+- **Given** BrokerUser requests data outside resolved broker scope
+- **When** access evaluates
+- **Then** response is deny-by-default
 
-- **Given** broker user session is active
-- **When** navigation menu renders
-- **Then** only broker-visible navigation items appear
+- **Given** BrokerUser data response includes mixed visibility fields
+- **When** response is serialized
+- **Then** all InternalOnly fields are omitted server-side
 
-- **Given** broker user A is signed in
-- **When** list or detail data is requested
-- **Then** only records mapped to broker organization A are returned
+- **Given** broker linkage cannot be resolved
+- **When** request is evaluated
+- **Then** request is denied
 
-- **Given** scope ownership cannot be determined for a requested record
-- **When** access evaluation runs
-- **Then** access is denied by default and no sensitive payload is returned
+## Scope Resolution Contract
 
-- Edge case: if broker role claim is missing/malformed, sign-in completes but app treats user as unauthorized and blocks protected content.
+- Scope anchor: authenticated `email` claim.
+- Matching rule: exactly one active broker where `Broker.Email == user.email` (case-insensitive).
+- `0` or `>1` matches: deny all BrokerUser-protected resources.
 
-## Data Requirements
+## Authorization Contract
 
-**Required Fields:**
-- BrokerUser role claim
-- Broker-to-entity visibility mapping (which broker records and linked resources are accessible)
-- InternalOnly vs BrokerVisible field definitions for exposed entities
+- `authorization-matrix.md` section 2.10 defines allowed BrokerUser resources/actions.
+- `policy.csv` must include explicit BrokerUser rows matching the matrix.
+- Default deny for any action/resource not explicitly allowed.
 
-**Optional Fields:**
-- Broker-facing display labels/help content
+## Field Boundary Contract
 
-**Validation Rules:**
-- Authorization defaults to deny when BrokerUser policy rule is absent
-- Broker-visible responses must never include InternalOnly fields
-- Records are returned only when broker-organization linkage exists for the signed-in broker user
-
-## Role-Based Visibility
-
-**Roles with this capability:**
-- BrokerUser — constrained read-oriented access
-- Admin — can impersonation-test/verify policy outcomes in non-production environments
-
-**Data Visibility:**
-- InternalOnly content: underwriting notes, internal assignment metadata, policy diagnostics
-- ExternalVisible content: broker-approved summary fields and timeline events marked broker-visible
+- `BROKER-VISIBILITY-MATRIX.md` is mandatory for field classification.
+- If endpoint cannot satisfy required field filtering, endpoint remains denied for BrokerUser in Phase 1.
 
 ## Non-Functional Expectations
 
-- Performance: broker-visible page loads p95 <= 2 seconds
-- Security: zero known exposures of internal-only fields in broker responses
-- Reliability: authorization behavior consistent between UI and direct API calls
+- Broker page load p95 <= 2s
+- Zero known InternalOnly field exposure in BrokerUser responses
+- Consistent behavior between direct API calls and UI paths
 
 ## Dependencies
 
-**Depends On:**
-- Authorization matrix and Casbin policy updates to include BrokerUser
-- Route guards and role entry behavior from F0009-S0003
-
-**Related Stories:**
-- F0009-S0005 — seeded user validation matrix
-
-## Out of Scope
-
-- Broker self-service CRUD for internal entities
-- Document exchange workflows
-- Broker-to-broker collaboration features
-
-## UI/UX Notes
-
-- Broker workspace should include explicit context indicator ("Broker Access") to set expectation.
-- Unauthorized states should avoid technical jargon and include support escalation guidance.
-
-## Questions & Assumptions
-
-**Open Questions:**
-- [ ] Which exact timeline event types are broker-visible in Phase 1 vs deferred?
-- [ ] For shared accounts linked to multiple brokers, should visibility be full-record or field-level constrained?
-
-**Assumptions (to be validated):**
-- BrokerUser is external and limited to read-first flows in this phase.
+- F0009-S0003 route guard behavior
+- BrokerUser policy delta in matrix + policy.csv
+- `BROKER-VISIBILITY-MATRIX.md`
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Broker-visible field boundary tests pass
-- [ ] Tests pass
-- [ ] Documentation updated (if needed)
+- [ ] Scope linkage logic implemented and fail-closed
+- [ ] BrokerUser policy rows implemented and parity-checked
+- [ ] Field-level filtering implemented and tested server-side
+- [ ] Cross-broker deny tests passing

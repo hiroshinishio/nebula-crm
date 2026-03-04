@@ -1,23 +1,38 @@
 # F0009 — Authentication + Role-Based Login — Status
 
-**Overall Status:** Draft
+**Overall Status:** Draft (Requirements Refined)
 **Last Updated:** 2026-03-04
 
 ## Story Checklist
 
 | Story | Title | Status | Notes |
 |-------|-------|--------|-------|
-| F0009-S0001 | Login Screen and OIDC Redirect | Draft | |
-| F0009-S0002 | OIDC Callback and Session Bootstrap | Draft | |
-| F0009-S0003 | Role-Based Entry and Protected Navigation | Draft | |
-| F0009-S0004 | BrokerUser Access Boundaries | Draft | |
-| F0009-S0005 | Seeded User Access Validation Matrix | Draft | |
+| F0009-S0001 | Login Screen and OIDC Redirect | Refined | Implementation contract added |
+| F0009-S0002 | OIDC Callback and Session Bootstrap | Refined | Session lifecycle decisions resolved |
+| F0009-S0003 | Role-Based Entry and Protected Navigation | Refined | Route/permission contract made deterministic |
+| F0009-S0004 | BrokerUser Access Boundaries | Refined | Scope + field boundary contracts defined |
+| F0009-S0005 | Seeded User Access Validation Matrix | Refined | Provisioning/test matrix contract defined |
 
 ## Prerequisite Tracking
 
 | Prerequisite | Status | Notes |
 |-------------|--------|-------|
 | F0005 IdP migration remains stable | Ready | authentik stack and claim normalization available |
-| BrokerUser role added to authorization matrix/policy | Not Started | required before broker login activation |
-| Broker-visible data boundary list approved | Not Started | required for safe external access |
-| Real-login frontend mode available (without `dev-auth.ts`) | Not Started | can ship behind feature flag initially |
+| BrokerUser role added to authorization matrix | Ready | matrix section 2.10 exists |
+| BrokerUser role added to policy.csv | Ready (artifact updated) | implementation must enforce query-layer scope + field filtering |
+| Broker-visible data boundary list approved | Ready | `BROKER-VISIBILITY-MATRIX.md` added |
+| Real-login frontend mode available (without `dev-auth.ts`) | Not Started | implementation required |
+| Required authentik seeded identities provisioned | Not Started | include `BrokerUser` group + user mappings |
+
+## Release-Blocking Requirement Gaps
+
+1. authentik blueprint missing `BrokerUser` group and required seeded identities.
+2. frontend still dependent on `dev-auth.ts` in default flow.
+3. backend query-layer scope + field filtering for BrokerUser not yet implemented in code.
+
+## Architecture-Ready Artifacts
+
+- [x] PRD with mandatory "How" decisions
+- [x] `IMPLEMENTATION-CONTRACT.md`
+- [x] `BROKER-VISIBILITY-MATRIX.md`
+- [x] Story-level deterministic acceptance criteria

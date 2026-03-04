@@ -9,96 +9,57 @@
 ## User Story
 
 **As a** authenticated Nebula user
-**I want** the app to process OIDC callback results and initialize my session
-**So that** I can access protected data without manual token handling
-
-## Context & Background
-
-A login redirect alone is insufficient; the app must securely handle callback state, bootstrap identity context, and load protected routes only after session readiness.
+**I want** the app to process OIDC callback and initialize my session
+**So that** I can access protected routes without manual token handling
 
 ## Acceptance Criteria
 
-- **Given** the IdP returns a valid callback response
-- **When** the callback route is processed
-- **Then** the app establishes session state and navigates to authorized entry route
+- **Given** IdP returns valid callback response
+- **When** `/auth/callback` is processed
+- **Then** app creates authenticated session and routes to role landing page
 
-- **Given** callback state, nonce, or code validation fails
+- **Given** callback validation fails (state/nonce/code)
 - **When** callback processing runs
-- **Then** session creation is rejected and the user is returned to login with actionable error messaging
+- **Then** session creation fails closed and user is routed to `/login?error=callback_failed`
 
-- **Given** I refresh the browser with an active session
-- **When** app bootstrap runs
-- **Then** protected routes remain accessible without forced re-login
+- **Given** browser refresh occurs with active session
+- **When** app bootstraps
+- **Then** protected routes remain accessible without re-login
 
-- **Given** my session is expired
-- **When** I navigate to a protected route
-- **Then** I am redirected to login and stale session state is cleared
+- **Given** session is expired
+- **When** protected route loads
+- **Then** session state is cleared and user is redirected to `/login?reason=session_expired`
 
-- Edge case: callback endpoint is opened multiple times for the same authorization code; second attempt fails safely without app crash.
+- **Given** same auth code callback is replayed
+- **When** callback executes
+- **Then** second attempt fails safely with deterministic login retry path
 
-## Data Requirements
+## Implementation Contract
 
-**Required Fields:**
-- Authorization code
-- OIDC state
-- ID token/access token claims required for user bootstrap
+- Callback route path: `/auth/callback`
+- Session source of truth: valid OIDC user from `oidc-client-ts`
+- Silent renew: out of scope in Phase 1 (full re-auth on expiry)
+- Claims required for bootstrap: `iss`, `sub`, `email`, `nebula_roles`
 
-**Optional Fields:**
-- Requested return URL after login
+## Validation Rules
 
-**Validation Rules:**
-- Callback payload must include expected state correlation value
-- Session bootstrap must fail closed on claim parsing errors
-
-## Role-Based Visibility
-
-**Roles that can complete callback/bootstrap:**
-- DistributionUser — yes
-- Underwriter — yes
-- BrokerUser — yes
-
-**Data Visibility:**
-- InternalOnly content: session diagnostic details and claim parsing traces
-- ExternalVisible content: generic callback success/failure outcomes
+- Callback processing fails closed on any protocol validation failure
+- Missing or malformed `nebula_roles` results in unauthorized user state
+- Token internals are never exposed in UI error content
 
 ## Non-Functional Expectations
 
-- Performance: callback processing and first authorized render p95 <= 3 seconds
-- Security: callback validation failures do not disclose token internals
-- Reliability: refresh with active session succeeds >= 99% in non-outage periods
+- Callback + first authorized render p95 <= 3s
+- Refresh with active session >= 99% success in non-outage windows
 
 ## Dependencies
 
-**Depends On:**
-- F0009-S0001 login redirect flow
-- Backend/user profile claim normalization in F0005
-
-**Related Stories:**
-- F0009-S0003 — role-based entry and protected navigation
-
-## Out of Scope
-
-- Cross-application single logout
-- Session sharing across browser profiles/devices
-
-## UI/UX Notes
-
-- Callback route should render a short-lived loading state and deterministic fallback errors.
-- Error messages should include a support trace identifier when available.
-
-## Questions & Assumptions
-
-**Open Questions:**
-- [ ] Is silent token renewal required in Phase 1, or is re-authentication on expiry acceptable?
-
-**Assumptions (to be validated):**
-- Existing backend accepts authentik-issued JWTs and exposes required protected data endpoints after session bootstrap.
+- F0009-S0001
+- F0005 claims normalization + JWT validation
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Session bootstrap telemetry verified
-- [ ] Tests pass
-- [ ] Documentation updated (if needed)
+- [ ] `/auth/callback` implemented
+- [ ] Session bootstrap deterministic for success/failure/expiry
+- [ ] Replay and direct-callback edge cases handled safely
+- [ ] Tests cover callback validation failure paths and expiry redirect

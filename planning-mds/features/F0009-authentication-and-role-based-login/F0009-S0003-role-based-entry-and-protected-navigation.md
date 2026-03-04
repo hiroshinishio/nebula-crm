@@ -9,96 +9,66 @@
 ## User Story
 
 **As a** signed-in user
-**I want** navigation and landing routes to align with my role
-**So that** I only see areas I am authorized to use
-
-## Context & Background
-
-Current routing is role-agnostic and assumes authenticated internal usage. With real login enabled, the app must enforce role-aware entry and navigation control.
+**I want** navigation and landing routes aligned to my role
+**So that** I only access authorized areas
 
 ## Acceptance Criteria
 
-- **Given** I sign in as `lisa.wong@nebula.local` with `DistributionUser`
-- **When** session bootstrap completes
-- **Then** I land on internal dashboard and can access authorized internal routes only
+- **Given** sign-in as `lisa.wong@nebula.local` (`DistributionUser`)
+- **When** callback bootstrap completes
+- **Then** user lands on `/` and internal route permissions apply
 
-- **Given** I sign in as `john.miller@nebula.local` with `Underwriter`
-- **When** session bootstrap completes
-- **Then** I land on the underwriter dashboard route and cannot access disallowed internal management routes
+- **Given** sign-in as `john.miller@nebula.local` (`Underwriter`)
+- **When** callback bootstrap completes
+- **Then** user lands on `/` and cannot access disallowed actions/resources
 
-- **Given** I attempt to navigate to a route outside my permissions
+- **Given** sign-in as `broker001@example.local` (`BrokerUser`)
+- **When** callback bootstrap completes
+- **Then** user lands on `/brokers` and broker boundary rules apply
+
+- **Given** authenticated user navigates to disallowed route
 - **When** route guard evaluates access
-- **Then** I receive deterministic unauthorized behavior (redirect or 403 page)
+- **Then** user is routed to `/unauthorized`
 
-- **Given** server-side authorization denies an API call
-- **When** the UI receives 403
-- **Then** the page presents a permission-safe error and does not leak restricted data
+- **Given** API returns `403`
+- **When** UI receives response
+- **Then** permission-safe error state is shown in context (with `traceId` when available)
 
-- Edge case: users with multiple roles are routed using deterministic priority order documented in this story.
+- **Given** API returns `401`
+- **When** UI receives response
+- **Then** local session is cleared and user is redirected to `/login`
 
-## Data Requirements
+## Route-to-Permission Contract
 
-**Required Fields:**
-- User role claim list (`nebula_roles`)
-- Route-to-permission mapping table
+| Route | Requires Auth | Allowed Roles |
+|-------|---------------|---------------|
+| `/` | Yes | DistributionUser, Underwriter, DistributionManager, RelationshipManager, ProgramManager, Admin |
+| `/brokers` | Yes | DistributionUser, Underwriter, DistributionManager, RelationshipManager, ProgramManager, Admin, BrokerUser |
+| `/brokers/new` | Yes | Roles with `broker:create` only |
+| `/brokers/:brokerId` | Yes | Roles with `broker:read` only |
+| `/login` | No | All |
+| `/auth/callback` | No (protocol route) | All |
+| `/unauthorized` | Yes | All authenticated users |
 
-**Optional Fields:**
-- Preferred landing route by role
+## Implementation Contract
 
-**Validation Rules:**
-- Role resolution must support at least DistributionUser, Underwriter, BrokerUser
-- Route guards must validate session and role before route render
-
-## Role-Based Visibility
-
-**Roles with expected primary entry:**
-- DistributionUser — internal dashboard
-- Underwriter — underwriter workspace/dashboard
-- BrokerUser — broker-constrained workspace (defined in S0004)
-
-**Data Visibility:**
-- InternalOnly content: internal navigation items and admin/ops views
-- ExternalVisible content: only routes explicitly marked broker-visible
+- Role claim source: `nebula_roles`
+- Deterministic role precedence for multi-role users:
+  - `Admin` > `DistributionManager` > `DistributionUser` > `Underwriter` > `BrokerUser`
+- Client guards are UX-level; server-side authorization remains authoritative.
 
 ## Non-Functional Expectations
 
-- Performance: post-login route resolution <= 300ms client-side
-- Security: client guards are secondary; API enforcement remains authoritative
-- Reliability: route guard behavior is deterministic across direct URL access and in-app navigation
+- Post-login route resolution <= 300ms client-side
+- Guard behavior deterministic for direct URL and in-app nav
 
 ## Dependencies
 
-**Depends On:**
-- F0009-S0002 callback/session bootstrap
-- Authorization policy matrix updates for role-to-resource mapping
-
-**Related Stories:**
-- F0009-S0004 — BrokerUser access boundaries
-- F0009-S0005 — seeded user validation matrix
-
-## Out of Scope
-
-- Fine-grained field-level UI personalization beyond role scope
-- Feature-flag experimentation by user segment
-
-## UI/UX Notes
-
-- Unauthorized route state should include a "Back to allowed home" action.
-- Sidebar/nav items should hide inaccessible routes to reduce navigation dead ends.
-
-## Questions & Assumptions
-
-**Open Questions:**
-- [ ] For multi-role users, should landing preference be configurable per user later?
-
-**Assumptions (to be validated):**
-- Deterministic role precedence for entry routing: `Admin` > `DistributionManager` > `DistributionUser` > `Underwriter` > `BrokerUser`.
+- F0009-S0002
+- Authorization matrix/policy parity for role/resource mapping
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Authorization-denied UX validated
-- [ ] Tests pass
-- [ ] Documentation updated (if needed)
+- [ ] Landing route logic implemented for required roles
+- [ ] Guard behavior deterministic for unauthorized routes and API errors
+- [ ] Route-to-permission mapping documented and tested

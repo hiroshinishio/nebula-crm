@@ -12,37 +12,34 @@
 **I want** a clear login screen that starts sign-in with the identity provider
 **So that** I can authenticate through a supported, explicit user flow
 
-## Context & Background
-
-The current frontend enters application routes directly and obtains tokens through a development helper. A dedicated login screen is required before real-user sign-in can be validated.
-
 ## Acceptance Criteria
 
 - **Given** I open Nebula without an active session
 - **When** I navigate to any protected route
-- **Then** I am redirected to the login screen
+- **Then** I am redirected to `/login`
 
-- **Given** I do not have valid authentication or authorization for a protected resource
-- **When** I attempt direct route access
-- **Then** access is blocked and I am redirected to login
+- **Given** I am on `/login`
+- **When** I click `Sign in`
+- **Then** the app starts OIDC Authorization Code + PKCE redirect to configured authority
 
-- **Given** I am not an authorized user for an internal route
-- **When** I attempt to continue past login
-- **Then** permission-safe unauthorized behavior is enforced
+- **Given** OIDC configuration is missing
+- **When** `/login` renders
+- **Then** sign-in action is disabled and a deterministic support-safe error is shown
 
-- **Given** I am on the login screen
-- **When** I click "Sign in"
-- **Then** I am redirected to the configured OIDC authorization endpoint
+- **Given** I attempt to access callback route directly without valid OIDC state
+- **When** callback validation executes
+- **Then** login retry path is shown without exposing protocol details
 
-- **Given** the identity provider is unavailable
-- **When** I attempt sign-in
-- **Then** I see a deterministic error state with retry guidance
+- **Given** the IdP is unavailable
+- **When** sign-in is attempted
+- **Then** deterministic error and retry guidance are shown
 
-- **Given** a login entry event occurs
-- **When** diagnostics are captured
-- **Then** traceable telemetry is emitted for support triage (no credential payload logged)
+## Implementation Contract
 
-- Edge case: attempting to load callback route directly without OIDC state returns a safe error and login retry path.
+- Route path: `/login`
+- Frontend OIDC library: `oidc-client-ts`
+- No role picker on login page (claims-driven role resolution after callback)
+- `dev-auth` fallback is allowed only under explicit feature flag in non-production
 
 ## Data Requirements
 
@@ -51,64 +48,24 @@ The current frontend enters application routes directly and obtains tokens throu
 - OIDC client ID
 - Redirect URI
 
-**Optional Fields:**
-- Post-login default route override
-- Support/help URL
-
 **Validation Rules:**
-- OIDC configuration must be present before rendering an enabled sign-in action
-- Callback route must validate required OIDC state parameters
-
-## Role-Based Visibility
-
-**Roles that can use this flow:**
-- DistributionUser — sign in
-- Underwriter — sign in
-- BrokerUser — sign in
-
-**Data Visibility:**
-- InternalOnly content: diagnostics metadata and support trace identifiers
-- ExternalVisible content: login page copy and generic sign-in error messaging
+- Sign-in is disabled when required OIDC config is absent
+- Login diagnostics must not log tokens/secrets/credentials
 
 ## Non-Functional Expectations
 
-- Performance: login screen first render p95 <= 1.5 seconds on broadband
-- Security: no token, secret, or credential values logged in browser console
-- Reliability: sign-in redirect failure rate <= 1% excluding IdP outages
+- Performance: login screen render p95 <= 1.5s
+- Security: no token/secret in browser logs
+- Reliability: sign-in redirect failure <= 1% excluding IdP outages
 
 ## Dependencies
 
-**Depends On:**
-- F0005 authentik OIDC baseline
-- Frontend route guard framework
-
-**Related Stories:**
-- F0009-S0002 — OIDC callback/session bootstrap
-
-## Out of Scope
-
-- Password reset UI implementation
-- User registration
-- MFA enrollment screens
-
-## UI/UX Notes
-
-- Login screen includes product identity, single primary "Sign in" call to action, and support link.
-- Avoid role picker on login page; role resolution is claims-driven after sign-in.
-
-## Questions & Assumptions
-
-**Open Questions:**
-- [ ] Should staging expose a temporary "use dev-auth" fallback toggle for support teams?
-
-**Assumptions (to be validated):**
-- IdP-hosted login handles credential entry, password policy, and MFA prompts.
+- F0005 authentik baseline
+- Route guard implementation (F0009-S0003)
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Security/diagnostic telemetry validated
-- [ ] Tests pass
-- [ ] Documentation updated (if needed)
+- [ ] `/login` implemented and routable
+- [ ] Redirect to IdP works with PKCE
+- [ ] Missing-config and IdP-error states deterministic
+- [ ] Tests cover login route guard redirect + error states

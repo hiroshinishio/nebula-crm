@@ -1,4 +1,4 @@
-# Feature Assembly Plan (F0001 + F0002)
+# Feature Assembly Plan (F0001 + F0002 + F0009)
 
 **Owner:** Architect
 **Status:** Approved
@@ -6,7 +6,7 @@
 
 ## Goal
 
-Define the build order, role handoffs, and integration checkpoints for F0001 (Dashboard) and F0002 (Broker Relationship Management) features.
+Define the build order, role handoffs, and integration checkpoints for F0001 (Dashboard), F0002 (Broker Relationship Management), and F0009 (Authentication + Role-Based Login).
 
 ---
 
@@ -75,6 +75,41 @@ Define the build order, role handoffs, and integration checkpoints for F0001 (Da
 - Verify ABAC scope on broker/contact reads and mutations.
 
 **Checkpoint F0002‑A:** Broker 360 flow complete end‑to‑end.
+
+---
+
+## F0009 — Authentication + Role-Based Login
+
+### Dependencies
+- F0005 authentik baseline and claim normalization
+- F0009 implementation contract and broker visibility matrix:
+  - `planning-mds/features/F0009-authentication-and-role-based-login/IMPLEMENTATION-CONTRACT.md`
+  - `planning-mds/features/F0009-authentication-and-role-based-login/BROKER-VISIBILITY-MATRIX.md`
+- BrokerUser matrix rules in `planning-mds/security/authorization-matrix.md` section 2.10
+- BrokerUser policy rows in `planning-mds/security/policies/policy.csv`
+
+### Backend Assembly Steps
+1. Add BrokerUser policy rows in Casbin policy artifact and verify matrix/policy parity.
+2. Implement broker scope resolution (`email` -> exactly one active broker; else deny).
+3. Apply scope filtering to all BrokerUser-allowed read endpoints (broker/contact/dashboard/timeline/task).
+4. Apply server-side BrokerVisible/InternalOnly field filtering for BrokerUser responses.
+5. Preserve deterministic ProblemDetails semantics for 401/403 outcomes.
+
+### Frontend Assembly Steps
+1. Add auth routes: `/login`, `/auth/callback`, `/unauthorized`.
+2. Implement OIDC code+PKCE flow via `oidc-client-ts`.
+3. Add deterministic route guard behavior and API 401/403 handling.
+4. Add role-based landing logic with precedence:
+   - `Admin > DistributionManager > DistributionUser > Underwriter > BrokerUser`
+5. Make `dev-auth` fallback explicit via feature flag only; primary flow is OIDC.
+
+### QA/Integration
+- Validate login/callback flow for all seeded identities.
+- Validate 401 redirect and 403 in-context error behavior.
+- Validate BrokerUser cross-broker denies and InternalOnly field exclusions.
+- Validate matrix vs policy parity for BrokerUser resources/actions.
+
+**Checkpoint F0009‑A:** End-to-end login + broker boundary enforcement passes for all required seeded users.
 
 ---
 
@@ -147,6 +182,6 @@ Navigation availability should be driven by a route registry check (e.g., `canNa
 
 ## Exit Criteria
 
-- F0001 and F0002 stories pass acceptance criteria.
+- F0001, F0002, and F0009 stories pass acceptance criteria.
 - API contract validation passes.
-- ABAC policy enforcement verified for all roles in matrix.
+- ABAC policy enforcement verified for all roles in matrix (including BrokerUser phase-1 delta).
