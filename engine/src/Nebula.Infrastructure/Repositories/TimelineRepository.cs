@@ -22,9 +22,9 @@ public class TimelineRepository(AppDbContext db) : ITimelineRepository
             .ToListAsync(ct);
     }
 
-    public async Task AddEventAsync(ActivityTimelineEvent evt, CancellationToken ct = default)
+    public Task AddEventAsync(ActivityTimelineEvent evt, CancellationToken ct = default)
     {
         db.ActivityTimelineEvents.Add(evt);
-        await db.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 }

@@ -19,26 +19,30 @@ Brokers occasionally need to be removed from active use due to errors, inactivit
 ## Acceptance Criteria
 
 - **Given** I have `broker:delete` permission
-- **When** I confirm broker deletion
-- **Then** the broker is soft deleted and no longer appears in active broker lists or search results
+- **When** I confirm broker deactivation
+- **Then** the broker is deactivated (soft deleted) and no longer appears in active broker lists or search results
 
-- **Given** a broker has been soft deleted
-- **When** I attempt to access Broker 360
-- **Then** I see a "Broker not found" message
+- **Given** a broker has been deactivated
+- **When** a non-Admin user attempts to access Broker 360 via direct URL
+- **Then** they see a "Broker not found" message and a link back to Broker List
 
-- **Given** I am not authorized to delete brokers
-- **When** I attempt to delete
+- **Given** a broker has been deactivated
+- **When** an Admin user navigates to Broker 360 via direct URL
+- **Then** the Admin can view the broker profile in a read-only deactivated state (for audit and recovery purposes); a "Deactivated" banner is displayed; all actions except Reactivate (see F0002-S0008) are hidden
+
+- **Given** I am not authorized to deactivate brokers
+- **When** I attempt to deactivate
 - **Then** access is denied with a 403 response
 
-- **Given** a broker is deleted successfully
-- **When** deletion completes
-- **Then** an audit timeline event is stored with actor, timestamp, and broker id
+- **Given** a broker is deactivated successfully
+- **When** deactivation completes
+- **Then** an audit timeline event is stored with actor, timestamp, and broker id; associated contacts are also hidden from active views (soft cascade — contacts are not independently deactivated but are excluded from list/search while the broker is deactivated)
 
 - **Given** the broker has active submissions or renewals
-- **When** I attempt to delete the broker
-- **Then** the delete is rejected with a deterministic conflict error and the broker remains active
+- **When** I attempt to deactivate the broker
+- **Then** the request is rejected with a deterministic conflict error (`active_dependencies_exist`) and the broker remains active
 
-- Edge case: deleting a broker that does not exist → return not found
+- Edge case: deactivating a broker that does not exist → return not found
 
 ## Data Requirements
 
@@ -46,8 +50,9 @@ Brokers occasionally need to be removed from active use due to errors, inactivit
 - BrokerId: identifier for the broker to delete
 
 **Validation Rules:**
-- Delete is soft delete (record retained, flagged as inactive/deleted)
-- Broker cannot be deleted while active submissions or renewals exist
+- Deactivation is a soft delete (record retained, flagged as deactivated); hard delete is not supported
+- Broker cannot be deactivated while active submissions or renewals exist
+- Associated contacts are hidden from active lists while broker is deactivated (soft cascade); they are not permanently deleted
 
 ## Role-Based Visibility
 
@@ -75,6 +80,7 @@ Brokers occasionally need to be removed from active use due to errors, inactivit
 
 **Related Stories:**
 - F0002-S0007 - View Broker Activity Timeline
+- F0002-S0008 - Reactivate Broker (the reverse operation)
 
 ## Out of Scope
 
@@ -83,13 +89,14 @@ Brokers occasionally need to be removed from active use due to errors, inactivit
 
 ## Questions & Assumptions
 
-**Assumptions (to be validated):**
-- Soft delete hides brokers from list/search but retains audit history
+**Assumptions (confirmed):**
+- Deactivation hides brokers from list/search but retains audit history and all timeline events
+- "Deactivate" is the user-facing term throughout the UI (not "delete"); the Casbin policy permission is `broker:delete` for historical reasons
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Audit/timeline logged for deletion
+- [x] Acceptance criteria met
+- [x] Edge cases handled
+- [x] Permissions enforced
+- [x] Audit/timeline logged for deletion
 - [ ] Tests pass

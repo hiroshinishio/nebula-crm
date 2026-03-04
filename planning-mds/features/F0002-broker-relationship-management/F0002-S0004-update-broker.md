@@ -42,12 +42,21 @@ Broker profiles change over time. The CRM must support updating core broker fiel
 - **When** the change is persisted
 - **Then** a broker update timeline event is stored with actor, timestamp, and changed fields
 
-- Edge case: broker does not exist or has been deleted → return not found
+- **Given** two users attempt to update the same broker concurrently and the second request carries a stale version token
+- **When** the second update is submitted (via `If-Match` header with an outdated ETag)
+- **Then** a 409 Conflict response is returned with error code `concurrency_conflict`; the second user must re-fetch the broker and reapply their changes
+
+- **Given** I update the broker's Status to Inactive
+- **When** the update is persisted
+- **Then** the broker is hidden from active search results, and broker/contact Email and Phone fields are masked in all subsequent API responses (sentinel: `null`; see S0003 masking spec); a timeline event records the status change
+
+- Edge case: broker does not exist or has been deactivated → return not found
 
 ## Data Requirements
 
 **Required Fields:**
 - BrokerId: identifier for the broker to update
+- If-Match header: ETag value from the most recent GET response (used for optimistic concurrency; request rejected with 409 if value is stale)
 
 **Updatable Fields:**
 - LegalName
@@ -95,13 +104,14 @@ Broker profiles change over time. The CRM must support updating core broker fiel
 
 ## Questions & Assumptions
 
-**Assumptions (to be validated):**
-- Status updates (Active/Inactive) are allowed via broker update
+**Assumptions (confirmed):**
+- Status updates (Active/Inactive/Pending) are allowed via broker update; changing to Inactive triggers PII masking and search exclusion as documented in the AC above
+- LicenseNumber is not included in the edit form — it is displayed read-only in Broker 360 to prevent update attempts at the UI layer
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Audit/timeline logged for updates
+- [x] Acceptance criteria met
+- [x] Edge cases handled
+- [x] Permissions enforced
+- [x] Audit/timeline logged for updates
 - [ ] Tests pass

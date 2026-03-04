@@ -462,6 +462,33 @@ public DateTime? DeletedAt { get; set; }
 public Guid? DeletedByUserId { get; set; } // internal UserId from UserProfile; never raw IdP sub
 ```
 
+### Pattern: IgnoreQueryFilters for Admin/Reactivation Access
+**Decision:** EF Core global query filters suppress soft-deleted records on all queries by default. Use `IgnoreQueryFilters()` only in the specific repository methods that must see deactivated records.
+**Rationale:** Global filters prevent accidental exposure of deleted data; selective bypass gives Admin and reactivation flows the access they need without scattering `WHERE IsDeleted = false` clauses everywhere.
+**Applied in:** Admin broker lookup (Broker 360 for deactivated broker), broker reactivation (F0002-S0008)
+
+**Global filter (configured once in DbContext):**
+```csharp
+modelBuilder.Entity<Broker>().HasQueryFilter(b => !b.IsDeleted);
+modelBuilder.Entity<BrokerContact>().HasQueryFilter(c => !c.IsDeleted);
+```
+
+**Bypass pattern — use sparingly and with explicit intent:**
+```csharp
+// Only for admin 360 view and reactivation use cases
+public async Task<Broker?> GetIncludingDeactivatedAsync(Guid id)
+{
+    return await _context.Brokers
+        .IgnoreQueryFilters()   // bypasses IsDeleted filter — Admin/reactivation only
+        .FirstOrDefaultAsync(b => b.Id == id);
+}
+```
+
+**Rules:**
+- Standard `GetAsync` / `ListAsync` methods must NOT call `IgnoreQueryFilters()`.
+- Methods that use `IgnoreQueryFilters()` must have a name suffix or comment making the bypass explicit (e.g., `GetIncludingDeactivatedAsync`).
+- ABAC authorization must still be enforced after the bypass — calling `IgnoreQueryFilters()` only bypasses the EF filter, not the authorization layer.
+
 ### Pattern: Optimistic Concurrency Control
 **Decision:** All mutable entities include a `RowVersion` column (EF Core concurrency token) for optimistic locking
 **Rationale:** Multi-user CRM requires safe concurrent edits; optimistic locking detects conflicts without database-level locks

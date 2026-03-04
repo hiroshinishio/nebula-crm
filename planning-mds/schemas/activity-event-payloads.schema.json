@@ -56,12 +56,20 @@
       "descriptionTemplate": "Broker status changed from {fromStatus} to {toStatus}"
     },
 
-    "BrokerDeleted": {
-      "description": "Emitted when a broker is soft-deleted (F0002-S0005). Payload is empty — the event itself records the actor and timestamp.",
+    "BrokerDeactivated": {
+      "description": "Emitted when a broker is soft-deleted/deactivated (F0002-S0005). Payload is empty — the event itself records the actor and timestamp.",
       "type": "object",
       "properties": {},
       "additionalProperties": false,
       "descriptionTemplate": "Broker deactivated"
+    },
+
+    "BrokerReactivated": {
+      "description": "Emitted when a previously deactivated broker is restored to Active status (F0002-S0008). Payload is empty — the event itself records the actor and timestamp.",
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false,
+      "descriptionTemplate": "Broker reactivated"
     },
 
     "ContactCreated": {
@@ -119,10 +127,10 @@
     "TaskCreated": {
       "description": "Emitted when a task is created (F0003-S0001, referenced by F0001-S0003 and F0001-S0005).",
       "type": "object",
-      "required": ["title", "assignedTo"],
+      "required": ["title", "assignedToUserId"],
       "properties": {
         "title":            { "type": "string" },
-        "assignedTo":       { "type": "string" },
+        "assignedToUserId": { "type": "string", "format": "uuid", "description": "Internal UserId (uuid) from UserProfile. Never a raw IdP subject string." },
         "dueDate":          { "type": ["string", "null"], "format": "date" },
         "linkedEntityType": { "type": ["string", "null"] },
         "linkedEntityId":   { "type": ["string", "null"], "format": "uuid" }
@@ -190,7 +198,8 @@
       { "eventType": "BrokerCreated",       "entityType": "Broker",  "emittedBy": "F0002-S0001" },
       { "eventType": "BrokerUpdated",       "entityType": "Broker",  "emittedBy": "F0002-S0004" },
       { "eventType": "BrokerStatusChanged", "entityType": "Broker",  "emittedBy": "F0002-S0004" },
-      { "eventType": "BrokerDeleted",       "entityType": "Broker",  "emittedBy": "F0002-S0005" },
+      { "eventType": "BrokerDeactivated",    "entityType": "Broker",  "emittedBy": "F0002-S0005" },
+      { "eventType": "BrokerReactivated",   "entityType": "Broker",  "emittedBy": "F0002-S0008" },
       { "eventType": "ContactCreated",      "entityType": "Broker",  "emittedBy": "F0002-S0006" },
       { "eventType": "ContactUpdated",      "entityType": "Broker",  "emittedBy": "F0002-S0006" },
       { "eventType": "ContactDeleted",      "entityType": "Broker",  "emittedBy": "F0002-S0006" },

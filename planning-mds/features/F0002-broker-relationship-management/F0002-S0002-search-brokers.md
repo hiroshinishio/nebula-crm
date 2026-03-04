@@ -43,7 +43,14 @@ As broker volume grows, list-only browsing becomes inefficient. Search is needed
 - Query: 1-100 chars after trimming
 
 **Optional Fields:**
-- Status filter: Active/Inactive
+- Status filter: Active / Inactive / Pending (all three statuses are filterable; default is no filter — all statuses returned)
+- Page: non-negative integer, default 1
+- PageSize: integer, default 20, maximum 100
+
+**Pagination:**
+- All list responses are paginated. Response includes: `data`, `page`, `pageSize`, `totalCount`, `totalPages`.
+- If no results on the requested page, return an empty `data` array (not a 404).
+- UI renders Previous/Next controls; disabled when at first/last page.
 
 **Validation Rules:**
 - Query must be sanitized before persistence/logging
@@ -53,9 +60,12 @@ As broker volume grows, list-only browsing becomes inefficient. Search is needed
 ## Role-Based Visibility
 
 **Roles that can search brokers:**
-- DistributionManager — full broker search
+- DistributionUser — scoped broker search (same scope as their read/update access)
+- DistributionManager — region-scoped broker search
 - RelationshipManager — full broker search
-- Admin — full broker search
+- Underwriter — read-only broker search (for submission context)
+- ProgramManager — scoped broker search (program context)
+- Admin — unscoped broker search
 
 **Data Visibility:**
 - InternalOnly content: inactive/hidden broker flags
@@ -84,12 +94,21 @@ As broker volume grows, list-only browsing becomes inefficient. Search is needed
 
 ## Questions & Assumptions
 
-**Assumptions (to be validated):**
+**Assumptions (confirmed):**
 - Name search is case-insensitive substring match
+- Soft-deleted brokers are excluded from all search results regardless of status filter
+
+## UI/UX Notes
+
+- Screens involved: Broker List (search bar + results table)
+- Layout: Search input + Status dropdown filter at top; paginated results table below
+- Table columns: Legal Name, License Number, State, Status, Created Date
+- Empty state: "No brokers match your search. Try a different name or license number." with a clear-filters button
+- Pagination controls: Previous / Next with current page indicator; page size selector (20 / 50 / 100)
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge case and error scenario tests pass
-- [ ] Authorization enforced for API and UI entry points
+- [x] Acceptance criteria met
+- [x] Edge case and error scenario tests pass
+- [x] Authorization enforced for API and UI entry points
 - [ ] Unit and integration tests pass

@@ -7,9 +7,10 @@ interface TopBarProps {
   title?: string;
   chatCollapsed: boolean;
   onToggleChatCollapsed: () => void;
+  onOpenMobileChat: () => void;
 }
 
-export function TopBar({ title, chatCollapsed, onToggleChatCollapsed }: TopBarProps) {
+export function TopBar({ title, chatCollapsed, onToggleChatCollapsed, onOpenMobileChat }: TopBarProps) {
   const { collapsed, toggleCollapsed, openMobile } = useSidebar();
   const { theme, toggleTheme } = useTheme();
 
@@ -59,6 +60,13 @@ export function TopBar({ title, chatCollapsed, onToggleChatCollapsed }: TopBarPr
         </button>
         <NotificationDropdown />
         <div className="hidden lg:block mx-1 h-5 w-px bg-topbar-border" />
+        <button
+          onClick={onOpenMobileChat}
+          aria-label="Open chat"
+          className="flex h-9 w-9 items-center justify-center rounded-md text-text-muted transition-colors hover:text-text-secondary lg:hidden"
+        >
+          <PanelRightOpen size={18} />
+        </button>
         <button
           onClick={onToggleChatCollapsed}
           aria-label={chatCollapsed ? 'Expand chat panel' : 'Collapse chat panel'}

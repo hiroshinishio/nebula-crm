@@ -71,11 +71,16 @@ p, RelationshipManager, broker, update, true
 p, ProgramManager,   broker, read,   true
 
 # Admin — full unscoped access. Source: F0002-S0001/F0002-S0002 Role Visibility; BLUEPRINT §4.4.
-p, Admin,            broker, create, true
-p, Admin,            broker, read,   true
-p, Admin,            broker, search, true
-p, Admin,            broker, update, true
-p, Admin,            broker, delete, true
+p, Admin,            broker, create,     true
+p, Admin,            broker, read,       true
+p, Admin,            broker, search,     true
+p, Admin,            broker, update,     true
+p, Admin,            broker, delete,     true
+p, Admin,            broker, reactivate, true
+
+# broker:reactivate — reverse of deactivate (F0002-S0008). Manager authority required.
+# DistributionUser and RelationshipManager explicitly excluded: structural record change requires manager authority.
+p, DistributionManager, broker, reactivate, true
 
 # ─────────────────────────────────────────────────────────────────────────────
 # §2.2 Contact

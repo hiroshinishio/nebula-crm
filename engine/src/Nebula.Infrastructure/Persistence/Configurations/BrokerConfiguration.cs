@@ -45,5 +45,7 @@ public class BrokerConfiguration : IEntityTypeConfiguration<Broker>
             .HasDatabaseName("IX_Brokers_LicenseNumber");
         builder.HasIndex(e => e.ManagedByUserId)
             .HasDatabaseName("IX_Brokers_ManagedByUserId");
+        builder.HasIndex(e => new { e.Status, e.IsDeleted })
+            .HasDatabaseName("IX_Brokers_Status_IsDeleted");
     }
 }

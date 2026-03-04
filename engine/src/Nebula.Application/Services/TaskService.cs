@@ -12,14 +12,15 @@ public class TaskService(ITaskRepository taskRepo)
     }
 
     public async Task<MyTasksResponseDto> GetMyTasksAsync(
-        Guid assignedToUserId, int limit, CancellationToken ct = default)
+        Guid assignedToUserId, string? callerDisplayName, int limit, CancellationToken ct = default)
     {
         var (tasks, totalCount) = await taskRepo.GetMyTasksAsync(assignedToUserId, limit, ct);
         var today = DateTime.UtcNow.Date;
         var summaries = tasks.Select(t => new TaskSummaryDto(
             t.Id, t.Title, t.Status, t.DueDate,
             t.LinkedEntityType, t.LinkedEntityId, null,
-            t.DueDate.HasValue && t.DueDate.Value < today && t.Status != "Done"))
+            t.DueDate.HasValue && t.DueDate.Value < today && t.Status != "Done",
+            callerDisplayName))
             .ToList();
 
         return new MyTasksResponseDto(summaries, totalCount);

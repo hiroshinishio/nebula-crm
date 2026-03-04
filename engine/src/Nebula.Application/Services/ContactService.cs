@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Nebula.Application.Common;
 using Nebula.Application.DTOs;
 using Nebula.Application.Interfaces;
@@ -8,7 +9,8 @@ namespace Nebula.Application.Services;
 public class ContactService(
     IContactRepository contactRepo,
     IBrokerRepository brokerRepo,
-    ITimelineRepository timelineRepo)
+    ITimelineRepository timelineRepo,
+    IUnitOfWork unitOfWork)
 {
     public async Task<ContactDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
@@ -56,7 +58,15 @@ public class ContactService(
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
+            EventPayloadJson = JsonSerializer.Serialize(new
+            {
+                id = contact.Id,
+                fullName = contact.FullName,
+                brokerId = dto.BrokerId,
+            }),
         }, ct);
+
+        await unitOfWork.CommitAsync(ct);
 
         return (MaskPii(MapToDto(contact), broker.Status), null);
     }
@@ -89,8 +99,16 @@ public class ContactService(
                 ActorUserId = user.UserId,
                 ActorDisplayName = user.DisplayName,
                 OccurredAt = now,
+                EventPayloadJson = JsonSerializer.Serialize(new
+                {
+                    id = contact.Id,
+                    fullName = contact.FullName,
+                    brokerId = contact.BrokerId.Value,
+                }),
             }, ct);
         }
+
+        await unitOfWork.CommitAsync(ct);
 
         return (MaskPii(MapToDto(contact), contact.Broker?.Status), null);
     }
@@ -120,8 +138,16 @@ public class ContactService(
                 ActorUserId = user.UserId,
                 ActorDisplayName = user.DisplayName,
                 OccurredAt = now,
+                EventPayloadJson = JsonSerializer.Serialize(new
+                {
+                    id = contact.Id,
+                    fullName = contact.FullName,
+                    brokerId = contact.BrokerId.Value,
+                }),
             }, ct);
         }
+
+        await unitOfWork.CommitAsync(ct);
 
         return null;
     }

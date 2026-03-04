@@ -11,11 +11,11 @@ export function RightChatPanel({ collapsed, fullscreen, onToggleFullscreen }: Ri
   const effectiveCollapsed = collapsed && !fullscreen;
 
   return (
-    <div className="hidden lg:block">
+    <div className={cn(fullscreen ? 'block' : 'hidden lg:block')}>
       <aside
         className={cn(
           'chat-panel h-full',
-          fullscreen ? 'left-0 w-auto z-[60]' : effectiveCollapsed ? 'w-16' : 'w-[22rem]',
+          fullscreen ? 'left-0 top-0 w-auto z-[60]' : effectiveCollapsed ? 'w-16' : 'w-[22rem]',
         )}
       >
         <NeuronPanel

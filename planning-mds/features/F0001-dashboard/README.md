@@ -1,6 +1,6 @@
 # F0001 — Dashboard
 
-**Status:** In Progress
+**Status:** In Progress (4/5 stories done)
 **Priority:** Critical
 **Phase:** MVP
 
@@ -20,11 +20,11 @@ Role-aware dashboard with KPI cards, pipeline summary, my tasks, broker activity
 
 | ID | Title | Status |
 |----|-------|--------|
-| [F0001-S0001](./F0001-S0001-view-key-metrics-cards.md) | View Key Metrics Cards | Draft |
-| [F0001-S0002](./F0001-S0002-view-pipeline-summary.md) | View Pipeline Summary (Mini-Kanban) | Draft |
-| [F0001-S0003](./F0001-S0003-view-my-tasks-and-reminders.md) | View My Tasks and Reminders | Draft |
-| [F0001-S0004](./F0001-S0004-view-broker-activity-feed.md) | View Broker Activity Feed | Draft |
-| [F0001-S0005](./F0001-S0005-view-nudge-cards.md) | View Nudge Cards | Draft |
+| [F0001-S0001](./F0001-S0001-view-key-metrics-cards.md) | View Key Metrics Cards | Done |
+| [F0001-S0002](./F0001-S0002-view-pipeline-summary.md) | View Pipeline Summary (Mini-Kanban) | Done |
+| [F0001-S0003](./F0001-S0003-view-my-tasks-and-reminders.md) | View My Tasks | Done |
+| [F0001-S0004](./F0001-S0004-view-broker-activity-feed.md) | View Broker Activity Feed | Done |
+| [F0001-S0005](./F0001-S0005-view-nudge-cards.md) | View and Dismiss Nudge Cards | In Progress |
 
 **Total Stories:** 5
-**Completed:** 0 / 5
+**Completed:** 4 / 5

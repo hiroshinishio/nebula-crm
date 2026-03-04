@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { SidebarContext, useSidebarProvider } from '@/hooks/useSidebar';
 import { useSidebar } from '@/hooks/useSidebar';
 import { RightChatPanel } from './RightChatPanel';
@@ -28,16 +28,6 @@ export function DashboardLayout({ title, children }: DashboardLayoutProps) {
     setChatFullscreen((prev) => !prev);
   }, []);
 
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth < 1024) {
-        setChatFullscreen(false);
-      }
-    }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
     <SidebarContext.Provider value={sidebarValue}>
       {!chatFullscreen && <Sidebar />}
@@ -51,6 +41,7 @@ export function DashboardLayout({ title, children }: DashboardLayoutProps) {
           title={title}
           chatCollapsed={chatCollapsed}
           onToggleChatCollapsed={toggleChatCollapsed}
+          onOpenMobileChat={toggleChatFullscreen}
         >
           {children}
         </ContentArea>
@@ -64,11 +55,13 @@ function ContentArea({
   children,
   chatCollapsed,
   onToggleChatCollapsed,
+  onOpenMobileChat,
 }: {
   title?: string;
   children: React.ReactNode;
   chatCollapsed: boolean;
   onToggleChatCollapsed: () => void;
+  onOpenMobileChat: () => void;
 }) {
   const { collapsed } = useSidebar();
 
@@ -87,6 +80,7 @@ function ContentArea({
           title={title}
           chatCollapsed={chatCollapsed}
           onToggleChatCollapsed={onToggleChatCollapsed}
+          onOpenMobileChat={onOpenMobileChat}
         />
         <main className="px-4 py-6 sm:px-6 lg:pl-6 lg:pr-8">
           {title && (

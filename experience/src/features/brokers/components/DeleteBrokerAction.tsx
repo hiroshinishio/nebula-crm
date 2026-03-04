@@ -22,8 +22,8 @@ export function DeleteBrokerAction({ brokerId, brokerName, open, onClose }: Dele
       await deleteBroker.mutateAsync(brokerId);
       navigate('/brokers');
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'active_submissions_exist') {
-        setError('Cannot delete: broker has active submissions or renewals.');
+      if (err instanceof ApiError && err.code === 'active_dependencies_exist') {
+        setError('Cannot deactivate: broker has active submissions or renewals.');
       } else {
         setError('Unable to delete broker. Please try again.');
       }

@@ -5,7 +5,7 @@ import { ErrorFallback } from '@/components/ui/ErrorFallback';
 import { ActivityFeedItem } from './ActivityFeedItem';
 
 export function ActivityFeed() {
-  const { data, isLoading, isError, refetch } = useTimelineEvents();
+  const { data, isLoading, isError, refetch } = useTimelineEvents('Broker', 12);
 
   return (
     <Card className="flex h-full min-h-0 flex-col overflow-hidden p-0">

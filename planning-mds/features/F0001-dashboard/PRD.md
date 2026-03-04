@@ -17,6 +17,7 @@
 - **Metric:** Percentage of users who navigate to a task or record directly from the dashboard within 30 seconds of login.
 - **Baseline:** Users currently rely on spreadsheets and email to track pipeline and tasks (no single view exists).
 - **Target:** 80% of daily-active users interact with at least one dashboard widget per session.
+- **Measurement:** No analytics instrumentation is defined for MVP. Tracking widget interactions requires a future event-logging integration (e.g., click events on task rows, broker feed items, nudge CTAs). Deferred — add to backlog before Phase B go-live.
 
 ## Problem Statement
 
@@ -45,8 +46,8 @@
 
 - Dashboard loads in < 2 seconds (p95) with all five widgets populated.
 - Each widget displays accurate data consistent with underlying list views.
-- Clicking a pipeline status segment navigates to filtered submission/renewal list.
-- Clicking a task navigates to the task detail or linked entity.
+- Pipeline status segments display counts and expand on hover/click to show mini-card previews; click-through to filtered submission/renewal lists is deferred until F0006/F0007 (mini-card entity names render as plain text per MVP constraints).
+- Clicking a broker-linked task row navigates to Broker 360; click-through for submission/renewal/account-linked tasks is deferred to F0003/F0006/F0007.
 - Clicking a broker activity item navigates to the Broker 360 view.
 - Empty states render meaningful messages when no data exists for a widget.
 
@@ -62,6 +63,13 @@
 - Broker entity and timeline events (for broker activity feed)
 - Submission / Renewal entities (for pipeline summary; can degrade gracefully)
 - Task entity (for my tasks widget; can degrade gracefully)
+
+## Rollout & Enablement
+
+- Internal team onboarding: ensure Distribution Users, Underwriters, Relationship Managers, and Program Managers are provisioned in authentik with the correct Casbin roles before go-live (see `planning-mds/security/policies/policy.csv`).
+- Admin role required to seed initial broker, submission, and task records so dashboard widgets render with real data on first login.
+- Verify role-scoped data visibility with at least one test user per role before releasing to the full team.
+- Dashboard renders with partial data if Submission/Renewal entities are not yet populated — acceptable for phased rollout.
 
 ## Related User Stories
 

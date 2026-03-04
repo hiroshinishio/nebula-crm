@@ -38,6 +38,9 @@
     },
     "isOverdue": {
       "type": "boolean"
+    },
+    "assignedToDisplayName": {
+      "type": ["string", "null"]
     }
   },
   "additionalProperties": false

@@ -55,8 +55,10 @@ This story establishes the first auditable broker lifecycle event in the CRM.
 ## Role-Based Visibility
 
 **Roles that can create brokers:**
-- DistributionManager — create/update broker
+- DistributionManager — create broker
 - Admin — full access
+
+Note: DistributionUser can update existing broker records (see S0004) but cannot create new ones. This is intentional — broker creation introduces a new record into the system and requires manager-level authority to prevent duplicate or erroneous entries. DistributionUser access is limited to maintaining accuracy of records already created by a manager.
 
 **Data Visibility:**
 - InternalOnly content: audit metadata and internal notes
@@ -85,13 +87,22 @@ This story establishes the first auditable broker lifecycle event in the CRM.
 
 ## Questions & Assumptions
 
-**Assumptions (to be validated):**
-- None
+**Assumptions (confirmed):**
+- New broker records default to Status = "Pending" until reviewed and set to Active by a manager
+- The create form lives on a dedicated Create Broker screen (not a modal) navigated to from the Broker List screen
+
+## UI/UX Notes
+
+- Screens involved: Broker List → Create Broker (dedicated screen) → Broker 360 (on success)
+- Layout: Full-page form with field groups (Identity: LegalName, LicenseNumber, State; Contact: Email, Phone)
+- On success: redirect to Broker 360 for the newly created broker
+- On validation error: inline field-level messages; form remains open
+- Unauthorized users: Create Broker option not rendered in the UI (hidden, not just disabled)
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge case and error scenario tests pass
-- [ ] Permission checks enforced server-side
-- [ ] Audit timeline event created for successful mutation
+- [x] Acceptance criteria met
+- [x] Edge case and error scenario tests pass
+- [x] Permission checks enforced server-side
+- [x] Audit timeline event created for successful mutation
 - [ ] Unit and integration tests pass

@@ -1,8 +1,8 @@
-# F0001-S0005: View Nudge Cards
+# F0001-S0005: View and Dismiss Nudge Cards
 
 **Story ID:** F0001-S0005
 **Feature:** F0001 — Dashboard
-**Title:** View Nudge Cards
+**Title:** View and Dismiss Nudge Cards
 **Priority:** High
 **Phase:** MVP
 
@@ -69,14 +69,17 @@ Inspired by Copper CRM's "Keep Things Moving" pattern, nudge cards are prominent
 - CTALabel: string (e.g., "Review Now", "Take Action", "Start Outreach")
 
 **Nudge Selection Rules:**
-- Overdue tasks: AssignedTo = current user AND DueDate < today AND Status != Done AND linked entity is not soft-deleted
-- Stale submissions: DaysInStatus > 5 AND CurrentStatus is non-terminal AND user has read access (ABAC) AND submission is not soft-deleted
+- Overdue tasks: AssignedToUserId = current user's UserId AND DueDate < today AND Status != Done AND linked entity is not soft-deleted
+- Stale submissions: DaysInStatus > 5 AND CurrentStatus is non-terminal AND user has read access (ABAC) AND submission is not soft-deleted. DaysInStatus is computed as calendar days since the most recent WorkflowTransition for that entity — see F0001-S0002 (Pipeline Summary) for the canonical computation definition.
 - Upcoming renewals: RenewalDate between today and today + 14 days AND CurrentStatus in (Created, Early) AND user has read access (ABAC)
 
 **Sorting within each type:**
 - Overdue tasks: most overdue first (oldest DueDate)
 - Stale submissions: most stale first (highest DaysInStatus)
 - Upcoming renewals: soonest first (nearest RenewalDate)
+
+**Overflow and dismiss behavior:**
+- Backend returns up to 10 eligible nudges sorted by priority order (overdue tasks first, then stale submissions, then upcoming renewals), not just 3. Client displays the first 3 non-dismissed cards from this list. When the user dismisses a card, it is removed from the displayed set and the next card from the remaining server-returned list fills the vacancy (client-side, no additional API call). If fewer than 3 total nudges exist, fewer cards are shown. Session state only — the full list is re-fetched on next page load.
 
 ## Role-Based Visibility
 
@@ -92,13 +95,13 @@ Inspired by Copper CRM's "Keep Things Moving" pattern, nudge cards are prominent
 ## Non-Functional Expectations
 
 - Performance: Nudge cards must render within the overall dashboard p95 < 2s target. The nudge query should aggregate across tasks, submissions, and renewals in a single backend call (or parallelized calls).
-- Security: Backend must enforce task ownership (AssignedTo) and Casbin ABAC scope for submissions/renewals
+- Security: Backend must enforce task ownership (AssignedToUserId = current user's UserId) and Casbin ABAC scope for submissions/renewals
 - Reliability: If nudge query fails, omit the "Needs Your Attention" section entirely (do not show error); log the failure. Dashboard must still render all other widgets.
 
 ## Dependencies
 
 **Depends On:**
-- Task entity with AssignedTo, DueDate, Status fields (for overdue task nudges)
+- Task entity with AssignedToUserId (uuid), DueDate, Status fields (for overdue task nudges)
 - Submission entity with CurrentStatus, DaysInStatus computation (for stale submission nudges)
 - Renewal entity with RenewalDate, CurrentStatus (for upcoming renewal nudges)
 - Broker 360 (F0002-S0003) for Broker-linked overdue task CTA — **available**
@@ -148,10 +151,10 @@ Inspired by Copper CRM's "Keep Things Moving" pattern, nudge cards are prominent
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled (no nudges, all dismissed, deleted entities, query failure)
-- [ ] Permissions enforced (task ownership + ABAC for submissions/renewals)
-- [ ] Audit/timeline logged: N/A (read-only; dismiss is client-side session state)
+- [ ] Acceptance criteria met — backend nudge selection priority logic (overdue > stale > upcoming) not fully verified
+- [x] Edge cases handled (no nudges, all dismissed, deleted entities, query failure)
+- [x] Permissions enforced (task ownership + ABAC for submissions/renewals)
+- [x] Audit/timeline logged: N/A (read-only; dismiss is client-side session state)
 - [ ] Tests pass (unit test for nudge selection/priority logic, integration test for scoped queries)
-- [ ] CTA navigation works for all nudge types
+- [ ] CTA navigation works for all nudge types — "Take Action" (Submission) and "Start Outreach" (Renewal) CTAs hidden per MVP constraints (F0006/F0007); "Review Now" for Broker-linked tasks works
 - [ ] Accessible: cards have role="alert" or role="status", dismiss button has aria-label="Dismiss"

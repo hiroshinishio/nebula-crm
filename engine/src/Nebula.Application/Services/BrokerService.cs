@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Nebula.Application.Common;
 using Nebula.Application.DTOs;
 using Nebula.Application.Interfaces;
@@ -7,11 +8,18 @@ namespace Nebula.Application.Services;
 
 public class BrokerService(
     IBrokerRepository brokerRepo,
-    ITimelineRepository timelineRepo)
+    ITimelineRepository timelineRepo,
+    IUnitOfWork unitOfWork)
 {
     public async Task<BrokerDto?> GetByIdAsync(Guid id, ICurrentUserService user, CancellationToken ct = default)
     {
-        var broker = await brokerRepo.GetByIdAsync(id, ct);
+        // Admin and DistributionManager may view deactivated (soft-deleted) brokers — F0002-S0005/S0008.
+        // All other roles get null (→ 404) for deactivated brokers via the global query filter.
+        var canSeeDeactivated = user.Roles.Contains("Admin") || user.Roles.Contains("DistributionManager");
+        var broker = canSeeDeactivated
+            ? await brokerRepo.GetByIdIncludingDeactivatedAsync(id, ct)
+            : await brokerRepo.GetByIdAsync(id, ct);
+
         if (broker is null) return null;
         return MaskPii(MapToDto(broker));
     }
@@ -56,7 +64,17 @@ public class BrokerService(
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
+            EventPayloadJson = JsonSerializer.Serialize(new
+            {
+                id = broker.Id,
+                legalName = broker.LegalName,
+                licenseNumber = broker.LicenseNumber,
+                state = broker.State,
+                status = broker.Status,
+            }),
         }, ct);
+
+        await unitOfWork.CommitAsync(ct);
 
         return (MapToDto(broker), null);
     }
@@ -86,6 +104,22 @@ public class BrokerService(
             ? $"Broker \"{broker.LegalName}\" status changed from {oldStatus} to {dto.Status}"
             : $"Broker \"{broker.LegalName}\" updated";
 
+        var payloadJson = eventType == "BrokerStatusChanged"
+            ? JsonSerializer.Serialize(new
+            {
+                id = broker.Id,
+                legalName = broker.LegalName,
+                previousStatus = oldStatus,
+                newStatus = broker.Status,
+            })
+            : JsonSerializer.Serialize(new
+            {
+                id = broker.Id,
+                legalName = broker.LegalName,
+                state = broker.State,
+                status = broker.Status,
+            });
+
         await timelineRepo.AddEventAsync(new ActivityTimelineEvent
         {
             EntityType = "Broker",
@@ -95,7 +129,10 @@ public class BrokerService(
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
+            EventPayloadJson = payloadJson,
         }, ct);
+
+        await unitOfWork.CommitAsync(ct);
 
         return (MaskPii(MapToDto(broker)), null);
     }
@@ -106,7 +143,7 @@ public class BrokerService(
         if (broker is null) return "not_found";
 
         if (await brokerRepo.HasActiveSubmissionsOrRenewalsAsync(id, ct))
-            return "active_submissions_exist";
+            return "active_dependencies_exist";
 
         var now = DateTime.UtcNow;
         broker.IsDeleted = true;
@@ -121,19 +158,65 @@ public class BrokerService(
         {
             EntityType = "Broker",
             EntityId = broker.Id,
-            EventType = "BrokerDeleted",
-            EventDescription = $"Broker \"{broker.LegalName}\" deleted",
+            EventType = "BrokerDeactivated",
+            EventDescription = $"Broker \"{broker.LegalName}\" deactivated",
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
+            EventPayloadJson = JsonSerializer.Serialize(new
+            {
+                id = broker.Id,
+                legalName = broker.LegalName,
+            }),
         }, ct);
+
+        await unitOfWork.CommitAsync(ct);
 
         return null;
     }
 
+    public async Task<(BrokerDto? Dto, string? ErrorCode)> ReactivateAsync(
+        Guid id, ICurrentUserService user, CancellationToken ct = default)
+    {
+        var broker = await brokerRepo.GetByIdIncludingDeactivatedAsync(id, ct);
+        if (broker is null) return (null, "not_found");
+
+        if (!broker.IsDeleted) return (null, "already_active");
+
+        var now = DateTime.UtcNow;
+        broker.IsDeleted = false;
+        broker.DeletedAt = null;
+        broker.DeletedByUserId = null;
+        broker.Status = "Active";
+        broker.UpdatedAt = now;
+        broker.UpdatedByUserId = user.UserId;
+
+        await brokerRepo.UpdateAsync(broker, ct);
+
+        await timelineRepo.AddEventAsync(new ActivityTimelineEvent
+        {
+            EntityType = "Broker",
+            EntityId = broker.Id,
+            EventType = "BrokerReactivated",
+            EventDescription = $"Broker \"{broker.LegalName}\" reactivated",
+            ActorUserId = user.UserId,
+            ActorDisplayName = user.DisplayName,
+            OccurredAt = now,
+            EventPayloadJson = JsonSerializer.Serialize(new
+            {
+                id = broker.Id,
+                legalName = broker.LegalName,
+            }),
+        }, ct);
+
+        await unitOfWork.CommitAsync(ct);
+
+        return (MapToDto(broker), null);
+    }
+
     private static BrokerDto MapToDto(Broker b) => new(
         b.Id, b.LegalName, b.LicenseNumber, b.State, b.Status,
-        b.Email, b.Phone, b.CreatedAt, b.UpdatedAt, b.RowVersion);
+        b.Email, b.Phone, b.CreatedAt, b.UpdatedAt, b.RowVersion, b.IsDeleted);
 
     private static BrokerDto MaskPii(BrokerDto dto) =>
         dto.Status == "Inactive" ? dto with { Email = null, Phone = null } : dto;

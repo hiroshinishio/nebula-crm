@@ -50,9 +50,9 @@ Broker relationships are the lifeblood of commercial P&C distribution. Currently
 
 **Required Fields (per feed item):**
 - EventType: string (e.g., "BrokerCreated", "BrokerUpdated", "ContactAdded")
-- EventDescription: string (human-readable summary derived from EventType and payload)
+- EventDescription: string (pre-rendered at write time and stored on the event record; templates defined in [activity-event-payloads.schema.json](../../schemas/activity-event-payloads.schema.json) — feed query reads the stored string, no query-time resolution needed)
 - BrokerName: string (resolved from EntityId)
-- ActorDisplayName: string (resolved from ActorSubject via UserProfile)
+- ActorDisplayName: string (resolved from ActorUserId via UserProfile)
 - OccurredAt: datetime
 - EntityId: uuid (Broker ID, for navigation)
 
@@ -84,7 +84,7 @@ Broker relationships are the lifeblood of commercial P&C distribution. Currently
 **Depends On:**
 - ActivityTimelineEvent entity (append-only timeline table)
 - Broker entity (for resolving broker name from EntityId)
-- UserProfile entity (for resolving actor display name from ActorSubject)
+- UserProfile entity (for resolving actor display name from ActorUserId)
 - Broker 360 screen (for click-through navigation)
 
 **Related Stories:**
@@ -117,10 +117,10 @@ Broker relationships are the lifeblood of commercial P&C distribution. Currently
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled (empty feed, restricted scope, unknown actor, query failure)
-- [ ] Permissions enforced (Casbin ABAC scope on broker entity)
-- [ ] Audit/timeline logged: N/A (read-only)
+- [x] Acceptance criteria met
+- [x] Edge cases handled (empty feed, restricted scope, unknown actor, query failure)
+- [x] Permissions enforced (Casbin ABAC scope on broker entity)
+- [x] Audit/timeline logged: N/A (read-only)
 - [ ] Tests pass (unit test for event rendering, integration test for scoped query)
-- [ ] Click-through to Broker 360 works
+- [x] Click-through to Broker 360 works
 - [ ] Accessible: feed items use semantic list markup with proper ARIA

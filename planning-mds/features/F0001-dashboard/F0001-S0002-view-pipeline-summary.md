@@ -160,14 +160,14 @@ Pipeline visibility is critical for distribution and underwriting teams. A tradi
 - Submission List, Renewal List, Submission Detail, and Renewal Detail screens are not in F0001/F0002 scope.
 - "View all N" links are hidden (not rendered) until target list screens exist.
 - Mini-card entity names render as plain text (not clickable) until target detail screens exist.
-- See [feature-assembly-plan.md — MVP Navigation Constraints](../../architecture/feature-assembly-plan.md) for full degradation rules.
+- See [feature-assembly-plan.md — MVP Navigation Constraints](../../architecture/feature-assembly-plan.md) for full degradation rules. Note: the color-group spec and navigation constraints are also inlined in this story (see the ColorGroup table in Acceptance Criteria and the constraints above) and are the authoritative source if that file does not yet exist.
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled (zero data, restricted scope, query failure, popover positioning)
-- [ ] Permissions enforced (Casbin ABAC scope filtering)
-- [ ] Audit/timeline logged: N/A (read-only)
+- [x] Acceptance criteria met
+- [x] Edge cases handled (zero data, restricted scope, query failure, popover positioning)
+- [x] Permissions enforced (Casbin ABAC scope filtering)
+- [x] Audit/timeline logged: N/A (read-only)
 - [ ] Tests pass (unit test for pill rendering and grouping, integration test for scoped counts and mini-card queries)
-- [ ] Click-through navigation works for available list and detail screens
+- [x] Click-through navigation works for available list and detail screens — mini-card names plain text, "View all" hidden per MVP constraints (F0006/F0007)
 - [ ] Accessible: pills are keyboard-navigable (Tab + Enter/Space to expand), popover has role="dialog" with aria-label

@@ -8,4 +8,5 @@ public record TaskSummaryDto(
     string? LinkedEntityType,
     Guid? LinkedEntityId,
     string? LinkedEntityName,
-    bool IsOverdue);
+    bool IsOverdue,
+    string? AssignedToDisplayName);

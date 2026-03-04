@@ -32,6 +32,7 @@ Distribution teams currently have no single view for high-level portfolio metric
 - No submissions exist → Open Submissions card displays "0"; Avg Turnaround displays "—"
 - No renewals have exited pipeline → Renewal Rate displays "—"
 - User has restricted scope (e.g., region-limited) → Counts reflect only authorized entities
+- Submission or Renewal entities not yet seeded (e.g., fresh environment or early phased rollout) → affected cards display "0" or "—" as appropriate; dashboard still loads and remaining widgets render normally
 
 **Checklist:**
 - [ ] Four KPI cards render on dashboard load
@@ -58,7 +59,7 @@ Distribution teams currently have no single view for high-level portfolio metric
 
 **Roles that can view KPI cards:**
 - Distribution User — sees metrics scoped to their department/region
-- Underwriter — sees metrics scoped to their assigned submissions
+- Underwriter — sees metrics scoped to all submissions they can access via Casbin ABAC (not limited to submissions where AssignedToUserId = current user; ABAC policy determines access breadth — confirm with stakeholders if narrower scoping is required)
 - Relationship Manager — sees metrics scoped to their broker relationships
 - Program Manager — sees metrics scoped to their programs
 - Admin — sees all metrics (unscoped)
@@ -105,9 +106,9 @@ Distribution teams currently have no single view for high-level portfolio metric
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled (zero data, restricted scope, query failure)
-- [ ] Permissions enforced (Casbin ABAC scope filtering)
-- [ ] Audit/timeline logged: N/A (read-only; no mutations)
+- [x] Acceptance criteria met
+- [x] Edge cases handled (zero data, restricted scope, query failure)
+- [x] Permissions enforced (Casbin ABAC scope filtering)
+- [x] Audit/timeline logged: N/A (read-only; no mutations)
 - [ ] Tests pass (unit test for aggregation logic, integration test for scoped queries)
 - [ ] Accessible: cards have aria-labels for screen readers

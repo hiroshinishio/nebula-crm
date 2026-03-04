@@ -10,11 +10,17 @@ public static class ProblemDetailsHelper
         statusCode: 409,
         extensions: Ext("duplicate_license"));
 
-    public static IResult ActiveSubmissionsExist() => Results.Problem(
+    public static IResult ActiveDependenciesExist() => Results.Problem(
         title: "Active submissions or renewals exist",
-        detail: "Cannot delete a broker with active (non-terminal) submissions or renewals.",
+        detail: "Cannot deactivate a broker with active (non-terminal) submissions or renewals.",
         statusCode: 409,
-        extensions: Ext("active_submissions_exist"));
+        extensions: Ext("active_dependencies_exist"));
+
+    public static IResult AlreadyActive() => Results.Problem(
+        title: "Broker is already active",
+        detail: "The broker is currently Active and cannot be reactivated.",
+        statusCode: 409,
+        extensions: Ext("already_active"));
 
     public static IResult InvalidTransition(string from, string to) => Results.Problem(
         title: "Invalid workflow transition",

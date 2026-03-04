@@ -1,13 +1,16 @@
 using Microsoft.EntityFrameworkCore;
+using Nebula.Application.Interfaces;
 using Nebula.Domain.Entities;
 
 namespace Nebula.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, IUnitOfWork
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
+
+    public Task CommitAsync(CancellationToken ct = default) => SaveChangesAsync(ct);
 
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<MGA> MGAs => Set<MGA>();

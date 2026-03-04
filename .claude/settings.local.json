@@ -42,7 +42,9 @@
       "Bash(cd /c/Users/gajap/sandbox/nebula-crm && docker compose up -d db 2>&1)",
       "Bash(docker exec:*)",
       "Bash(tail:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cat:*)",
+      "WebFetch(domain:)"
     ]
   }
 }

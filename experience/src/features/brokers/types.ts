@@ -11,6 +11,9 @@ export interface BrokerDto {
   createdAt: string;
   updatedAt: string;
   rowVersion: number;
+  /** True when the broker is soft-deleted (deactivated via DELETE endpoint, F0002-S0005).
+   * Only Admin and DistributionManager receive a broker with isDeactivated=true. */
+  isDeactivated: boolean;
 }
 
 export interface BrokerCreateDto {

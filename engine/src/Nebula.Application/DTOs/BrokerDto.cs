@@ -10,4 +10,5 @@ public record BrokerDto(
     string? Phone,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    uint RowVersion);
+    uint RowVersion,
+    bool IsDeactivated);

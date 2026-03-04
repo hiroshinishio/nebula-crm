@@ -11,6 +11,10 @@ public class BrokerRepository(AppDbContext db) : IBrokerRepository
     public async Task<Broker?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         await db.Brokers.Include(b => b.BrokerRegions).FirstOrDefaultAsync(b => b.Id == id, ct);
 
+    // IgnoreQueryFilters bypasses the IsDeleted global filter — Admin/reactivation use only (F0002-S0008).
+    public async Task<Broker?> GetByIdIncludingDeactivatedAsync(Guid id, CancellationToken ct = default) =>
+        await db.Brokers.IgnoreQueryFilters().Include(b => b.BrokerRegions).FirstOrDefaultAsync(b => b.Id == id, ct);
+
     public async Task<PaginatedResult<Broker>> ListAsync(
         string? search, string? statusFilter, int page, int pageSize, CancellationToken ct = default)
     {
@@ -37,14 +41,13 @@ public class BrokerRepository(AppDbContext db) : IBrokerRepository
         return new PaginatedResult<Broker>(data, page, pageSize, totalCount);
     }
 
-    public async Task AddAsync(Broker broker, CancellationToken ct = default)
+    public Task AddAsync(Broker broker, CancellationToken ct = default)
     {
         db.Brokers.Add(broker);
-        await db.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(Broker broker, CancellationToken ct = default) =>
-        await db.SaveChangesAsync(ct);
+    public Task UpdateAsync(Broker broker, CancellationToken ct = default) => Task.CompletedTask;
 
     public async Task<bool> ExistsByLicenseAsync(string licenseNumber, CancellationToken ct = default) =>
         await db.Brokers.IgnoreQueryFilters()

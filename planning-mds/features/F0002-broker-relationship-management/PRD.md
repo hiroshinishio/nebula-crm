@@ -14,9 +14,12 @@
 ## Business Objective
 
 - **Goal:** Establish a reliable broker relationship source of truth for intake and collaboration workflows.
-- **Metric:** Time to create and locate broker records; data completeness for broker profiles.
-- **Baseline:** Spreadsheet-based tracking with inconsistent structure and low traceability.
-- **Target:** Create/search broker workflows completed within target latency and with audit traces.
+- **Metrics:**
+  - API latency: broker create/read/update p95 < 500ms; broker search p95 < 300ms (per story-level targets)
+  - Data completeness: 90% of broker records have LegalName, LicenseNumber, State, and at least one Contact within 30 days of creation
+  - Auditability: 100% of broker mutations produce an immutable timeline event
+- **Baseline:** Spreadsheet-based tracking; no latency SLA, no audit trail, estimated 40% of broker records missing contact information.
+- **Target:** All three metric targets met within 60 days of internal go-live.
 
 ## Problem Statement
 
@@ -32,8 +35,15 @@
 - Timeline events for all broker mutations.
 
 **Out of Scope:**
-- External broker portal access.
-- Advanced analytics and scoring models.
+- External broker portal access (broker self-service login or profile management)
+- Advanced analytics, scoring models, or risk ratings for brokers
+- Bulk broker import or CSV upload
+- MGA/broker hierarchy management (parent-child relationships between brokers and MGAs) — deferred to a future MGA management feature
+- Broker license verification via external regulatory API
+- Duplicate broker detection beyond license number exact-match uniqueness
+- Broker data enrichment from third-party data sources
+- Multi-jurisdiction (non-US) license number formats or phone normalization
+- Hard delete (permanent removal) of broker records
 
 ## Success Criteria
 
@@ -49,7 +59,7 @@
 
 ## Dependencies
 
-- Keycloak authentication and Casbin ABAC enforcement.
+- authentik OIDC and Casbin ABAC enforcement (see ADR-006).
 - Broker, Contact, and timeline data model baseline.
 
 ## Related User Stories
@@ -58,9 +68,10 @@
 - F0002-S0002 - Search Brokers
 - F0002-S0003 - Read Broker (Broker 360 View)
 - F0002-S0004 - Update Broker
-- F0002-S0005 - Delete Broker
+- F0002-S0005 - Deactivate Broker
 - F0002-S0006 - Manage Broker Contacts
 - F0002-S0007 - View Broker Activity Timeline
+- F0002-S0008 - Reactivate Broker
 
 ## Rollout & Enablement
 

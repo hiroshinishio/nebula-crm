@@ -38,7 +38,11 @@ Broker contacts are essential for submissions, follow-ups, and relationship mana
 - **When** I attempt to create, update, or delete a contact
 - **Then** access is denied with a 403 response
 
-- Edge case: contact is associated to a different broker → validation error
+- **Given** I attempt to update or delete a contact using a BrokerId that does not match the contact's actual broker
+- **When** the request is processed
+- **Then** a validation error is returned and no changes are made (cross-broker ownership check applies to create, update, and delete)
+
+- Edge case: parent broker is deactivated → contacts are hidden from active lists (soft cascade from S0005); existing contact data is preserved and becomes accessible again if the broker is reactivated (see F0002-S0008)
 
 ## Data Requirements
 
@@ -93,13 +97,22 @@ Broker contacts are essential for submissions, follow-ups, and relationship mana
 
 ## Questions & Assumptions
 
-**Assumptions (to be validated):**
-- Contact delete is a soft delete
+**Assumptions (confirmed):**
+- Contact delete is a soft delete (record retained; excluded from active lists)
+- Contacts are not independently deactivated when a broker is deactivated; they are hidden via broker-level cascade and restored when the broker is reactivated
+
+## UI/UX Notes
+
+- Screens involved: Broker 360 → Contacts tab
+- Layout: Contacts tab displays a list of active contacts; Add Contact button opens a modal form; each row has Edit and Delete (for authorized roles) inline actions
+- Contact form fields: FullName (required), Email (required), Phone (required), Role (optional)
+- Delete requires confirmation ("Are you sure you want to remove this contact?")
+- Unauthorized users: Add/Edit/Delete actions not rendered (hidden, not disabled)
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Audit/timeline logged for contact changes
+- [x] Acceptance criteria met
+- [x] Edge cases handled
+- [x] Permissions enforced
+- [x] Audit/timeline logged for contact changes
 - [ ] Tests pass

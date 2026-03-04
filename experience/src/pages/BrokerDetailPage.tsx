@@ -15,6 +15,7 @@ import {
   DeleteBrokerAction,
   DeleteContactAction,
   EditBrokerModal,
+  ReactivateBrokerAction,
   useBroker,
 } from '@/features/brokers';
 import { ApiError } from '@/services/api';
@@ -30,6 +31,7 @@ export default function BrokerDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReactivateDialog, setShowReactivateDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState<ContactDto | null>(null);
   const [deletingContact, setDeletingContact] = useState<ContactDto | null>(null);
@@ -110,6 +112,7 @@ export default function BrokerDetailPage() {
             onEdit={() => setShowEditModal(true)}
             onDeactivate={() => setShowDeactivateDialog(true)}
             onDelete={() => setShowDeleteDialog(true)}
+            onReactivate={() => setShowReactivateDialog(true)}
           />
         </Card>
 
@@ -153,6 +156,13 @@ export default function BrokerDetailPage() {
         brokerName={broker.legalName}
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
+      />
+
+      <ReactivateBrokerAction
+        brokerId={broker.id}
+        brokerName={broker.legalName}
+        open={showReactivateDialog}
+        onClose={() => setShowReactivateDialog(false)}
       />
 
       <ContactFormModal

@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <EmbeddedResource Include="../../../planning-mds/security/policies/policy.csv"
+                      Link="Authorization/policy.csv" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Nebula.Application\Nebula.Application.csproj" />
     <ProjectReference Include="..\Nebula.Domain\Nebula.Domain.csproj" />
   </ItemGroup>

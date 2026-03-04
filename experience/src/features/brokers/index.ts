@@ -7,6 +7,7 @@ export * from './components/ContactFormModal';
 export * from './components/DeactivateAction';
 export * from './components/DeleteBrokerAction';
 export * from './components/DeleteContactAction';
+export * from './components/ReactivateBrokerAction';
 export * from './components/EditBrokerModal';
 export * from './hooks/useBroker';
 export * from './hooks/useBrokers';

@@ -45,6 +45,12 @@ The dashboard feed provides recent broker events, but relationship work requires
 - OccurredAt
 - EntityId (Broker ID)
 
+**Pagination:**
+- Default page size: 50 events per request
+- Client requests additional pages via `page` parameter; response includes `totalCount` and `totalPages`
+- UI renders a "Load more" control or page navigation when more events exist beyond the first page
+- Infinite scroll is not required for MVP; standard pagination is sufficient
+
 **Validation Rules:**
 - Events must be scoped to the requested broker
 - Events are immutable and read-only
@@ -64,7 +70,7 @@ The dashboard feed provides recent broker events, but relationship work requires
 
 ## Non-Functional Expectations
 
-- Performance: timeline panel renders within acceptable page-load targets
+- Performance: timeline panel initial page (50 events) renders within p95 < 500ms (consistent with all other F0002 story targets)
 - Security: ABAC scope enforced on timeline reads
 - Reliability: timeline read failures do not corrupt broker data
 
@@ -90,8 +96,8 @@ The dashboard feed provides recent broker events, but relationship work requires
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Audit/timeline logged: N/A (read-only)
+- [x] Acceptance criteria met
+- [x] Edge cases handled
+- [x] Permissions enforced
+- [x] Audit/timeline logged: N/A (read-only)
 - [ ] Tests pass

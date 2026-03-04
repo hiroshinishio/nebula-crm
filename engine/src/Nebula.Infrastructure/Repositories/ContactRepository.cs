@@ -29,12 +29,11 @@ public class ContactRepository(AppDbContext db) : IContactRepository
         return new PaginatedResult<Contact>(data, page, pageSize, totalCount);
     }
 
-    public async Task AddAsync(Contact contact, CancellationToken ct = default)
+    public Task AddAsync(Contact contact, CancellationToken ct = default)
     {
         db.Contacts.Add(contact);
-        await db.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(Contact contact, CancellationToken ct = default) =>
-        await db.SaveChangesAsync(ct);
+    public Task UpdateAsync(Contact contact, CancellationToken ct = default) => Task.CompletedTask;
 }

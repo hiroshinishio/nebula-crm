@@ -1,15 +1,15 @@
-# F0001-S0003: View My Tasks and Reminders
+# F0001-S0003: View My Tasks
 
 **Story ID:** F0001-S0003
 **Feature:** F0001 — Dashboard
-**Title:** View My Tasks and Reminders
+**Title:** View My Tasks
 **Priority:** High
 **Phase:** MVP
 
 ## User Story
 
 **As a** Distribution User, Underwriter, or Relationship Manager
-**I want** to see my assigned tasks and upcoming reminders on the dashboard
+**I want** to see my assigned tasks on the dashboard
 **So that** I can prioritize my day and avoid missing deadlines or follow-ups.
 
 ## Context & Background
@@ -22,7 +22,7 @@ Follow-up tasks and reminders are currently tracked in personal calendars, stick
 - **Given** the user is authenticated and on the Dashboard
 - **When** the dashboard loads
 - **Then** the My Tasks & Reminders widget displays:
-  - Tasks assigned to the logged-in user (matched by Subject/UserId), sorted by DueDate ascending (soonest first)
+  - Tasks assigned to the logged-in user (matched by AssignedToUserId = current user's UserId), sorted by DueDate ascending (soonest first)
   - Maximum 10 items displayed; if more exist, a "View all tasks" link is shown
   - Each task row shows: task title, due date, status (Open/InProgress/Done), and linked entity name (e.g., "Broker: Acme Insurance")
 
@@ -70,7 +70,7 @@ Follow-up tasks and reminders are currently tracked in personal calendars, stick
 
 **Validation Rules:**
 - Only tasks with Status in (Open, InProgress) are displayed
-- Tasks must belong to the authenticated user (AssignedTo = current Subject)
+- Tasks must belong to the authenticated user (AssignedToUserId = current user's UserId)
 
 ## Role-Based Visibility
 
@@ -84,13 +84,13 @@ Follow-up tasks and reminders are currently tracked in personal calendars, stick
 ## Non-Functional Expectations
 
 - Performance: Widget must render within the overall dashboard p95 < 2s target
-- Security: Backend must filter tasks by authenticated user's Subject; no cross-user task visibility
+- Security: Backend must filter tasks by authenticated user's UserId; no cross-user task visibility
 - Reliability: If query fails, display "Unable to load tasks" and log the error; do not block other widgets
 
 ## Dependencies
 
 **Depends On:**
-- Task entity with AssignedTo, DueDate, Status fields
+- Task entity with AssignedToUserId (uuid), DueDate, Status fields
 - ~~Task Center screen (for "View all" navigation)~~ — Not in F0001/F0002 scope; link hidden per MVP Navigation Constraints
 - Broker 360 (F0002-S0003) for Broker-linked task click-through — **available**
 - ~~Submission/Renewal/Account detail screens~~ — Not in F0001/F0002 scope; entity names render as plain text per MVP Navigation Constraints
@@ -102,7 +102,7 @@ Follow-up tasks and reminders are currently tracked in personal calendars, stick
 ## Out of Scope
 
 - Creating or editing tasks from the dashboard widget (Task Center/API only in MVP)
-- Snooze or dismiss functionality
+- Reminder functionality (calendar-style reminders, snooze, or time-based alerts) — deferred to F0003; the original story title referenced "Reminders" but no reminder behavior is defined for MVP
 - Task notifications (push/email)
 - Viewing other users' tasks
 - Recurring task display
@@ -117,7 +117,7 @@ Follow-up tasks and reminders are currently tracked in personal calendars, stick
 ## Questions & Assumptions
 
 **Assumptions:**
-- Tasks have an AssignedTo field that matches Keycloak Subject
+- Tasks have an AssignedToUserId (uuid) field that matches the authenticated user's UserId (resolved via UserProfile — see ADR-006)
 - "Done" tasks are excluded from the widget (only Open and InProgress shown)
 - Task entity is created as part of F0001/F0002 foundation (see data-model.md); write endpoints deferred to F0003
 
@@ -130,9 +130,9 @@ Follow-up tasks and reminders are currently tracked in personal calendars, stick
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled (empty state, null due dates, deleted entities, query failure)
-- [ ] Permissions enforced (user sees only own tasks)
-- [ ] Audit/timeline logged: N/A (read-only)
+- [x] Acceptance criteria met
+- [x] Edge cases handled (empty state, null due dates, deleted entities, query failure)
+- [x] Permissions enforced (user sees only own tasks)
+- [x] Audit/timeline logged: N/A (read-only)
 - [ ] Tests pass (unit test for sorting/filtering logic, integration test for user-scoped query)
 - [ ] Accessible: task list has proper ARIA roles (role="list")

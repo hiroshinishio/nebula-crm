@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Nebula.Api.Helpers;
 using Nebula.Application.Common;
 using Nebula.Application.DTOs;
+using Nebula.Application.Interfaces;
 using Nebula.Application.Services;
 
 namespace Nebula.Api.Endpoints;
@@ -20,6 +21,7 @@ public static class BrokerEndpoints
         group.MapGet("/{brokerId:guid}", GetBroker);
         group.MapPut("/{brokerId:guid}", UpdateBroker);
         group.MapDelete("/{brokerId:guid}", DeleteBroker);
+        group.MapPost("/{brokerId:guid}/reactivate", ReactivateBroker);
 
         return group;
     }
@@ -28,7 +30,11 @@ public static class BrokerEndpoints
         string? q, string? status, int? page, int? pageSize,
         BrokerService svc, CancellationToken ct)
     {
-        var result = await svc.ListAsync(q, status, page ?? 1, pageSize ?? 20, ct);
+        if (status is not null && status is not ("Active" or "Inactive" or "Pending"))
+            return ProblemDetailsHelper.ValidationError(
+                new Dictionary<string, string[]> { ["status"] = [$"Invalid status '{status}'. Must be Active, Inactive, or Pending."] });
+
+        var result = await svc.ListAsync(q, status, page ?? 1, Math.Min(pageSize ?? 20, 100), ct);
         return Results.Ok(new { data = result.Data, page = result.Page, pageSize = result.PageSize, totalCount = result.TotalCount, totalPages = result.TotalPages });
     }
 
@@ -101,8 +107,35 @@ public static class BrokerEndpoints
         return error switch
         {
             "not_found" => ProblemDetailsHelper.NotFound("Broker", brokerId),
-            "active_submissions_exist" => ProblemDetailsHelper.ActiveSubmissionsExist(),
+            "active_dependencies_exist" => ProblemDetailsHelper.ActiveDependenciesExist(),
             _ => Results.NoContent(),
+        };
+    }
+
+    private static async Task<IResult> ReactivateBroker(
+        Guid brokerId,
+        BrokerService svc,
+        ICurrentUserService user,
+        IAuthorizationService authz,
+        CancellationToken ct)
+    {
+        var authorized = false;
+        foreach (var role in user.Roles)
+        {
+            if (await authz.AuthorizeAsync(role, "broker", "reactivate"))
+            {
+                authorized = true;
+                break;
+            }
+        }
+        if (!authorized) return ProblemDetailsHelper.Forbidden();
+
+        var (result, error) = await svc.ReactivateAsync(brokerId, user, ct);
+        return error switch
+        {
+            "not_found" => ProblemDetailsHelper.NotFound("Broker", brokerId),
+            "already_active" => ProblemDetailsHelper.AlreadyActive(),
+            _ => Results.Ok(result),
         };
     }
 }

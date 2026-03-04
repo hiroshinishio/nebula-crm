@@ -9,9 +9,9 @@
 ## Services to Run
 
 ```bash
-docker compose up -d postgres keycloak
+docker compose up -d db authentik-server authentik-worker
 dotnet run --project engine/src/Nebula.Api
-cd experience && npm run dev
+cd experience && pnpm dev
 ```
 
 ## How to Verify

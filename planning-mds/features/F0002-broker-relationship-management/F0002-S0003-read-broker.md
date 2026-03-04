@@ -23,9 +23,13 @@ Broker information is fragmented across tools. A Broker 360 view provides a sing
 - **Then** I see:
   - Profile header (name, status)
   - Broker profile fields (legal name, license number, state, contact info)
-  - Contacts list (if any)
-  - Hierarchy/program links (if any)
+  - Contacts list (if any; empty state if none)
   - Immutable timeline panel (read-only)
+  - Note: MGA/program hierarchy links are deferred to a future MGA management feature and are not displayed in MVP
+
+- **Given** I have `broker:read` permission but not `broker:update` permission
+- **When** I view Broker 360
+- **Then** Edit, Deactivate, and Delete actions are not rendered in the UI and the profile is displayed in read-only mode
 
 - **Given** the broker does not exist or has been deleted
 - **When** I navigate to Broker 360
@@ -35,7 +39,7 @@ Broker information is fragmented across tools. A Broker 360 view provides a sing
 - **When** I attempt to open Broker 360
 - **Then** access is denied with a 403 response and no broker data is returned
 
-- Edge case: broker has no contacts or hierarchy links → show empty-state messaging
+- Edge case: broker has no contacts → show empty-state messaging in the Contacts tab ("No contacts added yet.")
 - Edge case: broker status is Inactive → display status, keep view read-only, and mask broker/contact email + phone fields in the API response (masking sentinel: fields returned as `null`; frontend displays "Masked")
 
 ## Data Requirements
@@ -93,6 +97,7 @@ Broker information is fragmented across tools. A Broker 360 view provides a sing
 
 - External broker portal access
 - Advanced broker analytics or scoring
+- MGA/broker hierarchy links (deferred to future MGA management feature)
 
 ## UI/UX Notes (Optional)
 
@@ -101,13 +106,13 @@ Broker information is fragmented across tools. A Broker 360 view provides a sing
 
 ## Questions & Assumptions
 
-**Assumptions (to be validated):**
-- Broker 360 is read-only for users without `broker:update` permission
+**Assumptions (confirmed):**
+- Broker 360 edit/deactivate/delete actions are hidden (not rendered) for users without `broker:update` / `broker:delete` permission — this is now a formal AC above
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met
-- [ ] Edge cases handled
-- [ ] Permissions enforced
-- [ ] Audit/timeline logged: N/A (read-only)
+- [x] Acceptance criteria met
+- [x] Edge cases handled
+- [x] Permissions enforced
+- [x] Audit/timeline logged: N/A (read-only)
 - [ ] Tests pass

@@ -115,7 +115,13 @@ paths:
     put:
       operationId: updateBroker
       summary: Update broker
+      description: >
+        Updates a broker record. Requires the If-Match header containing the current
+        rowVersion. Returns 409 with code=concurrency_conflict if another user
+        modified the broker since the caller last read it.
       tags: [Brokers]
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
       requestBody:
         required: true
         content:
@@ -137,10 +143,16 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
     delete:
       operationId: deleteBroker
-      summary: Delete broker
-      description: Soft delete broker. Returns 409 if active submissions or renewals exist.
+      summary: Deactivate broker
+      description: >
+        Soft-deactivates a broker (sets Status=Inactive, IsDeleted=true).
+        Returns 409 with code=active_dependencies_exist if active submissions or
+        renewals are linked to the broker. The record is retained for audit purposes;
+        use POST /api/brokers/{brokerId}/reactivate (F0002-S0008) to reverse.
       tags: [Brokers]
       responses:
         "204":
@@ -883,6 +895,7 @@ components:
         enum:
           - Active
           - Inactive
+          - Pending
     BrokerId:
       name: brokerId
       in: path
@@ -918,6 +931,16 @@ components:
       schema:
         type: string
         format: uuid
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: >
+        Optimistic concurrency token. Must equal the `rowVersion` value returned
+        in the last GET response for this resource. If the resource has been
+        modified since then, the server returns HTTP 409 with code=concurrency_conflict.
+      schema:
+        type: string
     Page:
       name: page
       in: query
@@ -1003,7 +1026,7 @@ components:
           description: URI reference identifying this specific occurrence.
         code:
           type: string
-          description: Stable machine-readable domain error code. Known MVP codes include invalid_transition, missing_transition_prerequisite, active_submissions_exist, region_mismatch.
+          description: "Stable machine-readable domain error code. See planning-mds/architecture/error-codes.md for the authoritative list. Known MVP codes: invalid_transition, missing_transition_prerequisite, active_dependencies_exist, already_active, region_mismatch, concurrency_conflict, duplicate_license, not_found, validation_error."
         traceId:
           type: string
           description: Correlation identifier for diagnostics and tracing.
@@ -1058,6 +1081,12 @@ components:
           description: >
             Returned as null when Status=Inactive (masking sentinel).
             Consumers must treat null on an inactive broker as "masked", not "missing".
+        rowVersion:
+          type: string
+          description: >
+            Optimistic concurrency token. Clients must echo this value in the
+            If-Match header on subsequent PUT requests. Value is opaque; do not
+            parse or compare numerically.
         createdAt:
           type: string
           format: date-time

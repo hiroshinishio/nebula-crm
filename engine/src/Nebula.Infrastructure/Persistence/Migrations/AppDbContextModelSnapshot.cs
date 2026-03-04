@@ -217,6 +217,9 @@ namespace Nebula.Infrastructure.Persistence.Migrations
                     b.HasIndex("ManagedByUserId")
                         .HasDatabaseName("IX_Brokers_ManagedByUserId");
 
+                    b.HasIndex("IsDeleted", "Status")
+                        .HasDatabaseName("IX_Brokers_Status_IsDeleted");
+
                     b.HasIndex("MgaId");
 
                     b.HasIndex("PrimaryProgramId");
