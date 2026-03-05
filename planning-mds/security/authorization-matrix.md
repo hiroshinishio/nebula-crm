@@ -196,7 +196,7 @@ No requirements invented. Gaps are marked "Not yet specified" with a reference t
 **Constraints applying to all ALLOW decisions on Task:**
 - A user may only create/update/delete tasks where `AssignedTo` equals their authenticated subject. No cross-user assignment in MVP. (F0003-S0001, F0003-S0002, F0003-S0003)
 - A user may only read tasks where they are the assigned user. No cross-user task visibility in MVP. (F0001-S0003 AC Checklist, Non-Functional)
-- Dashboard list excludes Done tasks; `GET /api/tasks/{taskId}` may return any status for own tasks. (F0001-S0003 Validation Rules)
+- Dashboard list excludes Done tasks; `GET /tasks/{taskId}` may return any status for own tasks. (F0001-S0003 Validation Rules)
 - If a linked entity on a task has been soft-deleted, the task is still displayed but the entity name must show as "[Deleted]". (F0001-S0003 edge cases)
 - Read-only in dashboard context. No create, update, or delete from the dashboard widget in MVP. (F0001-S0003 out of scope)
 
@@ -227,22 +227,22 @@ No requirements invented. Gaps are marked "Not yet specified" with a reference t
 
 | Role | Action | Decision | Business Scope / Constraints | Story / AC Reference |
 |------|--------|----------|------------------------------|----------------------|
-| DistributionUser | read | **ALLOW** | Submissions assigned to the user only. Applies to `GET /api/submissions/{submissionId}`. | F0001-S0002; user requirement |
-| DistributionUser | transition | **ALLOW** | Only for assigned submissions and only for valid transitions. Applies to `POST /api/submissions/{submissionId}/transitions`. | BLUEPRINT §4.3; user requirement |
-| DistributionManager | read | **ALLOW** | All submissions within region. Applies to `GET /api/submissions/{submissionId}`. | F0001-S0002; user requirement |
-| DistributionManager | transition | **ALLOW** | Submissions within region; valid transitions only. Applies to `POST /api/submissions/{submissionId}/transitions`. | BLUEPRINT §4.3; user requirement |
-| Underwriter | read | **ALLOW** | Submissions assigned to or accessible by the user. Applies to `GET /api/submissions/{submissionId}`. | BLUEPRINT §4.4 |
-| Underwriter | transition | **ALLOW** | Underwriters can transition within underwriting stages. Applies to `POST /api/submissions/{submissionId}/transitions`. | BLUEPRINT §4.4; §4.3 |
-| RelationshipManager | read | **ALLOW** | Submissions linked to managed broker relationships. Applies to `GET /api/submissions/{submissionId}`. | F0001-S0002 Role Visibility |
-| RelationshipManager | transition | **DENY** | Read-only access; no submission transitions in MVP. Applies to `POST /api/submissions/{submissionId}/transitions`. | BLUEPRINT §4.4 |
-| ProgramManager | read | **ALLOW** | Submissions within the user's programs. Applies to `GET /api/submissions/{submissionId}`. | F0001-S0002 Role Visibility |
-| ProgramManager | transition | **DENY** | Read-only access; no submission transitions in MVP. Applies to `POST /api/submissions/{submissionId}/transitions`. | BLUEPRINT §4.4 |
-| Admin | read | **ALLOW** | Unscoped access. Applies to `GET /api/submissions/{submissionId}`. | BLUEPRINT §4.4 |
-| Admin | transition | **ALLOW** | Unscoped; valid transitions only. Applies to `POST /api/submissions/{submissionId}/transitions`. | BLUEPRINT §4.4; §4.3 |
+| DistributionUser | read | **ALLOW** | Submissions assigned to the user only. Applies to `GET /submissions/{submissionId}`. | F0001-S0002; user requirement |
+| DistributionUser | transition | **ALLOW** | Only for assigned submissions and only for valid transitions. Applies to `POST /submissions/{submissionId}/transitions`. | BLUEPRINT §4.3; user requirement |
+| DistributionManager | read | **ALLOW** | All submissions within region. Applies to `GET /submissions/{submissionId}`. | F0001-S0002; user requirement |
+| DistributionManager | transition | **ALLOW** | Submissions within region; valid transitions only. Applies to `POST /submissions/{submissionId}/transitions`. | BLUEPRINT §4.3; user requirement |
+| Underwriter | read | **ALLOW** | Submissions assigned to or accessible by the user. Applies to `GET /submissions/{submissionId}`. | BLUEPRINT §4.4 |
+| Underwriter | transition | **ALLOW** | Underwriters can transition within underwriting stages. Applies to `POST /submissions/{submissionId}/transitions`. | BLUEPRINT §4.4; §4.3 |
+| RelationshipManager | read | **ALLOW** | Submissions linked to managed broker relationships. Applies to `GET /submissions/{submissionId}`. | F0001-S0002 Role Visibility |
+| RelationshipManager | transition | **DENY** | Read-only access; no submission transitions in MVP. Applies to `POST /submissions/{submissionId}/transitions`. | BLUEPRINT §4.4 |
+| ProgramManager | read | **ALLOW** | Submissions within the user's programs. Applies to `GET /submissions/{submissionId}`. | F0001-S0002 Role Visibility |
+| ProgramManager | transition | **DENY** | Read-only access; no submission transitions in MVP. Applies to `POST /submissions/{submissionId}/transitions`. | BLUEPRINT §4.4 |
+| Admin | read | **ALLOW** | Unscoped access. Applies to `GET /submissions/{submissionId}`. | BLUEPRINT §4.4 |
+| Admin | transition | **ALLOW** | Unscoped; valid transitions only. Applies to `POST /submissions/{submissionId}/transitions`. | BLUEPRINT §4.4; §4.3 |
 | ExternalUser | all | **DENY** | No external portal in MVP. | BLUEPRINT §3.1 non-goals |
 
 **Constraints applying to all ALLOW decisions on Submission:**
-- Applies to `POST /api/submissions/{submissionId}/transitions` only.
+- Applies to `POST /submissions/{submissionId}/transitions` only.
 - Invalid transition pairs return HTTP 409 with ProblemDetails code invalid_transition. (BLUEPRINT §4.3)
 - Missing transition prerequisites return HTTP 409 with ProblemDetails code missing_transition_prerequisite. (BLUEPRINT §4.3)
 - Every successful transition appends a WorkflowTransition and ActivityTimelineEvent record. (BLUEPRINT §4.3)
@@ -253,22 +253,22 @@ No requirements invented. Gaps are marked "Not yet specified" with a reference t
 
 | Role | Action | Decision | Business Scope / Constraints | Story / AC Reference |
 |------|--------|----------|------------------------------|----------------------|
-| DistributionUser | read | **ALLOW** | Renewals assigned to the user only. Applies to `GET /api/renewals/{renewalId}`. | F0001-S0002; user requirement |
-| DistributionUser | transition | **ALLOW** | Only for assigned renewals and only for valid transitions. Applies to `POST /api/renewals/{renewalId}/transitions`. | BLUEPRINT §4.3; user requirement |
-| DistributionManager | read | **ALLOW** | All renewals within region. Applies to `GET /api/renewals/{renewalId}`. | F0001-S0002; user requirement |
-| DistributionManager | transition | **ALLOW** | Renewals within region; valid transitions only. Applies to `POST /api/renewals/{renewalId}/transitions`. | BLUEPRINT §4.3; user requirement |
-| Underwriter | read | **ALLOW** | Renewals assigned to or accessible by the user. Applies to `GET /api/renewals/{renewalId}`. | BLUEPRINT §4.4 |
-| Underwriter | transition | **ALLOW** | Underwriters can transition within underwriting stages. Applies to `POST /api/renewals/{renewalId}/transitions`. | BLUEPRINT §4.4; §4.3 |
-| RelationshipManager | read | **ALLOW** | Renewals linked to managed broker relationships. Applies to `GET /api/renewals/{renewalId}`. | F0001-S0002 Role Visibility |
-| RelationshipManager | transition | **DENY** | Read-only access; no renewal transitions in MVP. Applies to `POST /api/renewals/{renewalId}/transitions`. | BLUEPRINT §4.4 |
-| ProgramManager | read | **ALLOW** | Renewals within the user's programs. Applies to `GET /api/renewals/{renewalId}`. | F0001-S0002 Role Visibility |
-| ProgramManager | transition | **DENY** | Read-only access; no renewal transitions in MVP. Applies to `POST /api/renewals/{renewalId}/transitions`. | BLUEPRINT §4.4 |
-| Admin | read | **ALLOW** | Unscoped access. Applies to `GET /api/renewals/{renewalId}`. | BLUEPRINT §4.4 |
-| Admin | transition | **ALLOW** | Unscoped; valid transitions only. Applies to `POST /api/renewals/{renewalId}/transitions`. | BLUEPRINT §4.4; §4.3 |
+| DistributionUser | read | **ALLOW** | Renewals assigned to the user only. Applies to `GET /renewals/{renewalId}`. | F0001-S0002; user requirement |
+| DistributionUser | transition | **ALLOW** | Only for assigned renewals and only for valid transitions. Applies to `POST /renewals/{renewalId}/transitions`. | BLUEPRINT §4.3; user requirement |
+| DistributionManager | read | **ALLOW** | All renewals within region. Applies to `GET /renewals/{renewalId}`. | F0001-S0002; user requirement |
+| DistributionManager | transition | **ALLOW** | Renewals within region; valid transitions only. Applies to `POST /renewals/{renewalId}/transitions`. | BLUEPRINT §4.3; user requirement |
+| Underwriter | read | **ALLOW** | Renewals assigned to or accessible by the user. Applies to `GET /renewals/{renewalId}`. | BLUEPRINT §4.4 |
+| Underwriter | transition | **ALLOW** | Underwriters can transition within underwriting stages. Applies to `POST /renewals/{renewalId}/transitions`. | BLUEPRINT §4.4; §4.3 |
+| RelationshipManager | read | **ALLOW** | Renewals linked to managed broker relationships. Applies to `GET /renewals/{renewalId}`. | F0001-S0002 Role Visibility |
+| RelationshipManager | transition | **DENY** | Read-only access; no renewal transitions in MVP. Applies to `POST /renewals/{renewalId}/transitions`. | BLUEPRINT §4.4 |
+| ProgramManager | read | **ALLOW** | Renewals within the user's programs. Applies to `GET /renewals/{renewalId}`. | F0001-S0002 Role Visibility |
+| ProgramManager | transition | **DENY** | Read-only access; no renewal transitions in MVP. Applies to `POST /renewals/{renewalId}/transitions`. | BLUEPRINT §4.4 |
+| Admin | read | **ALLOW** | Unscoped access. Applies to `GET /renewals/{renewalId}`. | BLUEPRINT §4.4 |
+| Admin | transition | **ALLOW** | Unscoped; valid transitions only. Applies to `POST /renewals/{renewalId}/transitions`. | BLUEPRINT §4.4; §4.3 |
 | ExternalUser | all | **DENY** | No external portal in MVP. | BLUEPRINT §3.1 non-goals |
 
 **Constraints applying to all ALLOW decisions on Renewal:**
-- Applies to `POST /api/renewals/{renewalId}/transitions` only.
+- Applies to `POST /renewals/{renewalId}/transitions` only.
 - Invalid transition pairs return HTTP 409 with ProblemDetails code invalid_transition. (BLUEPRINT §4.3)
 - Missing transition prerequisites return HTTP 409 with ProblemDetails code missing_transition_prerequisite. (BLUEPRINT §4.3)
 - Every successful transition appends a WorkflowTransition and ActivityTimelineEvent record. (BLUEPRINT §4.3)
@@ -285,9 +285,9 @@ This section applies only when F0009 is enabled. It does not alter MVP InternalO
 | BrokerUser | broker | create / update / delete / reactivate | **DENY** | BrokerUser is read-first in Phase 1. | F0009 PRD Out of Scope; F0009-S0004 |
 | BrokerUser | contact | read | **ALLOW** | Only contacts for broker-visible broker records. Internal-only fields masked/omitted. | F0009-S0004 |
 | BrokerUser | contact | create / update / delete | **DENY** | No broker-side contact mutations in this phase. | F0009 PRD Out of Scope |
-| BrokerUser | dashboard_kpi | read | **ALLOW** | Broker-scoped KPI subset only (no internal aggregate KPI exposure). | F0009-S0003, F0009-S0004 |
-| BrokerUser | dashboard_pipeline | read | **ALLOW** | Broker-scoped pipeline subset only. | F0009-S0003, F0009-S0004 |
-| BrokerUser | dashboard_nudge | read | **ALLOW** | Broker-visible nudges only; no internal-only reminders. | F0009-S0004 |
+| BrokerUser | dashboard_kpi | read | **DENY** | KPI response aggregates submission and renewal data (both DENY resources). Endpoint shape cannot be safely filtered in Phase 1 — returning only `activeBrokers` would require a new endpoint contract. | F0009-S0003, F0009-S0004; F-006 Resolution |
+| BrokerUser | dashboard_pipeline | read | **DENY** | Pipeline response is entirely submission/renewal status counts. No BrokerVisible field exists in this response shape. | F0009-S0003, F0009-S0004; F-006 Resolution |
+| BrokerUser | dashboard_nudge | read | **ALLOW** | Mandatory server-side scope filter: return only `OverdueTask` nudges where `linkedEntityType = 'Broker'` AND `linkedEntityId` is within the authenticated BrokerUser's resolved broker scope. `StaleSubmission` and `UpcomingRenewal` nudge types must be excluded. If broker scope is empty, return empty array — not 403. All NudgeCard fields are BrokerVisible; InternalOnly protection is at nudge type filter level. | F0009-S0004; F-006 Resolution |
 | BrokerUser | timeline_event | read | **ALLOW** | Only events explicitly classified BrokerVisible. | F0009-S0004 |
 | BrokerUser | task | read | **ALLOW** | Broker-visible tasks assigned to or linked to authenticated broker identity only. | F0009-S0004 |
 | BrokerUser | task | create / update / delete | **DENY** | No broker task mutation in Phase 1. | F0009 PRD Out of Scope |
@@ -299,6 +299,9 @@ This section applies only when F0009 is enabled. It does not alter MVP InternalO
 **Constraints applying to all BrokerUser ALLOW decisions:**
 - Default deny applies for any resource/action not explicitly listed as ALLOW above.
 - Server-side ABAC enforcement is authoritative; frontend hiding is defense-in-depth only.
+- BrokerUser tenant scope must resolve from authenticated `broker_tenant_id` claim.
+- If `broker_tenant_id` is missing, unknown, or maps ambiguously, access is denied.
+- Enforcement order is fixed: tenant query isolation -> ABAC decision -> DTO field filtering.
 - InternalOnly fields must be masked or omitted from all BrokerUser responses.
 - All BrokerUser reads must be broker-tenant scoped and auditable.
 

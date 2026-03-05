@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nebula.local/schemas/problem-details.schema.json",
   "title": "ProblemDetails",
-  "description": "RFC 7807 problem details payload with Nebula extension fields. See planning-mds/architecture/error-codes.md for the authoritative code list.",
+  "description": "RFC Problem Details payload with Nebula extension fields. Intended for application/problem+json responses. See planning-mds/architecture/error-codes.md for the authoritative code list.",
   "type": "object",
   "required": [
     "type",
@@ -33,7 +33,7 @@
     },
     "code": {
       "type": "string",
-      "description": "Stable machine-readable domain error code. Known MVP codes include invalid_transition, missing_transition_prerequisite, active_submissions_exist, region_mismatch."
+      "description": "Stable machine-readable domain error code. See planning-mds/architecture/error-codes.md."
     },
     "traceId": {
       "type": "string"

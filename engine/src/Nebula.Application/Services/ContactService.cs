@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Nebula.Application.Common;
 using Nebula.Application.DTOs;
 using Nebula.Application.Interfaces;
@@ -10,8 +11,11 @@ public class ContactService(
     IContactRepository contactRepo,
     IBrokerRepository brokerRepo,
     ITimelineRepository timelineRepo,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ILogger<ContactService> logger)
 {
+    private readonly ILogger<ContactService> _logger = logger;
+
     public async Task<ContactDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var contact = await contactRepo.GetByIdAsync(id, ct);
@@ -20,10 +24,11 @@ public class ContactService(
     }
 
     public async Task<PaginatedResult<ContactDto>> ListAsync(
-        Guid? brokerId, int page, int pageSize, CancellationToken ct = default)
+        Guid? brokerId, int page, int pageSize, ICurrentUserService user, CancellationToken ct = default)
     {
         var result = await contactRepo.ListAsync(brokerId, page, pageSize, ct);
         var mapped = result.Data.Select(c => MaskPii(MapToDto(c), c.Broker?.Status)).ToList();
+        AuditBrokerUserRead(user, "broker.contacts", brokerId);
         return new PaginatedResult<ContactDto>(mapped, result.Page, result.PageSize, result.TotalCount);
     }
 
@@ -157,4 +162,16 @@ public class ContactService(
 
     private static ContactDto MaskPii(ContactDto dto, string? brokerStatus) =>
         brokerStatus == "Inactive" ? dto with { Email = null, Phone = null } : dto;
+
+    private void AuditBrokerUserRead(ICurrentUserService user, string resource, Guid? entityId, Guid? resolvedBrokerId = null)
+    {
+        if (!user.Roles.Contains("BrokerUser")) return;
+        _logger.LogInformation(
+            "BrokerUser access: {Resource} by BrokerTenantId={BrokerTenantId} ResolvedBrokerId={ResolvedBrokerId} EntityId={EntityId} OccurredAt={OccurredAt}",
+            resource,
+            user.BrokerTenantId,
+            resolvedBrokerId,
+            entityId,
+            DateTime.UtcNow);
+    }
 }

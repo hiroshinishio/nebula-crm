@@ -9,7 +9,7 @@ public static class DashboardEndpoints
 {
     public static IEndpointRouteBuilder MapDashboardEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/dashboard")
+        var group = app.MapGroup("/dashboard")
             .WithTags("Dashboard")
             .RequireAuthorization();
 
@@ -71,7 +71,7 @@ public static class DashboardEndpoints
     {
         if (!await HasAccessAsync(user, authz, "dashboard_nudge"))
             return ProblemDetailsHelper.Forbidden();
-        return Results.Ok(await svc.GetNudgesAsync(user.UserId, ct));
+        return Results.Ok(await svc.GetNudgesAsync(user.UserId, user, ct));
     }
 
     private static async Task<bool> HasAccessAsync(

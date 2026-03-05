@@ -105,7 +105,7 @@ import { BrokerList } from './BrokerList';
 
 // Mock API
 const server = setupServer(
-  http.get('/api/brokers', () => {
+  http.get('/brokers', () => {
     return HttpResponse.json([
       { id: '1', name: 'Broker A', email: 'a@example.com' },
       { id: '2', name: 'Broker B', email: 'b@example.com' }
@@ -352,7 +352,7 @@ public class BrokerEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/brokers", dto);
+        var response = await _client.PostAsJsonAsync("/brokers", dto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -373,7 +373,7 @@ public class BrokerEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/brokers", dto);
+        var response = await _client.PostAsJsonAsync("/brokers", dto);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -386,7 +386,7 @@ public class BrokerEndpointTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task GetBroker_WithoutAuth_ReturnsUnauthorized()
     {
         // Act
-        var response = await _client.GetAsync("/api/brokers/123");
+        var response = await _client.GetAsync("/brokers/123");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -438,7 +438,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/brokers
+  url: {{baseUrl}}/brokers
   body: json
   auth: bearer
 }
@@ -492,7 +492,7 @@ TOKEN="your-jwt-token"
 
 # Test: Create Broker
 echo "Testing: Create Broker"
-RESPONSE=$(curl -s -w "%{http_code}" -X POST "$BASE_URL/api/brokers" \
+RESPONSE=$(curl -s -w "%{http_code}" -X POST "$BASE_URL/brokers" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"name":"Test Broker","email":"test@example.com","phone":"1234567890"}')
@@ -510,7 +510,7 @@ fi
 # Test: Get Broker
 BROKER_ID=$(echo "$BODY" | jq -r '.id')
 echo "Testing: Get Broker"
-curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/api/brokers/$BROKER_ID" \
+curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/brokers/$BROKER_ID" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -644,7 +644,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get('http://localhost:5000/api/brokers');
+  const res = http.get('http://localhost:5000/brokers');
   check(res, {
     'status is 200': (r) => r.status === 200,
     'response time < 500ms': (r) => r.timings.duration < 500,
@@ -933,7 +933,7 @@ export const options = {
 };
 
 export default function () {
-  http.get('http://localhost:5000/api/brokers');
+  http.get('http://localhost:5000/brokers');
 }
 ```
 

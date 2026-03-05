@@ -26,7 +26,8 @@ cd experience && pnpm dev
 
 Notes:
 - Internal users above already exist in backend dev seed profiles.
-- `broker001@example.local` must exist as authentik user with `BrokerUser` role and must map to exactly one active broker by email.
+- `broker001@example.local` must exist as authentik user with `BrokerUser` role and valid `broker_tenant_id` claim.
+- `broker_tenant_id` must resolve to exactly one active broker tenant mapping in backend.
 
 ## Verification Checklist
 
@@ -45,6 +46,7 @@ Notes:
 - Callback failure:
   - verify redirect URI includes `/auth/callback` and matches OIDC client config.
 - BrokerUser denied unexpectedly:
-  - verify exact email mapping to one active broker.
+  - verify `broker_tenant_id` claim is present and valid.
+  - verify claim resolves to exactly one active broker tenant mapping.
 - BrokerUser sees internal data:
   - block release; fix server-side response filtering.

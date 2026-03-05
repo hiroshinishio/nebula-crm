@@ -147,23 +147,24 @@ submission.Status = newStatus;
 ## 3. API Design Patterns
 
 ### Pattern: REST Resource Conventions
-**Decision:** API endpoints follow `/api/{resource}` and `/api/{resource}/{id}` pattern
-**Rationale:** Simplicity, RESTful conventions, no versioning complexity for MVP
+**Decision:** API endpoints follow `/{resource}` and `/{resource}/{id}` pattern
+**Rationale:** Simplicity, RESTful conventions, and cleaner gateway/public API paths
 **Applied in:** All REST endpoints
+**Profile:** `planning-mds/architecture/api-guidelines-profile.md`
 
 **Examples:**
 ```
-GET    /api/brokers           - List brokers
-POST   /api/brokers           - Create broker
-GET    /api/brokers/{id}      - Get broker detail
-PUT    /api/brokers/{id}      - Update broker
-DELETE /api/brokers/{id}      - Delete broker
+GET    /brokers           - List brokers
+POST   /brokers           - Create broker
+GET    /brokers/{id}      - Get broker detail
+PUT    /brokers/{id}      - Update broker
+DELETE /brokers/{id}      - Delete broker
 ```
 
 **Sub-resource vs query-parameter convention:**
-Use flat collection endpoints with query-parameter filters (e.g. `GET /api/contacts?brokerId=...`)
+Use flat collection endpoints with query-parameter filters (e.g. `GET /contacts?brokerId=...`)
 when the child entity may be queried across parents or independently. Use sub-resource URLs
-(e.g. `GET /api/brokers/{id}/submissions`) only when the child is always accessed in the context
+(e.g. `GET /brokers/{id}/submissions`) only when the child is always accessed in the context
 of a single parent. For Nebula MVP, contacts use the query-parameter pattern; submissions and
 renewals use the sub-resource pattern.
 
@@ -172,6 +173,8 @@ renewals use the sub-resource pattern.
 **Rationale:** Standard, machine-readable error format
 **Applied in:** All API error responses
 **Error codes:** See `planning-mds/architecture/error-codes.md` for the authoritative list.
+**Media type:** `application/problem+json`
+**Profile:** `planning-mds/architecture/api-guidelines-profile.md`
 
 **Example:**
 ```csharp
@@ -190,8 +193,8 @@ return Problem(
 
 **Example:**
 ```
-GET /api/brokers?page=1&pageSize=20
-GET /api/submissions?page=2&pageSize=50
+GET /brokers?page=1&pageSize=20
+GET /submissions?page=2&pageSize=50
 ```
 
 ### Pattern: Nullable Field Conventions
@@ -599,7 +602,7 @@ public async Task CreateBroker_WithValidData_ReturnsCreated()
     var dto = new CreateBrokerDto { Name = "Test", Email = "test@example.com" };
 
     // Act
-    var response = await client.PostAsJsonAsync("/api/brokers", dto);
+    var response = await client.PostAsJsonAsync("/brokers", dto);
 
     // Assert
     response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -822,6 +825,7 @@ builder.Services.AddRateLimiter(options =>
 **Decision:** Propagate a correlation ID (`X-Request-Id` header) through every request and include it in logs and error responses as `traceId`
 **Rationale:** Enables end-to-end request tracing across logs, error responses, and future distributed services
 **Applied in:** All API requests, all log entries, ProblemDetails responses
+**Profile:** `planning-mds/architecture/api-guidelines-profile.md`
 
 **Implementation:**
 - ASP.NET Core's `Activity` provides a built-in `TraceId`. Use this as the correlation ID.

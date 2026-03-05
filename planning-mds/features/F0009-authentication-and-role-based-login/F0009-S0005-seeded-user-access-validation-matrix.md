@@ -43,6 +43,7 @@
   - `BrokerUser` group
   - membership mapping for all three seeded users
   - `nebula_roles` claim mapping
+  - `broker_tenant_id` claim mapping for BrokerUser
 - Seed identity data must not include plaintext production secrets.
 
 ## Validation Matrix Contract
@@ -54,6 +55,7 @@ Validation artifact must include per-user checks for:
 3. Denied route/API access.
 4. BrokerUser cross-scope deny checks.
 5. BrokerUser InternalOnly field exclusion checks.
+6. BrokerUser missing/invalid `broker_tenant_id` deny checks.
 
 ## Non-Functional Expectations
 

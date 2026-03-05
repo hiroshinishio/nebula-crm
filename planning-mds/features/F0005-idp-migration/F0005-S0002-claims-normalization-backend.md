@@ -85,7 +85,7 @@ var allowed = await _enforcer.EnforceAsync(casbinSubject, resource, action);
 
 ### Token refresh endpoint update
 
-`/api/auth/refresh` replaces `IKeycloakService.RefreshTokensAsync` with `IAuthentikOidcService.RefreshTokensAsync`. The external contract (httpOnly refresh cookie in → `{ access_token }` out) is unchanged.
+`/auth/refresh` replaces `IKeycloakService.RefreshTokensAsync` with `IAuthentikOidcService.RefreshTokensAsync`. The external contract (httpOnly refresh cookie in → `{ access_token }` out) is unchanged.
 
 ---
 

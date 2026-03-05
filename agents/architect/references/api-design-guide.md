@@ -16,60 +16,60 @@ Comprehensive guide for designing RESTful APIs using .NET 10 Minimal APIs. This 
 ### 1.1 Resource Naming Conventions
 
 **Use Nouns, Not Verbs:**
-- ✅ Good: `GET /api/customers`, `POST /api/orders`
-- ❌ Bad: `GET /api/getCustomers`, `POST /api/createOrder`
+- ✅ Good: `GET /customers`, `POST /orders`
+- ❌ Bad: `GET /getCustomers`, `POST /createOrder`
 
 **Use Plural Nouns:**
-- ✅ Good: `/api/customers`, `/api/orders`
-- ❌ Bad: `/api/customer`, `/api/order`
+- ✅ Good: `/customers`, `/orders`
+- ❌ Bad: `/customer`, `/order`
 
 **Hierarchical Resource URLs:**
-- ✅ Good: `/api/customers/{id}/orders` (orders belong to customer)
-- ✅ Good: `/api/orders/{id}/items` (items belong to order)
-- ❌ Bad: `/api/customer-orders?customerId={id}` (flat structure)
+- ✅ Good: `/customers/{id}/orders` (orders belong to customer)
+- ✅ Good: `/orders/{id}/items` (items belong to order)
+- ❌ Bad: `/customer-orders?customerId={id}` (flat structure)
 
 **Lowercase with Hyphens (for multi-word resources):**
-- ✅ Good: `/api/order-items`, `/api/timeline-events`
-- ❌ Bad: `/api/OrderItems`, `/api/timeline_events`
+- ✅ Good: `/order-items`, `/timeline-events`
+- ❌ Bad: `/OrderItems`, `/timeline_events`
 
 **Avoid Deep Nesting (max 2 levels):**
-- ✅ Good: `/api/customers/{id}/orders/{orderId}`
-- ❌ Bad: `/api/customers/{id}/orders/{orderId}/items/{itemId}/details/{detailId}`
-- Better: `/api/orders/{orderId}/items/{itemId}`
+- ✅ Good: `/customers/{id}/orders/{orderId}`
+- ❌ Bad: `/customers/{id}/orders/{orderId}/items/{itemId}/details/{detailId}`
+- Better: `/orders/{orderId}/items/{itemId}`
 
 ---
 
 ### 1.2 HTTP Methods (Verbs)
 
 **GET - Retrieve Resources:**
-- `GET /api/customers` - List all customers (with pagination)
-- `GET /api/customers/{id}` - Get single customer by ID
-- `GET /api/customers/{id}/orders` - Get customer's orders
+- `GET /customers` - List all customers (with pagination)
+- `GET /customers/{id}` - Get single customer by ID
+- `GET /customers/{id}/orders` - Get customer's orders
 - Idempotent: Multiple identical requests have same effect
 - No side effects (no data mutations)
 - Cacheable
 
 **POST - Create New Resource:**
-- `POST /api/customers` - Create new customer
-- `POST /api/orders/{id}/transition` - Perform action (state change)
+- `POST /customers` - Create new customer
+- `POST /orders/{id}/transition` - Perform action (state change)
 - Non-idempotent: Multiple requests create multiple resources
 - Returns `201 Created` with `Location` header pointing to new resource
 - Response body includes created resource
 
 **PUT - Replace Entire Resource:**
-- `PUT /api/customers/{id}` - Replace entire customer (all fields required)
+- `PUT /customers/{id}` - Replace entire customer (all fields required)
 - Idempotent: Multiple identical requests have same effect
 - Returns `200 OK` with updated resource or `204 No Content`
 - Rarely used in practice (PATCH preferred)
 
 **PATCH - Partial Update:**
-- `PATCH /api/customers/{id}` - Update specific fields
+- `PATCH /customers/{id}` - Update specific fields
 - Idempotent (if designed correctly)
 - Returns `200 OK` with updated resource
 - Preferred over PUT for updates
 
 **DELETE - Remove Resource:**
-- `DELETE /api/customers/{id}` - Soft delete customer
+- `DELETE /customers/{id}` - Soft delete customer
 - Idempotent: Deleting already-deleted resource returns `204`
 - Returns `204 No Content` (no response body)
 - Consider soft delete (set DeletedAt timestamp) vs hard delete
@@ -110,7 +110,7 @@ Comprehensive guide for designing RESTful APIs using .NET 10 Minimal APIs. This 
 
 **Idempotency Keys for POST:**
 ```http
-POST /api/orders
+POST /orders
 Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
 
@@ -132,9 +132,9 @@ Server stores idempotency key; duplicate requests with same key return original 
   "name": "Acme Inc",
   "status": "Active",
   "_links": {
-    "self": { "href": "/api/customers/123e4567-e89b-12d3-a456-426614174000" },
-    "orders": { "href": "/api/customers/123e4567-e89b-12d3-a456-426614174000/orders" },
-    "addresses": { "href": "/api/customers/123e4567-e89b-12d3-a456-426614174000/addresses" }
+    "self": { "href": "/customers/123e4567-e89b-12d3-a456-426614174000" },
+    "orders": { "href": "/customers/123e4567-e89b-12d3-a456-426614174000/orders" },
+    "addresses": { "href": "/customers/123e4567-e89b-12d3-a456-426614174000/addresses" }
   }
 }
 ```
@@ -168,7 +168,7 @@ public record CreateCustomerRequest
 }
 
 // Minimal API endpoint
-app.MapPost("/api/customers", async (
+app.MapPost("/customers", async (
     CreateCustomerRequest request,
     ICustomerService customerService,
     IValidator<CreateCustomerRequest> validator) =>
@@ -178,7 +178,7 @@ app.MapPost("/api/customers", async (
         return Results.ValidationProblem(validationResult.ToDictionary());
 
     var customer = await customerService.CreateAsync(request);
-    return Results.Created($"/api/customers/{customer.Id}", customer);
+    return Results.Created($"/customers/{customer.Id}", customer);
 })
 .WithName("CreateCustomer")
 .WithTags("Customers")
@@ -232,67 +232,20 @@ var response = new CustomerResponse
 
 ### 2.3 Standard Error Contract
 
-**Consistent Error Response Format:**
+Nebula standardizes on RFC Problem Details with media type `application/problem+json`.
 
-```csharp
-public record ErrorResponse
-{
-    [JsonPropertyName("code")]
-    public string Code { get; init; }
+Reference:
+- `planning-mds/architecture/api-guidelines-profile.md`
+- `planning-mds/architecture/error-codes.md`
 
-    [JsonPropertyName("message")]
-    public string Message { get; init; }
-
-    [JsonPropertyName("details")]
-    public List<ErrorDetail>? Details { get; init; }
-
-    [JsonPropertyName("traceId")]
-    public string? TraceId { get; init; }
-}
-
-public record ErrorDetail
-{
-    [JsonPropertyName("field")]
-    public string? Field { get; init; }
-
-    [JsonPropertyName("message")]
-    public string Message { get; init; }
-}
-```
-
-**Example Error Responses:**
-
-**Validation Error (400):**
+**Example Error Response (403):**
 ```json
 {
-  "code": "VALIDATION_ERROR",
-  "message": "Invalid request data",
-  "details": [
-    { "field": "name", "message": "Name is required" },
-    { "field": "email", "message": "Email address must be unique" }
-  ],
-  "traceId": "0HN1234567890ABCDEF"
-}
-```
-
-**Business Rule Violation (409):**
-```json
-{
-  "code": "DUPLICATE_ORDER_NUMBER",
-  "message": "An order with this order number already exists",
-  "details": [
-    { "field": "orderNumber", "message": "Order number ORD-12345 is already in use" }
-  ],
-  "traceId": "0HN1234567890ABCDEF"
-}
-```
-
-**Authorization Error (403):**
-```json
-{
-  "code": "INSUFFICIENT_PERMISSIONS",
-  "message": "User lacks CreateCustomer permission",
-  "traceId": "0HN1234567890ABCDEF"
+  "type": "https://nebula.local/problems/policy-denied",
+  "title": "Forbidden",
+  "status": 403,
+  "code": "policy_denied",
+  "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
 }
 ```
 
@@ -302,7 +255,7 @@ public record ErrorDetail
 
 **Simple Response (No Envelope):**
 ```json
-GET /api/customers/123
+GET /customers/123
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
   "name": "Acme Inc",
@@ -312,7 +265,7 @@ GET /api/customers/123
 
 **List Response (With Pagination Metadata):**
 ```json
-GET /api/customers?page=1&pageSize=20
+GET /customers?page=1&pageSize=20
 {
   "data": [
     { "id": "...", "name": "Acme Inc" },
@@ -339,7 +292,7 @@ GET /api/customers?page=1&pageSize=20
 
 **Request:**
 ```http
-GET /api/customers?page=2&pageSize=20
+GET /customers?page=2&pageSize=20
 ```
 
 **Response:**
@@ -358,7 +311,7 @@ GET /api/customers?page=2&pageSize=20
 
 **Implementation:**
 ```csharp
-app.MapGet("/api/customers", async (
+app.MapGet("/customers", async (
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 20,
     ApplicationDbContext context) =>
@@ -402,7 +355,7 @@ app.MapGet("/api/customers", async (
 
 **Request:**
 ```http
-GET /api/customers?limit=20&cursor=eyJuYW1lIjoiQWNtZSIsImlkIjoiMTIzIn0=
+GET /customers?limit=20&cursor=eyJuYW1lIjoiQWNtZSIsImlkIjoiMTIzIn0=
 ```
 
 **Response:**
@@ -447,11 +400,11 @@ var nextCursor = hasMore ? EncodeCursor(customers.Last().Name, customers.Last().
   "totalCount": 156,
   "totalPages": 8,
   "_links": {
-    "first": { "href": "/api/customers?page=1&pageSize=20" },
-    "prev": { "href": "/api/customers?page=1&pageSize=20" },
-    "self": { "href": "/api/customers?page=2&pageSize=20" },
-    "next": { "href": "/api/customers?page=3&pageSize=20" },
-    "last": { "href": "/api/customers?page=8&pageSize=20" }
+    "first": { "href": "/customers?page=1&pageSize=20" },
+    "prev": { "href": "/customers?page=1&pageSize=20" },
+    "self": { "href": "/customers?page=2&pageSize=20" },
+    "next": { "href": "/customers?page=3&pageSize=20" },
+    "last": { "href": "/customers?page=8&pageSize=20" }
   }
 }
 ```
@@ -464,22 +417,22 @@ var nextCursor = hasMore ? EncodeCursor(customers.Last().Name, customers.Last().
 
 **Simple Filters:**
 ```http
-GET /api/customers?status=Active&region=West
+GET /customers?status=Active&region=West
 ```
 
 **Search (across multiple fields):**
 ```http
-GET /api/customers?search=acme
+GET /customers?search=acme
 ```
 
 **Filter Operators:**
 ```http
-GET /api/orders?amount[gte]=500&orderDate[lte]=2026-12-31
+GET /orders?amount[gte]=500&orderDate[lte]=2026-12-31
 ```
 
 **Implementation:**
 ```csharp
-app.MapGet("/api/customers", async (
+app.MapGet("/customers", async (
     [FromQuery] string? status,
     [FromQuery] string? region,
     [FromQuery] string? search,
@@ -507,7 +460,7 @@ app.MapGet("/api/customers", async (
 
 **Query Parameter:**
 ```http
-GET /api/customers?sort=name:asc,createdAt:desc
+GET /customers?sort=name:asc,createdAt:desc
 ```
 
 **Implementation:**
@@ -566,8 +519,8 @@ var customers = await context.Customers
 
 **Include Version in URL Path:**
 ```http
-GET /api/v1/customers
-GET /api/v2/customers
+GET /v1/customers
+GET /v2/customers
 ```
 
 **Pros:** Simple, explicit, easy to route
@@ -575,10 +528,10 @@ GET /api/v2/customers
 
 **Implementation:**
 ```csharp
-var v1 = app.MapGroup("/api/v1").WithTags("V1");
+var v1 = app.MapGroup("/v1").WithTags("V1");
 v1.MapGet("/customers", GetCustomersV1);
 
-var v2 = app.MapGroup("/api/v2").WithTags("V2");
+var v2 = app.MapGroup("/v2").WithTags("V2");
 v2.MapGet("/customers", GetCustomersV2);
 ```
 
@@ -588,7 +541,7 @@ v2.MapGet("/customers", GetCustomersV2);
 
 **Version in Custom Header:**
 ```http
-GET /api/customers
+GET /customers
 API-Version: 2
 ```
 
@@ -601,7 +554,7 @@ API-Version: 2
 
 **Version as Query Param:**
 ```http
-GET /api/customers?version=2
+GET /customers?version=2
 ```
 
 **Pros:** Easy to test
@@ -616,7 +569,7 @@ GET /api/customers?version=2
 HTTP/1.1 200 OK
 Sunset: Sat, 31 Dec 2026 23:59:59 GMT
 Deprecation: true
-Link: <https://api.example.com/api/v2/customers>; rel="successor-version"
+Link: <https://api.example.com/v2/customers>; rel="successor-version"
 ```
 
 **Recommendation:** Support previous version for 12 months after new version released.
@@ -629,7 +582,7 @@ Link: <https://api.example.com/api/v2/customers>; rel="successor-version"
 
 **Require Bearer Token on All Endpoints:**
 ```csharp
-app.MapGet("/api/customers", async () => { ... })
+app.MapGet("/customers", async () => { ... })
     .RequireAuthorization();
 ```
 
@@ -815,7 +768,7 @@ components:
 
 **Add Examples to Endpoints:**
 ```csharp
-app.MapPost("/api/customers", async (CreateCustomerRequest request) => { ... })
+app.MapPost("/customers", async (CreateCustomerRequest request) => { ... })
     .WithOpenApi(operation =>
     {
         operation.Summary = "Create a new customer";

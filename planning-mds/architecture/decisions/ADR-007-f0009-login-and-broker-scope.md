@@ -21,9 +21,9 @@ F0009 introduces real login and an external BrokerUser role. Existing MVP archit
    - API `403` -> stay in context and render permission-safe message
 
 3. **BrokerUser scope resolution**
-   - Resolve broker scope via authenticated `email` claim.
-   - Match rule: exactly one active broker where `Broker.Email == email` (case-insensitive).
-   - No match or ambiguous match -> deny by default.
+   - Resolve broker scope via authenticated `broker_tenant_id` claim.
+   - Match rule: exactly one active broker tenant mapping for `broker_tenant_id`.
+   - Missing claim, no match, or ambiguous match -> deny by default.
 
 4. **Policy and matrix parity**
    - `authorization-matrix.md` section 2.10 is normative.
@@ -33,6 +33,10 @@ F0009 introduces real login and an external BrokerUser role. Existing MVP archit
 5. **Field-level boundaries**
    - BrokerUser response filtering is server-side mandatory.
    - `InternalOnly` fields must never be emitted to BrokerUser.
+   - Enforcement order is fixed:
+     1) tenant query isolation
+     2) Casbin ABAC decision
+     3) DTO/response filtering
 
 ## Architecture Sketch (ASCII)
 
@@ -42,7 +46,7 @@ F0009 introduces real login and an external BrokerUser role. Existing MVP archit
    |                                              v
    +----------------> [API request with token] -> [JWT validate]
                                                  -> [ABAC policy check]
-                                                 -> [Broker scope resolve by email]
+                                                 -> [Broker scope resolve by broker_tenant_id]
                                                  -> [Field filter by visibility class]
                                                  -> [200 | 401 | 403]
 ```
@@ -61,7 +65,7 @@ sequenceDiagram
     FE->>FE: validate state, establish session
     FE->>API: request with bearer token
     API->>API: validate JWT + roles
-    API->>DB: resolve broker scope by email
+    API->>DB: resolve broker scope by broker_tenant_id
     API->>API: enforce ABAC + field filtering
     API-->>FE: 200 or 401/403 ProblemDetails
 ```
@@ -76,12 +80,22 @@ Positive:
 
 Tradeoffs:
 
-- Broker scope currently depends on email linkage quality.
+- Broker scope depends on correct IdP claim mapping for `broker_tenant_id`.
 - Silent renew deferred, so long-lived sessions require explicit re-auth.
+
+## Security Hardening Stance
+
+- RLS is deferred for F0009 Phase 1 to reduce implementation burden.
+- Phase 1 compensating controls are mandatory:
+  - no raw SQL agent tools
+  - ABAC enforcement at API/MCP tool boundary
+  - tenant-scoped query filters
+  - server-side field filtering
+  - auditable policy decisions
+- RLS remains a Phase 2 hardening option for highest-risk tenant tables.
 
 ## Follow-up
 
 - Implement seeded authentik BrokerUser identities and group mappings.
 - Add policy parity validation to CI for matrix vs `policy.csv`.
 - Revisit silent renew in future auth hardening story.
-

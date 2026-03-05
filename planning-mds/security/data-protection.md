@@ -30,10 +30,10 @@ When `Broker.Status = Inactive`, the API **must** mask PII fields on all broker 
 
 | Endpoint | Masked Fields | Sentinel Value |
 |----------|--------------|----------------|
-| `GET /api/brokers` (list) | `email`, `phone` | `null` |
-| `GET /api/brokers/{id}` (detail) | `email`, `phone` | `null` |
-| `GET /api/contacts` (list) | `email`, `phone` (when parent broker is Inactive) | `null` |
-| `GET /api/contacts/{id}` (detail) | `email`, `phone` (when parent broker is Inactive) | `null` |
+| `GET /brokers` (list) | `email`, `phone` | `null` |
+| `GET /brokers/{id}` (detail) | `email`, `phone` | `null` |
+| `GET /contacts` (list) | `email`, `phone` (when parent broker is Inactive) | `null` |
+| `GET /contacts/{id}` (detail) | `email`, `phone` (when parent broker is Inactive) | `null` |
 
 - Masking is enforced **server-side** before serialization; the frontend never receives raw PII for inactive brokers.
 - Frontend consumers must display `null` on an inactive broker/contact as "Masked", not as missing data.

@@ -9,7 +9,7 @@ The separation is intentional. Generic agents live in `agents/`. Solution-specif
 
 ## Release Scope (Initial Public Preview)
 
-As of 2026-02-08, this repository is published as a human-orchestrated framework preview:
+As of 2026-02-08, this repository is **published as a human-orchestrated framework** preview:
 
 - Actions are executed by a human operator following `agents/actions/*.md`.
 - There is no built-in automated orchestrator in this initial release.

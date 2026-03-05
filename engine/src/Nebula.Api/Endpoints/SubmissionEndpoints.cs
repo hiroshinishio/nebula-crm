@@ -10,7 +10,7 @@ public static class SubmissionEndpoints
 {
     public static IEndpointRouteBuilder MapSubmissionEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/submissions")
+        var group = app.MapGroup("/submissions")
             .WithTags("Submissions")
             .RequireAuthorization();
 
@@ -51,7 +51,7 @@ public static class SubmissionEndpoints
         {
             "not_found" => ProblemDetailsHelper.NotFound("Submission", submissionId),
             "invalid_transition" => ProblemDetailsHelper.InvalidTransition("current", dto.ToState),
-            _ => Results.Created($"/api/submissions/{submissionId}/transitions", result),
+            _ => Results.Created($"/submissions/{submissionId}/transitions", result),
         };
     }
 }

@@ -12,7 +12,7 @@ public static class BrokerEndpoints
 {
     public static RouteGroupBuilder MapBrokerEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/brokers")
+        var group = app.MapGroup("/brokers")
             .WithTags("Brokers")
             .RequireAuthorization();
 
@@ -28,13 +28,13 @@ public static class BrokerEndpoints
 
     private static async Task<IResult> ListBrokers(
         string? q, string? status, int? page, int? pageSize,
-        BrokerService svc, CancellationToken ct)
+        BrokerService svc, ICurrentUserService user, CancellationToken ct)
     {
         if (status is not null && status is not ("Active" or "Inactive" or "Pending"))
             return ProblemDetailsHelper.ValidationError(
                 new Dictionary<string, string[]> { ["status"] = [$"Invalid status '{status}'. Must be Active, Inactive, or Pending."] });
 
-        var result = await svc.ListAsync(q, status, page ?? 1, Math.Min(pageSize ?? 20, 100), ct);
+        var result = await svc.ListAsync(q, status, page ?? 1, Math.Min(pageSize ?? 20, 100), user, ct);
         return Results.Ok(new { data = result.Data, page = result.Page, pageSize = result.PageSize, totalCount = result.TotalCount, totalPages = result.TotalPages });
     }
 
@@ -55,7 +55,7 @@ public static class BrokerEndpoints
         return error switch
         {
             "duplicate_license" => ProblemDetailsHelper.DuplicateLicense(),
-            _ => Results.Created($"/api/brokers/{result!.Id}", result),
+            _ => Results.Created($"/brokers/{result!.Id}", result),
         };
     }
 

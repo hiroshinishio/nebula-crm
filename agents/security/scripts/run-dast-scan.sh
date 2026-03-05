@@ -13,7 +13,7 @@
 #
 # Env overrides:
 #   DAST_TARGET_URL     Target URL if --target is omitted
-#   DAST_SCAN_CMD       Custom command to run instead of ZAP
+#   DAST_SCAN_CMD       Custom executable to run instead of ZAP
 #
 # Exit codes:
 #   0  No blocking issues found
@@ -78,7 +78,7 @@ fi
 if [ -n "${DAST_SCAN_CMD:-}" ]; then
   echo "Running DAST via DAST_SCAN_CMD against ${TARGET_URL}"
   export DAST_TARGET_URL="$TARGET_URL"
-  sh -c "$DAST_SCAN_CMD \"\$@\"" sh "$@"
+  "$DAST_SCAN_CMD" "$@"
   exit $?
 fi
 

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Nebula.Application.Common;
 using Nebula.Application.DTOs;
 using Nebula.Application.Interfaces;
@@ -9,8 +10,11 @@ namespace Nebula.Application.Services;
 public class BrokerService(
     IBrokerRepository brokerRepo,
     ITimelineRepository timelineRepo,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ILogger<BrokerService> logger)
 {
+    private readonly ILogger<BrokerService> _logger = logger;
+
     public async Task<BrokerDto?> GetByIdAsync(Guid id, ICurrentUserService user, CancellationToken ct = default)
     {
         // Admin and DistributionManager may view deactivated (soft-deleted) brokers — F0002-S0005/S0008.
@@ -21,14 +25,16 @@ public class BrokerService(
             : await brokerRepo.GetByIdAsync(id, ct);
 
         if (broker is null) return null;
+        AuditBrokerUserRead(user, "broker.detail", id, id);
         return MaskPii(MapToDto(broker));
     }
 
     public async Task<PaginatedResult<BrokerDto>> ListAsync(
-        string? search, string? statusFilter, int page, int pageSize, CancellationToken ct = default)
+        string? search, string? statusFilter, int page, int pageSize, ICurrentUserService user, CancellationToken ct = default)
     {
         var result = await brokerRepo.ListAsync(search, statusFilter, page, pageSize, ct);
         var mapped = result.Data.Select(b => MaskPii(MapToDto(b))).ToList();
+        AuditBrokerUserRead(user, "broker.list", null);
         return new PaginatedResult<BrokerDto>(mapped, result.Page, result.PageSize, result.TotalCount);
     }
 
@@ -220,4 +226,16 @@ public class BrokerService(
 
     private static BrokerDto MaskPii(BrokerDto dto) =>
         dto.Status == "Inactive" ? dto with { Email = null, Phone = null } : dto;
+
+    private void AuditBrokerUserRead(ICurrentUserService user, string resource, Guid? entityId, Guid? resolvedBrokerId = null)
+    {
+        if (!user.Roles.Contains("BrokerUser")) return;
+        _logger.LogInformation(
+            "BrokerUser access: {Resource} by BrokerTenantId={BrokerTenantId} ResolvedBrokerId={ResolvedBrokerId} EntityId={EntityId} OccurredAt={OccurredAt}",
+            resource,
+            user.BrokerTenantId,
+            resolvedBrokerId,
+            entityId,
+            DateTime.UtcNow);
+    }
 }

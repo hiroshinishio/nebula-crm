@@ -210,7 +210,7 @@ p, Admin,               dashboard_nudge, read, true
 # Enforcement point MUST hydrate r.obj.assignee before calling the enforcer (request on create; DB on read/update/delete).
 # Mapping: r.obj.assignee == Task.AssignedTo (domain field).
 # Read-only in dashboard context. No create/update/delete from widget (F0001-S0003 out of scope).
-# Status filter (Open/InProgress only; Done excluded) enforced at query layer for /api/my/tasks.
+# Status filter (Open/InProgress only; Done excluded) enforced at query layer for /my/tasks.
 # Admin: own tasks only in MVP; cross-user task view is explicitly Future (F0001-S0003 Role Visibility).
 # DistributionManager: own tasks only for dashboard widget.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -265,17 +265,26 @@ p, Admin,               timeline_event, read, true
 # §2.10 BrokerUser (Phase 1 Delta — F0009)
 # BrokerUser is external and read-first in Phase 1.
 # Scope + field filtering constraints are enforced at query/response layer:
-#   - broker scope resolves from authenticated email -> exactly one active broker
-#   - default deny if 0 or >1 broker matches
+#   - broker scope resolves from authenticated broker_tenant_id -> exactly one active tenant mapping
+#   - default deny if claim missing or mapping count != 1
 #   - InternalOnly fields omitted server-side
+#   - enforcement order: tenant query isolation -> Casbin ABAC decision -> DTO/response filtering
 # Source: authorization-matrix.md §2.10, F0009-S0004.
+#
+# F-006 Resolution (2026-03-04):
+#   dashboard_kpi     — DENY: KPI aggregates submission/renewal data; endpoint shape cannot be safely
+#                       filtered for BrokerUser in Phase 1. No policy line = implicit deny.
+#   dashboard_pipeline — DENY: entirely submission/renewal status counts; no BrokerVisible data.
+#                       No policy line = implicit deny.
+#   dashboard_nudge   — ALLOW with mandatory query-layer scope filter:
+#                       return only OverdueTask nudges where linkedEntityType='Broker'
+#                       AND linkedEntityId IN resolved broker scope.
+#                       StaleSubmission and UpcomingRenewal types excluded at query layer.
 # ─────────────────────────────────────────────────────────────────────────────
 
 p, BrokerUser, broker,            read,   true
 p, BrokerUser, broker,            search, true
 p, BrokerUser, contact,           read,   true
-p, BrokerUser, dashboard_kpi,     read,   true
-p, BrokerUser, dashboard_pipeline, read,  true
 p, BrokerUser, dashboard_nudge,   read,   true
 p, BrokerUser, timeline_event,    read,   true
 p, BrokerUser, task,              read,   true

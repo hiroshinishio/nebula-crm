@@ -23,16 +23,19 @@
 | Broker-visible data boundary list approved | Ready | `BROKER-VISIBILITY-MATRIX.md` added |
 | Real-login frontend mode available (without `dev-auth.ts`) | Not Started | implementation required |
 | Required authentik seeded identities provisioned | Not Started | include `BrokerUser` group + user mappings |
+| BrokerUser `broker_tenant_id` claim contract implemented | Not Started | required for stable tenant isolation |
 
 ## Release-Blocking Requirement Gaps
 
 1. authentik blueprint missing `BrokerUser` group and required seeded identities.
 2. frontend still dependent on `dev-auth.ts` in default flow.
 3. backend query-layer scope + field filtering for BrokerUser not yet implemented in code.
+4. BrokerUser `broker_tenant_id` claim mapping + tenant resolution not yet implemented in code.
 
 ## Architecture-Ready Artifacts
 
 - [x] PRD with mandatory "How" decisions
 - [x] `IMPLEMENTATION-CONTRACT.md`
 - [x] `BROKER-VISIBILITY-MATRIX.md`
+- [x] `planning-mds/security/F0009-security-review-checklist.md`
 - [x] Story-level deterministic acceptance criteria

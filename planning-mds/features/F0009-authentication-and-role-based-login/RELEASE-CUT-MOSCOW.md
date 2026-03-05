@@ -16,6 +16,7 @@
   - `broker001@example.local` (`BrokerUser`)
 - Regression check: no protected route accessible without authenticated session
 - Regression check: broker user cannot retrieve cross-broker records or InternalOnly fields
+- Regression check: BrokerUser missing/invalid `broker_tenant_id` claim is denied by default
 
 ## Should Have (Strongly Preferred)
 
@@ -41,5 +42,6 @@
 ## Release Guardrails
 
 - If BrokerUser field-level boundaries are not verified, release defaults to internal-role login only.
-- If role claims are inconsistent (`nebula_roles` missing/malformed), release is blocked.
+- If required role/tenant claims are inconsistent (`nebula_roles` or `broker_tenant_id` missing/malformed), release is blocked.
 - Any endpoint-level authorization gap found in protected routes is a release blocker.
+- If Phase 1 compensating controls (tenant-scoped query filtering + ABAC checks + server-side field filtering + audit logging) are not verified, release is blocked.

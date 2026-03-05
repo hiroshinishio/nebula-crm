@@ -20,7 +20,7 @@ As a frontend developer, I need the React app to authenticate via **authentik** 
 2. When the full OIDC login flow is implemented (future story), it uses `oidc-client-ts` (or equivalent standard OIDC library) rather than `keycloak-js`.
 3. No references to `keycloak`, `realms`, or Keycloak-specific URL patterns remain in frontend source code or config files.
 4. The `api.ts` service continues to inject Bearer tokens from `getDevToken()` unchanged — the token source switches transparently.
-5. E2E smoke test: `getDevToken()` returns a non-empty string; a GET to `/api/health` with that token returns 200.
+5. E2E smoke test: `getDevToken()` returns a non-empty string; a GET to `/health` with that token returns 200.
 
 ---
 
@@ -71,9 +71,9 @@ VITE_OIDC_CLIENT_ID=nebula-crm
 
 The ADR-Auth-Token-Storage hybrid strategy is **unchanged**:
 - Access token: React context (in-memory)
-- Refresh token: httpOnly cookie managed by backend `/api/auth/refresh`
+- Refresh token: httpOnly cookie managed by backend `/auth/refresh`
 
-The `oidc-client-ts` `UserManager` access token is extracted and stored in React context on login; the refresh token is NOT stored in the browser — it is sent to `/api/auth/token` to be stored server-side as an httpOnly cookie, same as the Keycloak flow.
+The `oidc-client-ts` `UserManager` access token is extracted and stored in React context on login; the refresh token is NOT stored in the browser — it is sent to `/auth/token` to be stored server-side as an httpOnly cookie, same as the Keycloak flow.
 
 ---
 

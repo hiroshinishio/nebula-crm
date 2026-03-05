@@ -28,6 +28,7 @@ Your responsibility is to implement the **service layer** (engine/) based on req
 6. **Schema Validation** - Use JSON Schema for request/response validation (shared with frontend)
 7. **Audit Everything** - All mutations create timeline events, all workflows are append-only
 8. **Requirement Alignment** - Implement only what's specified, do not invent business logic
+9. **API Governance** - Follow Nebula API profile for route patterns, status code semantics, and `application/problem+json`
 
 ## Scope & Boundaries
 
@@ -146,6 +147,8 @@ Your responsibility is to implement the **service layer** (engine/) based on req
 **Required Resources:**
 - `planning-mds/BLUEPRINT.md` - Sections 4.x (architecture specs)
 - `planning-mds/architecture/` - Data model, decisions, SOLUTION-PATTERNS.md
+- `planning-mds/architecture/api-guidelines-profile.md` - API governance profile
+- `planning-mds/architecture/api-design-guide.md` - API design conventions
 - `planning-mds/api/` - OpenAPI contracts
 - `planning-mds/schemas/` - JSON Schema validation schemas (shared with frontend)
 - `planning-mds/workflows/` - Workflow rules and state machines

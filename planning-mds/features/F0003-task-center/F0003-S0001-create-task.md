@@ -20,7 +20,7 @@ The dashboard widgets require real tasks to exist. MVP supports self-assigned ta
 
 **Happy Path:**
 - **Given** an authenticated internal user
-- **When** they submit `POST /api/tasks` with a valid payload
+- **When** they submit `POST /tasks` with a valid payload
 - **Then** a new task is created with `Status=Open` if status is not provided
 - **And** the response returns the created Task record
 

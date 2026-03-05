@@ -36,15 +36,23 @@
 
 ## Scope Resolution Contract
 
-- Scope anchor: authenticated `email` claim.
-- Matching rule: exactly one active broker where `Broker.Email == user.email` (case-insensitive).
-- `0` or `>1` matches: deny all BrokerUser-protected resources.
+- Scope anchor: authenticated `broker_tenant_id` claim (stable IdP-issued broker identity).
+- Matching rule: exactly one active broker tenant mapping resolves from `broker_tenant_id`.
+- Missing claim, unknown mapping, or ambiguous mapping (`0` or `>1`): deny all BrokerUser-protected resources.
 
 ## Authorization Contract
 
 - `authorization-matrix.md` section 2.10 defines allowed BrokerUser resources/actions.
 - `policy.csv` must include explicit BrokerUser rows matching the matrix.
 - Default deny for any action/resource not explicitly allowed.
+
+## Enforcement Order Contract
+
+1. Query/service layer tenant isolation (cross-broker rows are filtered out before payload shaping).
+2. Casbin ABAC resource/action allow-deny decision.
+3. DTO/response filtering for `InternalOnly` field exclusion.
+
+Note: DTO filtering is mandatory for field visibility but is not a substitute for tenant isolation.
 
 ## Field Boundary Contract
 
@@ -67,5 +75,6 @@
 
 - [ ] Scope linkage logic implemented and fail-closed
 - [ ] BrokerUser policy rows implemented and parity-checked
+- [ ] Query/service layer tenant isolation implemented using `broker_tenant_id`
 - [ ] Field-level filtering implemented and tested server-side
 - [ ] Cross-broker deny tests passing

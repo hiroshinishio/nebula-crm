@@ -13,7 +13,7 @@
 #   -h, --help          Show help
 #
 # Env override:
-#   SECRET_SCAN_CMD     Custom command to run instead of gitleaks
+#   SECRET_SCAN_CMD     Custom executable to run instead of gitleaks
 #
 # Exit codes:
 #   0  No secret leaks found
@@ -94,7 +94,7 @@ if [ -n "${SECRET_SCAN_CMD:-}" ]; then
   echo "Running secret scan via SECRET_SCAN_CMD in $TARGET_PATH"
   (
     cd "$TARGET_PATH" || exit 2
-    sh -c "$SECRET_SCAN_CMD \"\$@\"" sh "$@"
+    "$SECRET_SCAN_CMD" "$@"
   )
   exit $?
 fi
@@ -106,11 +106,8 @@ if ! command -v gitleaks >/dev/null 2>&1; then
 fi
 
 if [ "$MODE" = "auto" ]; then
-  if (cd "$TARGET_PATH" && git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
-    MODE="git"
-  else
-    MODE="filesystem"
-  fi
+  # Prefer filesystem mode to include untracked working-tree content.
+  MODE="filesystem"
 fi
 
 mkdir -p "$REPORT_DIR"

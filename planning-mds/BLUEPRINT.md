@@ -233,7 +233,7 @@ This section defines the build-ready technical baseline for the reference implem
   - See [ADR-002](architecture/decisions/ADR-002-dashboard-data-aggregation.md) for per-widget endpoint design.
 - **TaskManagement module (F0001 + F0003):**
   - Owns the Task entity (CRUD + status transitions).
-  - Provides `GET /api/my/tasks` for dashboard and Task Center.
+  - Provides `GET /my/tasks` for dashboard and Task Center.
   - All Task mutations generate ActivityTimelineEvent records.
   - See [ADR-003](architecture/decisions/ADR-003-task-entity-nudge-engine.md) for entity design.
 - BrokerRelationship module:
@@ -250,7 +250,7 @@ This section defines the build-ready technical baseline for the reference implem
   - Tracks outreach and renewal-specific lifecycle.
 - TimelineAudit module:
   - Owns ActivityTimelineEvent and WorkflowTransition append-only records.
-  - Provides timeline query/read APIs (including `GET /api/timeline/events` for dashboard activity feed).
+  - Provides timeline query/read APIs (including `GET /timeline/events` for dashboard activity feed).
 - IdentityAuthorization module:
   - Validates authentik JWT tokens (JWKS from `Authentication__Authority/.well-known/openid-configuration`).
   - Normalizes `(iss, sub)` claims to internal `NebulaPrincipal { UserId, Roles, Regions }` via `IClaimsPrincipalNormalizer`.
@@ -379,31 +379,31 @@ Entity coverage in API surface:
 - Account, Broker, MGA, Program, Contact, Submission, Renewal, ActivityTimelineEvent, WorkflowTransition
 
 MVP endpoint pattern examples:
-- GET `/api/brokers`
-- POST `/api/brokers`
-- GET `/api/brokers/{brokerId}`
-- PUT `/api/brokers/{brokerId}`
-- DELETE `/api/brokers/{brokerId}`
-- GET `/api/contacts`
-- POST `/api/contacts`
-- GET `/api/submissions/{submissionId}/transitions`
-- POST `/api/submissions/{submissionId}/transitions`
-- GET `/api/renewals/{renewalId}/transitions`
-- POST `/api/renewals/{renewalId}/transitions`
+- GET `/brokers`
+- POST `/brokers`
+- GET `/brokers/{brokerId}`
+- PUT `/brokers/{brokerId}`
+- DELETE `/brokers/{brokerId}`
+- GET `/contacts`
+- POST `/contacts`
+- GET `/submissions/{submissionId}/transitions`
+- POST `/submissions/{submissionId}/transitions`
+- GET `/renewals/{renewalId}/transitions`
+- POST `/renewals/{renewalId}/transitions`
 
 Dashboard endpoints (F0001 — per-widget, see [ADR-002](architecture/decisions/ADR-002-dashboard-data-aggregation.md)):
-- GET `/api/dashboard/kpis` — KPI metrics (active brokers, open subs, renewal rate, avg turnaround)
-- GET `/api/dashboard/pipeline` — Pipeline summary counts by status
-- GET `/api/dashboard/pipeline/{entityType}/{status}/items` — Lazy-loaded mini-cards (max 5)
-- GET `/api/dashboard/nudges` — Prioritized nudge cards (max 3)
-- GET `/api/my/tasks` — Tasks assigned to authenticated user
-- GET `/api/timeline/events?entityType=Broker&limit=20` — Broker activity feed
+- GET `/dashboard/kpis` — KPI metrics (active brokers, open subs, renewal rate, avg turnaround)
+- GET `/dashboard/pipeline` — Pipeline summary counts by status
+- GET `/dashboard/pipeline/{entityType}/{status}/items` — Lazy-loaded mini-cards (max 5)
+- GET `/dashboard/nudges` — Prioritized nudge cards (max 3)
+- GET `/my/tasks` — Tasks assigned to authenticated user
+- GET `/timeline/events?entityType=Broker&limit=20` — Broker activity feed
 
 Task CRUD endpoints (F0001 + F0003):
-- POST `/api/tasks` — Create task
-- GET `/api/tasks/{taskId}` — Get task
-- PUT `/api/tasks/{taskId}` — Update task
-- DELETE `/api/tasks/{taskId}` — Soft delete task
+- POST `/tasks` — Create task
+- GET `/tasks/{taskId}` — Get task
+- PUT `/tasks/{taskId}` — Update task
+- DELETE `/tasks/{taskId}` — Soft delete task
 
 Error contract:
 - All non-success responses return RFC 7807 `ProblemDetails` with `type`, `title`, `status`, plus extension fields `code`, `traceId`, and optional `detail`/`errors`.
@@ -425,6 +425,8 @@ Performance:
 Security:
 - OIDC JWT validation against authentik issuer/audience (see ADR-006).
 - Casbin ABAC for all protected actions.
+- Any secondary access channel (for example MCP/agent tools) must enforce the same ABAC policies and tenant filters as API endpoints; no raw SQL access paths.
+- F0009 Phase 1: RLS is not required; compensating controls are mandatory (tenant-scoped queries, ABAC checks, server-side field filtering, audit logging).
 - Secrets via environment variables; no hardcoded credentials in code or config.
 - Immutable audit trail for every mutation and transition.
 

@@ -13,7 +13,7 @@ Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation
 - Modules: BrokerRelationship, Submission, Renewal, TaskManagement, TimelineAudit, IdentityAuthorization, Dashboard
 - Features in scope: F0001, F0002 (MVP), F0009 (Phase 1 auth hardening + broker boundary pilot)
 - Out of scope: External portal, analytics/insights beyond F0001/F0002, deployment hardening
-- **F0003 Task Write Endpoints:** Out of scope for this implementation pass. Task write endpoints (`POST /api/tasks`, `PUT /api/tasks/{taskId}`, `DELETE /api/tasks/{taskId}`) are not registered and return HTTP 404. Dashboard (F0001) only reads tasks. Test data for the My Tasks and Nudge widgets will be provided via a dev seed migration. The story index lists F0003-S0001, F0003-S0002, and F0003-S0003 as MVP priority for future activation, not for this pass.
+- **F0003 Task Write Endpoints:** Out of scope for this implementation pass. Task write endpoints (`POST /tasks`, `PUT /tasks/{taskId}`, `DELETE /tasks/{taskId}`) are not registered and return HTTP 404. Dashboard (F0001) only reads tasks. Test data for the My Tasks and Nudge widgets will be provided via a dev seed migration. The story index lists F0003-S0001, F0003-S0002, and F0003-S0003 as MVP priority for future activation, not for this pass.
 
 ## Required Inputs (Must Exist)
 
@@ -61,7 +61,7 @@ Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation
 **Backend**
 - Implement only endpoints defined in `planning-mds/api/nebula-api.yaml` that are in scope for F0001 and F0002.
 - For out-of-scope endpoints and schemas (see `planning-mds/schemas/README.md`), do not register routes; callers should receive HTTP 404.
-- Until F0003 is activated, task write endpoints (`POST /api/tasks`, `PUT /api/tasks/{taskId}`, `DELETE /api/tasks/{taskId}`) are treated as out-of-scope and must return 404.
+- Until F0003 is activated, task write endpoints (`POST /tasks`, `PUT /tasks/{taskId}`, `DELETE /tasks/{taskId}`) are treated as out-of-scope and must return 404.
 - Enforce schema validation on request payloads.
 - Ensure policy checks for every endpoint (ABAC + role action).
 
@@ -85,6 +85,7 @@ Provide a sequenced, cross‑role plan to assemble the Nebula CRM implementation
 
 **Checkpoint C‑F0009:**
 - End-to-end login + callback + BrokerUser boundary validations pass.
+- Security review checklist evidence complete (`planning-mds/security/F0009-security-review-checklist.md`).
 
 ### 4) Feature Assembly (F0001 + F0002)
 
@@ -110,4 +111,5 @@ Follow the feature assembly plan to build complete vertical slices.
 - All F0001, F0002, and F0009 stories pass acceptance criteria.
 - API contract validation passes.
 - ABAC enforcement verified with integration tests, including BrokerUser phase-1 rules.
+- Phase 1 no-RLS compensating controls verified in security review evidence.
 - UI renders core flows without fallback errors.

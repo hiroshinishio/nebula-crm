@@ -12,7 +12,7 @@
 #   -h, --help          Show help
 #
 # Env override:
-#   SAST_SCAN_CMD       Custom command to run instead of semgrep
+#   SAST_SCAN_CMD       Custom executable to run instead of semgrep
 #
 # Exit codes:
 #   0  Scan passed (or findings allowed with --no-error)
@@ -78,7 +78,7 @@ if [ -n "${SAST_SCAN_CMD:-}" ]; then
   echo "Running SAST via SAST_SCAN_CMD in $TARGET_PATH"
   (
     cd "$TARGET_PATH" || exit 2
-    sh -c "$SAST_SCAN_CMD \"\$@\"" sh "$@"
+    "$SAST_SCAN_CMD" "$@"
   )
   exit $?
 fi

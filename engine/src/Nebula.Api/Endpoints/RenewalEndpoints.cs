@@ -10,7 +10,7 @@ public static class RenewalEndpoints
 {
     public static IEndpointRouteBuilder MapRenewalEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/renewals")
+        var group = app.MapGroup("/renewals")
             .WithTags("Renewals")
             .RequireAuthorization();
 
@@ -51,7 +51,7 @@ public static class RenewalEndpoints
         {
             "not_found" => ProblemDetailsHelper.NotFound("Renewal", renewalId),
             "invalid_transition" => ProblemDetailsHelper.InvalidTransition("current", dto.ToState),
-            _ => Results.Created($"/api/renewals/{renewalId}/transitions", result),
+            _ => Results.Created($"/renewals/{renewalId}/transitions", result),
         };
     }
 }

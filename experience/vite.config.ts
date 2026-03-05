@@ -1,25 +1,89 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-export default defineConfig({
-  plugins: [
+export default defineConfig(() => {
+  const apiProxyTarget = 'http://localhost:5113'
+  const apiProxyPaths = [
+    '/auth',
+    '/brokers',
+    '/contacts',
+    '/dashboard',
+    '/my',
+    '/tasks',
+    '/timeline',
+    '/accounts',
+    '/mgas',
+    '/programs',
+    '/submissions',
+    '/renewals',
+    '/healthz',
+  ]
+
+  return {
+    plugins: [
     react(),
     tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5113',
-        changeOrigin: true,
+    {
+      name: 'nebula-auth-mode-guard',
+      buildStart() {
+        if (
+          process.env.VITE_AUTH_MODE === 'dev' &&
+          process.env.NODE_ENV === 'production'
+        ) {
+          throw new Error(
+            'FATAL: VITE_AUTH_MODE=dev is not permitted in production builds. Set VITE_AUTH_MODE=oidc.',
+          );
+        }
       },
     },
-  },
+  ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    server: {
+      port: 5173,
+      proxy: Object.fromEntries(
+        apiProxyPaths.map((pathPrefix) => [
+          pathPrefix,
+          {
+            target: apiProxyTarget,
+            changeOrigin: true,
+          },
+        ]),
+      ),
+      headers: {
+        // Development CSP — Vite/React HMR needs inline + eval script allowances.
+        // connect-src includes http://localhost:9000 (authentik IdP) because oidc-client-ts
+        // calls the OIDC discovery endpoint and token endpoint directly from the browser.
+        'Content-Security-Policy': [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "connect-src 'self' ws://localhost:5173 http://localhost:9000",
+          "img-src 'self' data:",
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "frame-src 'none'",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+        ].join('; '),
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+      },
+    },
+    test: {
+      environment: 'jsdom',
+      globals: true,
+      setupFiles: ['./src/test-setup.ts'],
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+  }
 })

@@ -35,7 +35,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Broker endpoints (existing)
   # ──────────────────────────────────────────────────────────────
-  /api/brokers:
+  /brokers:
     get:
       operationId: listBrokers
       summary: List brokers
@@ -66,7 +66,7 @@ paths:
       summary: Create broker
       description: >
         Creates a new broker. Status is omitted from the request and defaults
-        to "Pending" server-side. Use PUT /api/brokers/{id} to change status.
+        to "Pending" server-side. Use PUT /brokers/{id} to change status.
       tags: [Brokers]
       requestBody:
         required: true
@@ -90,7 +90,7 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
-  /api/brokers/{brokerId}:
+  /brokers/{brokerId}:
     parameters:
       - $ref: "#/components/parameters/BrokerId"
     get:
@@ -117,7 +117,7 @@ paths:
       summary: Update broker
       description: >
         Updates a broker record. Requires the If-Match header containing the current
-        rowVersion. Returns 409 with code=concurrency_conflict if another user
+        rowVersion. Returns 412 with code=precondition_failed if another user
         modified the broker since the caller last read it.
       tags: [Brokers]
       parameters:
@@ -143,6 +143,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "412":
+          $ref: "#/components/responses/PreconditionFailed"
         "409":
           $ref: "#/components/responses/Conflict"
     delete:
@@ -152,7 +154,7 @@ paths:
         Soft-deactivates a broker (sets Status=Inactive, IsDeleted=true).
         Returns 409 with code=active_dependencies_exist if active submissions or
         renewals are linked to the broker. The record is retained for audit purposes;
-        use POST /api/brokers/{brokerId}/reactivate (F0002-S0008) to reverse.
+        use POST /brokers/{brokerId}/reactivate (F0002-S0008) to reverse.
       tags: [Brokers]
       responses:
         "204":
@@ -171,7 +173,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Contact endpoints (existing)
   # ──────────────────────────────────────────────────────────────
-  /api/contacts:
+  /contacts:
     get:
       operationId: listContacts
       summary: List contacts
@@ -230,7 +232,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/contacts/{contactId}:
+  /contacts/{contactId}:
     parameters:
       - $ref: "#/components/parameters/ContactId"
     get:
@@ -296,7 +298,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Account, MGA, Program endpoints (existing)
   # ──────────────────────────────────────────────────────────────
-  /api/accounts:
+  /accounts:
     get:
       operationId: listAccounts
       summary: List accounts
@@ -317,7 +319,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/mgas:
+  /mgas:
     get:
       operationId: listMgas
       summary: List MGAs
@@ -338,7 +340,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/programs:
+  /programs:
     get:
       operationId: listPrograms
       summary: List programs
@@ -362,7 +364,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Submission / Renewal detail endpoints (NEW)
   # ──────────────────────────────────────────────────────────────
-  /api/submissions/{submissionId}:
+  /submissions/{submissionId}:
     parameters:
       - $ref: "#/components/parameters/SubmissionId"
     get:
@@ -385,7 +387,7 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
-  /api/renewals/{renewalId}:
+  /renewals/{renewalId}:
     parameters:
       - $ref: "#/components/parameters/RenewalId"
     get:
@@ -411,7 +413,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Workflow transition endpoints (existing)
   # ──────────────────────────────────────────────────────────────
-  /api/submissions/{submissionId}/transitions:
+  /submissions/{submissionId}/transitions:
     parameters:
       - $ref: "#/components/parameters/SubmissionId"
     get:
@@ -459,7 +461,7 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
-  /api/renewals/{renewalId}/transitions:
+  /renewals/{renewalId}/transitions:
     parameters:
       - $ref: "#/components/parameters/RenewalId"
     get:
@@ -510,7 +512,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Dashboard endpoints (NEW — F0001)
   # ──────────────────────────────────────────────────────────────
-  /api/dashboard/kpis:
+  /dashboard/kpis:
     get:
       operationId: getDashboardKpis
       summary: Get dashboard KPI metrics
@@ -534,7 +536,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/dashboard/opportunities:
+  /dashboard/opportunities:
     get:
       operationId: getDashboardOpportunities
       summary: Get opportunities summary counts
@@ -557,7 +559,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/dashboard/opportunities/flow:
+  /dashboard/opportunities/flow:
     get:
       operationId: getDashboardOpportunityFlow
       summary: Get opportunity transition flow (Sankey data)
@@ -597,7 +599,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/dashboard/opportunities/{entityType}/{status}/items:
+  /dashboard/opportunities/{entityType}/{status}/items:
     parameters:
       - name: entityType
         in: path
@@ -646,7 +648,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/dashboard/nudges:
+  /dashboard/nudges:
     get:
       operationId: getDashboardNudges
       summary: Get nudge cards
@@ -681,7 +683,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Task endpoints (NEW — F0001 + F0003)
   # ──────────────────────────────────────────────────────────────
-  /api/my/tasks:
+  /my/tasks:
     get:
       operationId: getMyTasks
       summary: Get tasks assigned to the authenticated user
@@ -725,7 +727,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/tasks:
+  /tasks:
     post:
       operationId: createTask
       summary: Create a task (self-assigned only in MVP)
@@ -751,7 +753,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /api/tasks/{taskId}:
+  /tasks/{taskId}:
     parameters:
       - $ref: "#/components/parameters/TaskId"
     get:
@@ -819,7 +821,7 @@ paths:
   # ──────────────────────────────────────────────────────────────
   # Timeline endpoints (NEW — dashboard activity feed)
   # ──────────────────────────────────────────────────────────────
-  /api/timeline/events:
+  /timeline/events:
     get:
       operationId: listTimelineEvents
       summary: List timeline events
@@ -938,7 +940,7 @@ components:
       description: >
         Optimistic concurrency token. Must equal the `rowVersion` value returned
         in the last GET response for this resource. If the resource has been
-        modified since then, the server returns HTTP 409 with code=concurrency_conflict.
+        modified since then, the server returns HTTP 412 with code=precondition_failed.
       schema:
         type: string
     Page:
@@ -964,40 +966,101 @@ components:
   responses:
     BadRequest:
       description: Invalid input
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
     Unauthorized:
       description: Authentication required or invalid token
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
     Forbidden:
       description: Authenticated but not allowed
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
     NotFound:
       description: Resource not found
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
     Conflict:
       description: Conflict with current state (for example invalid transition)
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
       content:
-        application/json:
+        application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
+    PreconditionFailed:
+      description: Precondition failed (for example stale If-Match value)
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    UnprocessableContent:
+      description: Request semantic validation failed
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+        Retry-After:
+          description: Suggested delay before retrying the request.
+          schema:
+            type: string
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    ServiceUnavailable:
+      description: Service or dependency unavailable
+      headers:
+        X-Request-Id:
+          $ref: "#/components/headers/XRequestId"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+
+  headers:
+    XRequestId:
+      description: Correlation identifier echoed for request tracing.
+      schema:
+        type: string
 
   schemas:
     # ── Error Contract ──────────────────────────────────────────
     ProblemDetails:
       type: object
-      description: RFC 7807 problem details payload with Nebula-specific extension fields. See `planning-mds/architecture/error-codes.md` for the authoritative code list.
+      description: RFC Problem Details payload with Nebula-specific extension fields. Used with application/problem+json. See `planning-mds/architecture/error-codes.md` for the authoritative code list.
       required:
         - type
         - title
@@ -1026,7 +1089,7 @@ components:
           description: URI reference identifying this specific occurrence.
         code:
           type: string
-          description: "Stable machine-readable domain error code. See planning-mds/architecture/error-codes.md for the authoritative list. Known MVP codes: invalid_transition, missing_transition_prerequisite, active_dependencies_exist, already_active, region_mismatch, concurrency_conflict, duplicate_license, not_found, validation_error."
+          description: "Stable machine-readable domain error code. See planning-mds/architecture/error-codes.md for the authoritative list."
         traceId:
           type: string
           description: Correlation identifier for diagnostics and tracing.

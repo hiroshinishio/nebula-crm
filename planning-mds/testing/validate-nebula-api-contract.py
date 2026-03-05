@@ -3,7 +3,7 @@
 Nebula API contract checks.
 
 Validates story-critical constraints that are intentionally solution-specific:
-- F0002-S0001 create-broker conflict behavior (POST /api/brokers -> 409)
+- F0002-S0001 create-broker conflict behavior (POST /brokers -> 409)
 - F0002-S0002 broker search query semantics and constraints
 - Nebula baseline error contract profile (RFC 7807 ProblemDetails)
 
@@ -67,9 +67,9 @@ def extract_response_schema_ref(
             return ""
 
     content = response_object.get("content", {})
-    json_content = content.get("application/json")
+    json_content = content.get("application/problem+json")
     if not isinstance(json_content, dict):
-        errors.append(f"{context}: response must define application/json content")
+        errors.append(f"{context}: response must define application/problem+json content")
         return ""
 
     schema = json_content.get("schema")
@@ -129,27 +129,27 @@ def validate_nebula_contract(spec: Dict[str, Any]) -> List[str]:
             )
 
     paths = spec.get("paths", {})
-    brokers_path = paths.get("/api/brokers")
+    brokers_path = paths.get("/brokers")
     if not isinstance(brokers_path, dict):
-        errors.append("Missing /api/brokers path (required by F0002-S0001 and F0002-S0002)")
+        errors.append("Missing /brokers path (required by F0002-S0001 and F0002-S0002)")
         return errors
 
     create_operation = brokers_path.get("post")
     if not isinstance(create_operation, dict):
-        errors.append("Missing POST /api/brokers operation (F0002-S0001)")
+        errors.append("Missing POST /brokers operation (F0002-S0001)")
     else:
         responses = create_operation.get("responses", {})
         if "409" not in responses:
-            errors.append("POST /api/brokers must define 409 Conflict for duplicate license behavior (F0002-S0001)")
+            errors.append("POST /brokers must define 409 Conflict for duplicate license behavior (F0002-S0001)")
 
     search_operation = brokers_path.get("get")
     if not isinstance(search_operation, dict):
-        errors.append("Missing GET /api/brokers operation (F0002-S0002)")
+        errors.append("Missing GET /brokers operation (F0002-S0002)")
         return errors
 
     raw_parameters = search_operation.get("parameters", [])
     if not isinstance(raw_parameters, list):
-        errors.append("GET /api/brokers parameters must be an array")
+        errors.append("GET /brokers parameters must be an array")
         return errors
 
     parameters = [resolve_parameter(spec, p, errors) for p in raw_parameters]
@@ -159,29 +159,29 @@ def validate_nebula_contract(spec: Dict[str, Any]) -> List[str]:
         None,
     )
     if query_param is None:
-        errors.append("GET /api/brokers must define query parameter 'q' (F0002-S0002)")
+        errors.append("GET /brokers must define query parameter 'q' (F0002-S0002)")
     else:
         schema = query_param.get("schema", {})
         if schema.get("type") != "string":
-            errors.append("GET /api/brokers query parameter 'q' must be a string")
+            errors.append("GET /brokers query parameter 'q' must be a string")
         if schema.get("minLength") != 1:
-            errors.append("GET /api/brokers query parameter 'q' must set minLength: 1")
+            errors.append("GET /brokers query parameter 'q' must set minLength: 1")
         if schema.get("maxLength") != 100:
-            errors.append("GET /api/brokers query parameter 'q' must set maxLength: 100")
+            errors.append("GET /brokers query parameter 'q' must set maxLength: 100")
 
     status_param = next(
         (p for p in parameters if p.get("name") == "status" and p.get("in") == "query"),
         None,
     )
     if status_param is None:
-        errors.append("GET /api/brokers must define optional query parameter 'status' (F0002-S0002)")
+        errors.append("GET /brokers must define optional query parameter 'status' (F0002-S0002)")
     else:
         status_schema = status_param.get("schema", {})
         enum_values = status_schema.get("enum", [])
         if not isinstance(enum_values, list):
-            errors.append("GET /api/brokers query parameter 'status' must define enum values")
+            errors.append("GET /brokers query parameter 'status' must define enum values")
         elif not {"Active", "Inactive"}.issubset(set(enum_values)):
-            errors.append("GET /api/brokers query parameter 'status' must include Active and Inactive")
+            errors.append("GET /brokers query parameter 'status' must include Active and Inactive")
 
     return errors
 

@@ -6,4 +6,5 @@ public interface ICurrentUserService
     string? DisplayName { get; }
     IReadOnlyList<string> Roles { get; }
     IReadOnlyList<string> Regions { get; }
+    string? BrokerTenantId { get; }
 }

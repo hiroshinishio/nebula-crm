@@ -44,9 +44,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         }
         else
         {
+            var audience = builder.Configuration["Authentication:Audience"]
+                           ?? throw new InvalidOperationException(
+                               "Authentication:Audience configuration value is required.");
+
             options.Authority = builder.Configuration["Authentication:Authority"];
-            options.Audience = builder.Configuration["Authentication:Audience"];
+            options.Audience = audience;
             options.RequireHttpsMetadata = true;
+
+            // F-003 (F0009 Implementation Contract §5): explicitly enforce aud claim validation.
+            // The JWT middleware must reject tokens where aud != Authentication:Audience before
+            // any endpoint handler runs. Setting ValidateAudience here makes the intent
+            // unambiguous and guards against any future framework default change.
+            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+                ValidateAudience = true,
+                ValidAudiences = [audience],
+            };
         }
     });
 builder.Services.AddAuthorization();
@@ -85,6 +99,9 @@ builder.Services.AddOpenApi();
 // Health checks
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection") ?? "");
+
+// HttpClient for external service calls (authentik revocation, etc.)
+builder.Services.AddHttpClient("AuthentikRevocation");
 
 // Infrastructure (repositories, authorization, caching)
 builder.Services.AddInfrastructure();
@@ -172,6 +189,19 @@ app.UseStatusCodePages(async statusCodeContext =>
 });
 
 app.UseCors();
+
+// Transitional compatibility: accept legacy /api-prefixed paths and rewrite
+// them to the canonical root paths defined in endpoint mappings.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api", out var remaining))
+    {
+        context.Request.Path = remaining.HasValue ? remaining : "/";
+    }
+
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -186,6 +216,7 @@ if (app.Environment.IsDevelopment())
 app.MapHealthChecks("/healthz").AllowAnonymous();
 
 // API endpoints
+app.MapAuthEndpoints();
 app.MapBrokerEndpoints();
 app.MapContactEndpoints();
 app.MapReferenceDataEndpoints();

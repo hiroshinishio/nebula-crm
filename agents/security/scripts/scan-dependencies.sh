@@ -15,9 +15,9 @@
 #   -h, --help            Show help
 #
 # Env overrides:
-#   FRONTEND_DEP_SCAN_CMD  Custom frontend scan command
-#   BACKEND_DEP_SCAN_CMD   Custom backend scan command
-#   AI_DEP_SCAN_CMD        Custom AI scan command
+#   FRONTEND_DEP_SCAN_CMD  Custom frontend scan executable
+#   BACKEND_DEP_SCAN_CMD   Custom backend scan executable
+#   AI_DEP_SCAN_CMD        Custom AI scan executable
 #
 # Exit codes:
 #   0  All executed scans passed
@@ -79,7 +79,7 @@ run_frontend_scan() {
 
   if [ -n "${FRONTEND_DEP_SCAN_CMD:-}" ]; then
     echo "Running frontend dependency scan via FRONTEND_DEP_SCAN_CMD."
-    (cd "$FRONTEND_DIR" || exit 2; sh -c "$FRONTEND_DEP_SCAN_CMD")
+    (cd "$FRONTEND_DIR" || exit 2; "$FRONTEND_DEP_SCAN_CMD")
     return $?
   fi
 
@@ -126,7 +126,7 @@ run_backend_scan() {
 
   if [ -n "${BACKEND_DEP_SCAN_CMD:-}" ]; then
     echo "Running backend dependency scan via BACKEND_DEP_SCAN_CMD."
-    (cd "$BACKEND_DIR" || exit 2; sh -c "$BACKEND_DEP_SCAN_CMD")
+    (cd "$BACKEND_DIR" || exit 2; "$BACKEND_DEP_SCAN_CMD")
     return $?
   fi
 
@@ -147,7 +147,7 @@ run_backend_scan() {
 
   echo "Running dotnet dependency vulnerability scan on ${DOTNET_TARGET}."
   TMP_OUT=$(mktemp)
-  dotnet list "$DOTNET_TARGET" package --vulnerable --include-transitive >"$TMP_OUT" 2>&1
+  dotnet list "$DOTNET_TARGET" package --vulnerable --include-transitive --format json >"$TMP_OUT" 2>&1
   rc=$?
   cat "$TMP_OUT"
 
@@ -156,10 +156,49 @@ run_backend_scan() {
     return $rc
   fi
 
-  if grep -Eqi "has the following vulnerable packages|vulnerable package" "$TMP_OUT" && ! grep -Eqi "has no vulnerable packages|no vulnerable packages were found" "$TMP_OUT"; then
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "FAIL (backend): python3 not found; unable to parse dotnet JSON output." >&2
+    rm -f "$TMP_OUT"
+    return 2
+  fi
+
+  python3 - "$TMP_OUT" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+        data = json.load(fh)
+except Exception:
+    sys.exit(2)
+
+def count_vulns(node):
+    if isinstance(node, dict):
+        total = 0
+        for key, value in node.items():
+            if key == "vulnerabilities" and isinstance(value, list):
+                total += len(value)
+            else:
+                total += count_vulns(value)
+        return total
+    if isinstance(node, list):
+        return sum(count_vulns(item) for item in node)
+    return 0
+
+count = count_vulns(data)
+print(count)
+sys.exit(1 if count > 0 else 0)
+PY
+  parse_rc=$?
+  if [ $parse_rc -eq 1 ]; then
     rm -f "$TMP_OUT"
     echo "Vulnerable backend packages detected."
     return 1
+  elif [ $parse_rc -ne 0 ]; then
+    rm -f "$TMP_OUT"
+    echo "FAIL (backend): unable to parse dotnet vulnerability output." >&2
+    return 2
   fi
 
   rm -f "$TMP_OUT"
@@ -182,7 +221,7 @@ run_ai_scan() {
 
   if [ -n "${AI_DEP_SCAN_CMD:-}" ]; then
     echo "Running AI dependency scan via AI_DEP_SCAN_CMD."
-    (cd "$AI_DIR" || exit 2; sh -c "$AI_DEP_SCAN_CMD")
+    (cd "$AI_DIR" || exit 2; "$AI_DEP_SCAN_CMD")
     return $?
   fi
 

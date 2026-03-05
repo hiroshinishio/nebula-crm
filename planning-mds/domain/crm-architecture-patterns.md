@@ -418,9 +418,9 @@ public class SubmissionDocument : BaseEntity
 - BrokerHierarchy (or self-referencing on Broker)
 
 **API Endpoints:**
-- `/api/brokers` (CRUD)
-- `/api/brokers/{id}/contacts` (list contacts for broker)
-- `/api/brokers/{id}/hierarchy` (get broker tree)
+- `/brokers` (CRUD)
+- `/brokers/{id}/contacts` (list contacts for broker)
+- `/brokers/{id}/hierarchy` (get broker tree)
 
 **Dependencies:**
 - Identity Module (created/updated by users)
@@ -441,8 +441,8 @@ public class SubmissionDocument : BaseEntity
 - AccountClassification
 
 **API Endpoints:**
-- `/api/accounts` (CRUD)
-- `/api/accounts/{id}/360` (360-degree view with policies, submissions)
+- `/accounts` (CRUD)
+- `/accounts/{id}/360` (360-degree view with policies, submissions)
 
 **Dependencies:**
 - Broker Module (account belongs to broker)
@@ -465,9 +465,9 @@ public class SubmissionDocument : BaseEntity
 - Quote
 
 **API Endpoints:**
-- `/api/submissions` (CRUD)
-- `/api/submissions/{id}/transition` (workflow transitions)
-- `/api/submissions/{id}/documents` (upload/download documents)
+- `/submissions` (CRUD)
+- `/submissions/{id}/transition` (workflow transitions)
+- `/submissions/{id}/documents` (upload/download documents)
 
 **Dependencies:**
 - Broker Module (submission from broker)
@@ -489,8 +489,8 @@ public class SubmissionDocument : BaseEntity
 - RenewalReminder
 
 **API Endpoints:**
-- `/api/renewals` (list upcoming renewals)
-- `/api/renewals/{id}` (renewal details)
+- `/renewals` (list upcoming renewals)
+- `/renewals/{id}` (renewal details)
 
 **Dependencies:**
 - Policy Module (renewals for expiring policies)
@@ -511,7 +511,7 @@ public class SubmissionDocument : BaseEntity
 - WorkflowTransition
 
 **API Endpoints:**
-- `/api/timeline?entityType=Broker&entityId={id}` (query timeline for entity)
+- `/timeline?entityType=Broker&entityId={id}` (query timeline for entity)
 
 **Design Pattern:**
 - Append-only tables (no updates or deletes)
@@ -535,8 +535,8 @@ public class SubmissionDocument : BaseEntity
 - UserPreference
 
 **API Endpoints:**
-- `/api/users/me` (current user profile)
-- `/api/users/{id}/preferences` (user preferences)
+- `/users/me` (current user profile)
+- `/users/{id}/preferences` (user preferences)
 
 **Dependencies:**
 - Keycloak (external auth provider)

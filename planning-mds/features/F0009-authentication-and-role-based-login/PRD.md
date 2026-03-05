@@ -57,12 +57,17 @@
    - BrokerUser -> `/brokers`
 5. Role precedence for multi-role users:
    - `Admin` > `DistributionManager` > `DistributionUser` > `Underwriter` > `BrokerUser`
-6. Broker scope resolution anchor is `email` claim:
-   - exactly one active `Broker.Email == user.email` (case-insensitive) required
-   - 0 or >1 matches -> deny
+6. Broker scope resolution anchor is `broker_tenant_id` claim (stable IdP-issued broker identity):
+   - BrokerUser token must include `broker_tenant_id`
+   - exactly one active broker tenant mapping must resolve from that value
+   - missing/unknown/ambiguous mapping -> deny
 7. Matrix/policy synchronization is release-blocking:
    - BrokerUser section in `authorization-matrix.md` must match `policy.csv` rows.
 8. Broker field boundaries are enforced server-side per `BROKER-VISIBILITY-MATRIX.md`.
+9. Broker isolation + field visibility enforcement order is mandatory:
+   - query/service layer tenant isolation first (cross-broker rows never fetched for BrokerUser)
+   - Casbin ABAC resource/action decision second
+   - DTO/response filtering third for `InternalOnly` field stripping
 
 ## Broker Visibility Rules
 
@@ -81,6 +86,7 @@
 | Dev token dependency | API client always uses `getDevToken()` | Add OIDC mode path where token source is OIDC session, not `dev-auth.ts` |
 | Broker policy not implemented | Matrix has BrokerUser section but policy.csv missing rows | Add explicit BrokerUser policy rows and parity check against matrix |
 | Broker field boundary undefined | No concrete response field classification | Enforce `BROKER-VISIBILITY-MATRIX.md` on all BrokerUser-allowed endpoints |
+| Broker scope key instability | Email-based linkage can drift with profile changes | Use stable IdP-issued `broker_tenant_id` claim and explicit tenant mapping |
 | Seed identity ambiguity | Broker record exists, IdP user provisioning unclear | Seed/provision `broker001@example.local` as BrokerUser in authentik, idempotently |
 | Unauthorized UX ambiguity | Redirect vs 403 behavior varies | Standardize behaviors defined in this PRD and implementation contract |
 

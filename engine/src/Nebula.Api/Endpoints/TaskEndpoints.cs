@@ -9,10 +9,10 @@ public static class TaskEndpoints
 {
     public static IEndpointRouteBuilder MapTaskEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/my/tasks", GetMyTasks)
+        app.MapGet("/my/tasks", GetMyTasks)
             .WithTags("Tasks").RequireAuthorization();
 
-        app.MapGet("/api/tasks/{taskId:guid}", GetTaskById)
+        app.MapGet("/tasks/{taskId:guid}", GetTaskById)
             .WithTags("Tasks").RequireAuthorization();
 
         // F0003 write endpoints NOT registered — return 404 by default
@@ -38,7 +38,7 @@ public static class TaskEndpoints
         }
         if (!authorized) return ProblemDetailsHelper.Forbidden();
 
-        return Results.Ok(await svc.GetMyTasksAsync(user.UserId, user.DisplayName, limit ?? 10, ct));
+        return Results.Ok(await svc.GetMyTasksAsync(user.UserId, user.DisplayName, limit ?? 10, user, ct));
     }
 
     private static async Task<IResult> GetTaskById(

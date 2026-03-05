@@ -136,16 +136,16 @@ Execute these review agents **in parallel**:
 
 3. **Execute security review:**
    - **OWASP Top 10 scan:**
-     1. Injection (SQL, command, XSS)
-     2. Broken authentication
-     3. Sensitive data exposure
-     4. XML external entities (XXE)
-     5. Broken access control
-     6. Security misconfiguration
-     7. Cross-site scripting (XSS)
-     8. Insecure deserialization
-     9. Components with known vulnerabilities
-     10. Insufficient logging and monitoring
+     1. A01 Broken Access Control
+     2. A02 Cryptographic Failures
+     3. A03 Injection
+     4. A04 Insecure Design
+     5. A05 Security Misconfiguration
+     6. A06 Vulnerable and Outdated Components
+     7. A07 Identification and Authentication Failures
+     8. A08 Software and Data Integrity Failures
+     9. A09 Security Logging and Monitoring Failures
+     10. A10 Server-Side Request Forgery (SSRF)
    - Review authorization implementation (Casbin ABAC)
    - Check input validation and sanitization
    - Review secrets management (no hardcoded secrets)
@@ -169,43 +169,43 @@ Execute these review agents **in parallel**:
 
    ## OWASP Top 10 Assessment
 
-   ### 1. Injection
+   ### 1. A01 Broken Access Control
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 2. Broken Authentication
+   ### 2. A02 Cryptographic Failures
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 3. Sensitive Data Exposure
+   ### 3. A03 Injection
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 4. XML External Entities (XXE)
+   ### 4. A04 Insecure Design
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 5. Broken Access Control
+   ### 5. A05 Security Misconfiguration
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 6. Security Misconfiguration
+   ### 6. A06 Vulnerable and Outdated Components
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 7. Cross-Site Scripting (XSS)
+   ### 7. A07 Identification and Authentication Failures
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 8. Insecure Deserialization
+   ### 8. A08 Software and Data Integrity Failures
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 9. Using Components with Known Vulnerabilities
+   ### 9. A09 Security Logging and Monitoring Failures
    - Status: [PASS / FAIL]
    - Findings: [details]
 
-   ### 10. Insufficient Logging & Monitoring
+   ### 10. A10 Server-Side Request Forgery (SSRF)
    - Status: [PASS / FAIL]
    - Findings: [details]
 

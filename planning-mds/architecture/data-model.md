@@ -104,6 +104,7 @@ erDiagram
         uuid EntityId "polymorphic, no FK constraint"
         string EventType
         string EventDescription
+        string BrokerDescription "nullable, broker-safe public description"
         uuid ActorUserId
         datetime OccurredAt
     }
@@ -207,7 +208,10 @@ TASKS
                              via (LinkedEntityType, LinkedEntityId)
 
 AUDIT / APPEND-ONLY (no soft delete; polymorphic EntityId — no FK constraint)
-  ActivityTimelineEvent(EntityType, EntityId, EventType, EventDescription, ActorUserId, OccurredAt)
+  ActivityTimelineEvent(EntityType, EntityId, EventType, EventDescription, BrokerDescription opt, ActorUserId, OccurredAt)
+    BrokerDescription: varchar(500) NULL. Populated at event creation for BrokerUser-visible event types
+    (BrokerCreated, BrokerUpdated, BrokerStatusChanged, ContactAdded, ContactUpdated) using safe
+    predefined templates. NULL for all InternalOnly event types. See F0009 BROKER-VISIBILITY-MATRIX.md.
   WorkflowTransition   (WorkflowType, EntityId, FromState, ToState, Reason opt, ActorUserId, OccurredAt)
 ```
 
@@ -466,6 +470,8 @@ The dashboard consumes a subset of the domain: it aggregates computed KPIs and p
 4. **Migration 004:** Seed reference data for `ReferenceTaskStatus` (Open, InProgress, Done), `ReferenceSubmissionStatus` (10 values), and `ReferenceRenewalStatus` (8 values). See Section 1.2 for complete seed definitions.
 
 **Decision:** Task Status uses `ReferenceTaskStatus` to align with BLUEPRINT.md reference-table strategy. Task Priority remains a CHECK constraint because it is not admin-configurable in MVP. If Priority becomes configurable later, add `ReferenceTaskPriority` via ADR.
+
+5. **Migration 005 (F0009):** Add `BrokerDescription varchar(500) NULL` to `ActivityTimelineEvents` table. Field is nullable; all existing rows default to NULL. No backfill required — historical events predate BrokerUser access. Source: F0009 security finding F-004 (Option B — split-field sanitization).
 
 ---
 

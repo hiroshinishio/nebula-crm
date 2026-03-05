@@ -191,13 +191,13 @@ async def fetch_customer_context(customer_id: str) -> dict:
 
         # Fetch customer details
         customer = await client.get(
-            f"http://engine:5000/api/internal/customers/{customer_id}",
+            f"http://engine:5000/internal/customers/{customer_id}",
             headers=headers
         )
 
         # Fetch payment history
         payments = await client.get(
-            f"http://engine:5000/api/internal/customers/{customer_id}/payments",
+            f"http://engine:5000/internal/customers/{customer_id}/payments",
             headers=headers
         )
 

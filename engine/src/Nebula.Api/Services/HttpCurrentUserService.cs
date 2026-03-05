@@ -74,4 +74,6 @@ public class HttpCurrentUserService(
 
     public IReadOnlyList<string> Regions =>
         User.FindAll("regions").Select(c => c.Value).ToList();
+
+    public string? BrokerTenantId => User.FindFirstValue("broker_tenant_id");
 }

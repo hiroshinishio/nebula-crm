@@ -70,11 +70,16 @@ sequenceDiagram
   - `planning-mds/security/policies/policy.csv` BrokerUser rows
 - Default deny if resource/action not explicitly allowed.
 - Tenant scope resolution:
-  - `Broker.Email` (case-insensitive) must match authenticated `email` claim.
-  - Exactly one active broker must match.
-  - `0` or `>1` matches => deny.
+  - token must include `broker_tenant_id` claim.
+  - exactly one active broker tenant mapping must resolve from `broker_tenant_id`.
+  - missing, unknown, or ambiguous mapping => deny.
 - Field boundaries enforced server-side per:
   - `planning-mds/features/F0009-authentication-and-role-based-login/BROKER-VISIBILITY-MATRIX.md`
+
+Enforcement order:
+1. query/service layer tenant isolation (cross-tenant rows filtered pre-response)
+2. Casbin ABAC resource/action decision
+3. DTO/response field filtering (`InternalOnly` stripped)
 
 ## 5. Route and Session Contracts
 
@@ -105,6 +110,17 @@ F0009 is release-blocked unless all are true:
 2. Broker scope resolution logic implemented in backend services.
 3. Server-side response filtering excludes `InternalOnly` fields for BrokerUser.
 
+## 6.1 RLS Position (F0009)
+
+- PostgreSQL RLS is **not required** for F0009 Phase 1 delivery.
+- Compensating controls required in Phase 1:
+  - no raw SQL tool exposure for agent/MCP interfaces
+  - mandatory service-layer tenant filtering by `broker_tenant_id`
+  - mandatory Casbin ABAC checks for every protected action
+  - mandatory server-side field filtering
+  - audit logging for policy decisions and response classification
+- RLS is planned as Phase 2 hardening for high-risk tenant tables.
+
 ## 7. Implementation Handoffs
 
 Backend:
@@ -128,3 +144,11 @@ DevOps:
 
 - Ensure authentik seed/provisioning includes `BrokerUser` group and required users.
 
+## 8. Secondary Channel Security (MCP/Agent)
+
+If MCP/agent access is enabled for F0009-related resources:
+
+- MCP tools must enforce the same ABAC + tenant + field policies as API.
+- Raw SQL tools are prohibited.
+- Tool contracts must accept subject context including `broker_tenant_id`.
+- Tool calls must be audit-logged with policy decision outcomes.

@@ -190,7 +190,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 ### 5. Token Refresh Flow (Updated)
 
-The hybrid token storage strategy (access token in memory + refresh token in httpOnly cookie) from ADR-Auth-Token-Storage is **unchanged**. The backend `/api/auth/refresh` endpoint replaces `IKeycloakService` calls with `IAuthentikService` calls. The external contract (cookie in → access token out) is identical.
+The hybrid token storage strategy (access token in memory + refresh token in httpOnly cookie) from ADR-Auth-Token-Storage is **unchanged**. The backend `/auth/refresh` endpoint replaces `IKeycloakService` calls with `IAuthentikService` calls. The external contract (cookie in → access token out) is identical.
 
 **Rename:** `IKeycloakService` → `IAuthentikOidcService` (Infrastructure layer).
 

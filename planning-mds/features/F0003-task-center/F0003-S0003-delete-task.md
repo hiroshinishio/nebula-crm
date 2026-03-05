@@ -20,7 +20,7 @@ Tasks are soft-deleted to preserve audit history while removing them from active
 
 **Happy Path:**
 - **Given** an authenticated internal user
-- **When** they submit `DELETE /api/tasks/{taskId}`
+- **When** they submit `DELETE /tasks/{taskId}`
 - **Then** the task is soft-deleted and the API returns 204
 
 **Authorization:**
@@ -34,7 +34,7 @@ Tasks are soft-deleted to preserve audit history while removing them from active
 
 **Visibility:**
 - **Given** a task is deleted
-- **Then** it no longer appears in `/api/my/tasks` or nudge calculations
+- **Then** it no longer appears in `/my/tasks` or nudge calculations
 
 ## Data Requirements
 

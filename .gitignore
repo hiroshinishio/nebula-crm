@@ -1,6 +1,17 @@
 # Environment
+# Blanket-ignore all .env* files repo-wide; committed defaults are un-ignored below.
 .env*
+# Root-level example template — always committed
 !.env.example
+# experience/ committed env defaults (staging + production are NOT secrets — they only set VITE_AUTH_MODE=oidc)
+!experience/.env.example
+!experience/.env.staging
+!experience/.env.production
+# Local-dev example file is committed so developers can copy it; the actual local file is ignored
+!experience/.env.development.local.example
+# Explicit patterns for files that must never be committed (belt-and-suspenders; already covered by .env* above)
+experience/.env.local
+experience/.env.development.local
 
 # .NET
 bin/
@@ -12,9 +23,12 @@ obj/
 *.user
 *.suo
 *.csproj.user
+engine/src/Nebula.Api/out.xml
 
 # Node / React
 node_modules/
+.pnpm-store/
+**/.pnpm-store/
 dist/
 .next/
 build/

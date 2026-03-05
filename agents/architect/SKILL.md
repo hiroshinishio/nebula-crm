@@ -89,7 +89,7 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
    - Specify resources, actions, and policies
 
 6) **Create API contracts**
-   - Follow REST patterns from SOLUTION-PATTERNS.md (/api/{resource}/{id})
+  - Follow REST patterns from SOLUTION-PATTERNS.md (/{resource}/{id})
    - Specify request/response schemas using OpenAPI
    - Define error responses (ProblemDetails pattern)
 
@@ -137,6 +137,8 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
 - `planning-mds/domain/` - Solution-specific domain knowledge
 - `planning-mds/examples/architecture/` - Solution-specific architecture examples
 - `planning-mds/architecture/SOLUTION-PATTERNS.md` - Solution-specific architectural patterns
+- `planning-mds/architecture/api-guidelines-profile.md` - API governance profile (routing, status semantics, error media type)
+- `planning-mds/architecture/api-design-guide.md` - Implementation-facing API design guide
 - `agents/templates/` - Generic templates (ADR, API contract, entity model, workflow)
 - `agents/backend-developer/SKILL.md` - Understand backend tech stack and constraints
 - `agents/frontend-developer/SKILL.md` - Understand frontend tech stack and patterns

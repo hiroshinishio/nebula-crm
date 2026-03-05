@@ -8,7 +8,7 @@ export function useReactivateBroker() {
   return useMutation({
     mutationFn: (brokerId: string) =>
       api.post<BrokerDto>(`/brokers/${brokerId}/reactivate`, {}),
-    onSuccess: (data, brokerId) => {
+    onSuccess: (_data, brokerId) => {
       queryClient.invalidateQueries({ queryKey: ['brokers', brokerId] });
       queryClient.invalidateQueries({ queryKey: ['brokers'] });
     },

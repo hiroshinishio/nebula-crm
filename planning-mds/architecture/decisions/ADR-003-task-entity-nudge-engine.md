@@ -81,7 +81,7 @@ All Task mutations generate ActivityTimelineEvent:
 
 ### Server-Side Computation
 
-Nudge logic runs **server-side** in a single endpoint (`GET /api/dashboard/nudges`). The backend executes three scoped queries in parallel, merges results by priority, and returns the top 3.
+Nudge logic runs **server-side** in a single endpoint (`GET /dashboard/nudges`). The backend executes three scoped queries in parallel, merges results by priority, and returns the top 3.
 
 **Why server-side (not frontend):**
 - ABAC scope filtering must happen before data leaves the server

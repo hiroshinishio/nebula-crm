@@ -11,7 +11,7 @@ public static class ContactEndpoints
 {
     public static RouteGroupBuilder MapContactEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/contacts")
+        var group = app.MapGroup("/contacts")
             .WithTags("Contacts")
             .RequireAuthorization();
 
@@ -26,9 +26,9 @@ public static class ContactEndpoints
 
     private static async Task<IResult> ListContacts(
         Guid? brokerId, int? page, int? pageSize,
-        ContactService svc, CancellationToken ct)
+        ContactService svc, ICurrentUserService user, CancellationToken ct)
     {
-        var result = await svc.ListAsync(brokerId, page ?? 1, pageSize ?? 20, ct);
+        var result = await svc.ListAsync(brokerId, page ?? 1, pageSize ?? 20, user, ct);
         return Results.Ok(new { data = result.Data, page = result.Page, pageSize = result.PageSize, totalCount = result.TotalCount, totalPages = result.TotalPages });
     }
 
@@ -49,7 +49,7 @@ public static class ContactEndpoints
         return error switch
         {
             "not_found" => ProblemDetailsHelper.NotFound("Broker", dto.BrokerId),
-            _ => Results.Created($"/api/contacts/{result!.Id}", result),
+            _ => Results.Created($"/contacts/{result!.Id}", result),
         };
     }
 

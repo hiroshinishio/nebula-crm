@@ -70,7 +70,7 @@ We will store tokens using a two-tier strategy:
 - Longer TTL (7 days with sliding expiration)
 
 **Token Refresh Flow:**
-1. On app load or access token expiry, frontend calls `/api/auth/refresh`
+1. On app load or access token expiry, frontend calls `/auth/refresh`
 2. Browser automatically sends refresh token cookie
 3. Backend validates refresh token with authentik
 4. Backend returns new access token in response body
@@ -100,7 +100,7 @@ We will store tokens using a two-tier strategy:
 
 ### Negative:
 - **Page Refresh Overhead:** Each page refresh triggers token refresh call (mitigated by fast refresh endpoint)
-- **Backend Dependency:** Requires backend `/api/auth/refresh` endpoint to exchange cookies for tokens
+- **Backend Dependency:** Requires backend `/auth/refresh` endpoint to exchange cookies for tokens
 - **Cookie Management:** Backend must manage httpOnly cookie lifecycle (rotation, expiration)
 - **CORS Complexity:** Requires proper CORS configuration for cookie credentials (`credentials: 'include'`)
 - **Subdomain Scope:** Cookies are domain-scoped; multi-domain support requires additional configuration
@@ -130,7 +130,7 @@ async function login() {
   // After redirect back with auth code:
   const tokens = await authentik.tokenExchange(authCode);
   // Send tokens to backend to set httpOnly cookie
-  await axios.post('/api/auth/token', {
+  await axios.post('/auth/token', {
     access_token: tokens.access_token,
     refresh_token: tokens.refresh_token,
   }, { withCredentials: true }); // Important: send cookies
@@ -146,7 +146,7 @@ useEffect(() => {
 
 async function refreshAccessToken() {
   try {
-    const response = await axios.post('/api/auth/refresh', {}, {
+    const response = await axios.post('/auth/refresh', {}, {
       withCredentials: true, // Send httpOnly cookie
     });
     setAccessToken(response.data.access_token);
@@ -188,7 +188,7 @@ var app = builder.Build();
 app.UseCors("AllowFrontend");
 
 // Auth Endpoints Group
-var authGroup = app.MapGroup("/api/auth");
+var authGroup = app.MapGroup("/auth");
 
 // 1. Token Exchange Endpoint (after authentik login)
 authGroup.MapPost("/token", async (

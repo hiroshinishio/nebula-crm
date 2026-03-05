@@ -112,7 +112,7 @@ security:
   - bearerAuth: []
 
 paths:
-  /api/brokers:
+  /brokers:
     post:
       summary: Create a new broker
       description: Creates a new broker record. Requires CreateBroker permission.
@@ -288,7 +288,7 @@ paths:
                     type: integer
                     example: 8
 
-  /api/brokers/{id}:
+  /brokers/{id}:
     get:
       summary: Get broker by ID
       description: Returns detailed broker information. Requires ReadBroker permission.
@@ -660,7 +660,7 @@ This example shows a complete workflow with state machine, transitions, validati
 ### Submission API Workflow Endpoint
 
 ```yaml
-/api/submissions/{id}/transition:
+/submissions/{id}/transition:
   post:
     summary: Transition submission to new status
     operationId: transitionSubmission
@@ -766,7 +766,7 @@ This example shows how to design a 360-degree view with optimized queries and re
 ### Account 360 API Endpoint
 
 ```yaml
-/api/accounts/{id}/360:
+/accounts/{id}/360:
   get:
     summary: Get complete account 360 view
     description: Returns account with all related entities in a single optimized query

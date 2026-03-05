@@ -42,7 +42,7 @@ The Nebula Dashboard (F0001) displays five widgets that pull data from multiple 
 
 ## Considered Options
 
-### Option 1: Single BFF Endpoint (`GET /api/dashboard`)
+### Option 1: Single BFF Endpoint (`GET /dashboard`)
 
 A single endpoint returns all widget data in one response.
 
@@ -73,12 +73,12 @@ The dashboard frontend will make **5 parallel API calls** on page load, one per 
 
 | Endpoint | Widget | Lazy? |
 |----------|--------|-------|
-| `GET /api/dashboard/nudges` | Nudge Cards | No (page load) |
-| `GET /api/dashboard/kpis` | KPI Metrics | No (page load) |
-| `GET /api/dashboard/pipeline` | Pipeline Summary pills | No (page load) |
-| `GET /api/dashboard/pipeline/{entityType}/{status}/items` | Pipeline Popover | Yes (on hover/click) |
-| `GET /api/my/tasks` | My Tasks & Reminders | No (page load) |
-| `GET /api/timeline/events?entityType=Broker&limit=20` | Broker Activity Feed | No (page load) |
+| `GET /dashboard/nudges` | Nudge Cards | No (page load) |
+| `GET /dashboard/kpis` | KPI Metrics | No (page load) |
+| `GET /dashboard/pipeline` | Pipeline Summary pills | No (page load) |
+| `GET /dashboard/pipeline/{entityType}/{status}/items` | Pipeline Popover | Yes (on hover/click) |
+| `GET /my/tasks` | My Tasks & Reminders | No (page load) |
+| `GET /timeline/events?entityType=Broker&limit=20` | Broker Activity Feed | No (page load) |
 
 The **pipeline popover mini-cards** are the only lazy-loaded call (triggered on user interaction, p95 < 300 ms).
 
@@ -115,9 +115,9 @@ All endpoints live in the same deployable. "Per-widget endpoints" means separate
 ```
 Nebula.Api/
   Endpoints/
-    DashboardEndpoints.cs      # Maps /api/dashboard/* routes
-    MyTasksEndpoints.cs        # Maps /api/my/tasks
-    TimelineEndpoints.cs       # Maps /api/timeline/*
+    DashboardEndpoints.cs      # Maps /dashboard/* routes
+    MyTasksEndpoints.cs        # Maps /my/tasks
+    TimelineEndpoints.cs       # Maps /timeline/*
 
 Nebula.Application/
   Dashboard/

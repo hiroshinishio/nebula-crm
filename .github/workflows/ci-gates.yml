@@ -36,5 +36,8 @@ jobs:
       - name: Run required gates for current lifecycle stage (stage-scoped)
         run: python3 scripts/run-lifecycle-gates.py
 
+      - name: BrokerUser policy parity check (F-007)
+        run: python3 scripts/check-policy-parity.py
+
       - name: Docker build (builder image)
         run: docker build -t nebula-builder .

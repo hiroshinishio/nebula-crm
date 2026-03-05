@@ -20,7 +20,7 @@ Tasks evolve as work progresses. MVP supports self-updates to status, due date, 
 
 **Happy Path:**
 - **Given** an authenticated internal user
-- **When** they submit `PUT /api/tasks/{taskId}` with a valid payload
+- **When** they submit `PUT /tasks/{taskId}` with a valid payload
 - **Then** the task is updated and returned in the response
 
 **Authorization:**

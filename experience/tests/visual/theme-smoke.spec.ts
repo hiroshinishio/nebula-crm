@@ -116,7 +116,7 @@ async function mockNebulaApis(page: Page) {
     },
   )
 
-  await page.route('**/api/dashboard/kpis', async (route) => {
+  await page.route('**/dashboard/kpis', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -129,7 +129,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/api/dashboard/nudges', async (route) => {
+  await page.route('**/dashboard/nudges', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -160,7 +160,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/api/dashboard/opportunities/flow?*', async (route) => {
+  await page.route('**/dashboard/opportunities/flow?*', async (route) => {
     const url = new URL(route.request().url())
     const entityType = url.searchParams.get('entityType')
 
@@ -268,7 +268,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/api/dashboard/opportunities', async (route) => {
+  await page.route('**/dashboard/opportunities', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -291,7 +291,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/api/my/tasks?*', async (route) => {
+  await page.route('**/my/tasks?*', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -323,7 +323,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/api/timeline/events?*', async (route) => {
+  await page.route('**/timeline/events?*', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -331,7 +331,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/api/brokers?*', async (route) => {
+  await page.route('**/brokers?*', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

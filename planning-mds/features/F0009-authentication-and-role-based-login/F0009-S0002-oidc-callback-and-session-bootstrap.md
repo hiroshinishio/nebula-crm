@@ -40,11 +40,13 @@
 - Session source of truth: valid OIDC user from `oidc-client-ts`
 - Silent renew: out of scope in Phase 1 (full re-auth on expiry)
 - Claims required for bootstrap: `iss`, `sub`, `email`, `nebula_roles`
+- Additional required claim for BrokerUser bootstrap: `broker_tenant_id`
 
 ## Validation Rules
 
 - Callback processing fails closed on any protocol validation failure
 - Missing or malformed `nebula_roles` results in unauthorized user state
+- BrokerUser without valid `broker_tenant_id` results in unauthorized user state
 - Token internals are never exposed in UI error content
 
 ## Non-Functional Expectations

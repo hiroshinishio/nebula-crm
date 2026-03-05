@@ -13,7 +13,7 @@ Define the build order, role handoffs, and integration checkpoints for F0001 (Da
 ## F0001 — Dashboard
 
 ### Dependencies
-- Dashboard endpoints (`/api/dashboard/*`, `/api/my/tasks`, `/api/timeline/events`)
+- Dashboard endpoints (`/dashboard/*`, `/my/tasks`, `/timeline/events`)
 - Task entity + indexes (`planning-mds/architecture/data-model.md`)
 - Timeline event query support (ActivityTimelineEvent)
 - ABAC enforcement for dashboard queries
@@ -22,12 +22,12 @@ Define the build order, role handoffs, and integration checkpoints for F0001 (Da
 1. Implement Task entity + repository (Tasks table, indexes per data-model.md).
 2. Implement ActivityTimelineEvent read query with ABAC scoping.
 3. Implement dashboard aggregation endpoints:
-   - `/api/dashboard/kpis`
-   - `/api/dashboard/pipeline`
-   - `/api/dashboard/pipeline/{entityType}/{status}/items`
-   - `/api/dashboard/nudges`
-   - `/api/my/tasks`
-   - `/api/timeline/events`
+   - `/dashboard/kpis`
+   - `/dashboard/pipeline`
+   - `/dashboard/pipeline/{entityType}/{status}/items`
+   - `/dashboard/nudges`
+   - `/my/tasks`
+   - `/timeline/events`
 4. Enforce request/response schema validation for dashboard payloads.
 
 ### Frontend Assembly Steps
@@ -59,7 +59,7 @@ Define the build order, role handoffs, and integration checkpoints for F0001 (Da
 4. Implement Contact CRUD endpoints per OpenAPI (list/create/read/update/delete).
 5. Enforce required email/phone and validation rules; return ProblemDetails on validation error.
 6. Emit ActivityTimelineEvent for broker/contact create/update/delete.
-7. Mask broker/contact email/phone on **all** broker and contact API responses (`GET /api/brokers`, `GET /api/brokers/{id}`, `GET /api/contacts`, `GET /api/contacts/{id}`) when `Broker.Status = Inactive`. Return `null` as the masking sentinel; see Broker and Contact schema descriptions in `nebula-api.yaml`.
+7. Mask broker/contact email/phone on **all** broker and contact API responses (`GET /brokers`, `GET /brokers/{id}`, `GET /contacts`, `GET /contacts/{id}`) when `Broker.Status = Inactive`. Return `null` as the masking sentinel; see Broker and Contact schema descriptions in `nebula-api.yaml`.
 
 ### Frontend Assembly Steps
 1. Broker List screen with search, filters, and status badges.
@@ -108,6 +108,8 @@ Define the build order, role handoffs, and integration checkpoints for F0001 (Da
 - Validate 401 redirect and 403 in-context error behavior.
 - Validate BrokerUser cross-broker denies and InternalOnly field exclusions.
 - Validate matrix vs policy parity for BrokerUser resources/actions.
+- Run security gate checklist: `planning-mds/security/F0009-security-review-checklist.md`.
+- Verify Phase 1 compensating controls (no-RLS): tenant query filters + ABAC checks + DTO filtering + audit logs.
 
 **Checkpoint F0009‑A:** End-to-end login + broker boundary enforcement passes for all required seeded users.
 
@@ -167,8 +169,8 @@ Navigation availability should be driven by a route registry check (e.g., `canNa
 **Rationale:** F0001 dashboard widgets (My Tasks, Nudge Cards) only *read* task data. No F0001 or F0002 story requires creating, updating, or deleting tasks via API. Task data for dashboard testing will be provided via a dev seed migration alongside Submission and Renewal seed data.
 
 **Impact:**
-- `POST /api/tasks`, `PUT /api/tasks/{taskId}`, `DELETE /api/tasks/{taskId}` — routes not registered, return 404.
-- `GET /api/my/tasks`, `GET /api/tasks/{taskId}` — implemented as part of F0001.
+- `POST /tasks`, `PUT /tasks/{taskId}`, `DELETE /tasks/{taskId}` — routes not registered, return 404.
+- `GET /my/tasks`, `GET /tasks/{taskId}` — implemented as part of F0001.
 - Task entity, table, and indexes — created in Phase 1 (Data Model + Migrations) since F0001 queries depend on them.
 - F0003-S0001, F0003-S0002, and F0003-S0003 stories remain in the story index at MVP priority for future activation.
 

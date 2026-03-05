@@ -73,6 +73,13 @@ jobs:
       - name: Lint (Effects Tokens)
         run: pnpm lint:effects
 
+      - name: Assert VITE_AUTH_MODE is not dev (security gate)
+        run: |
+          if [ "${VITE_AUTH_MODE:-oidc}" = "dev" ]; then
+            echo "FATAL: VITE_AUTH_MODE=dev must not be set in CI builds." >&2
+            exit 1
+          fi
+
       - name: Build frontend
         run: pnpm build
 
