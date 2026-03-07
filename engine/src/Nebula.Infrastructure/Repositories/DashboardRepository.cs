@@ -364,6 +364,35 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         return nudges.Take(3).ToList();
     }
 
+    public async Task<IReadOnlyList<NudgeCardDto>> GetNudgesForBrokerUserAsync(
+        IReadOnlyList<Guid> brokerIds, CancellationToken ct = default)
+    {
+        // F0009 §14: BrokerUser sees only OverdueTask nudges for tasks linked to their broker(s).
+        // StaleSubmission and UpcomingRenewal types are excluded entirely.
+        var today = DateTime.UtcNow.Date;
+
+        var overdueTasks = await db.Tasks
+            .Where(t => t.LinkedEntityType == "Broker"
+                && brokerIds.Contains(t.LinkedEntityId!.Value)
+                && t.Status != "Done"
+                && t.DueDate.HasValue && t.DueDate.Value < today)
+            .OrderBy(t => t.DueDate)
+            .Take(3)
+            .ToListAsync(ct);
+
+        var nudges = overdueTasks.Select(task =>
+        {
+            var daysOverdue = (int)(today - task.DueDate!.Value).TotalDays;
+            return new NudgeCardDto(
+                "OverdueTask", task.Title,
+                $"{daysOverdue} day{(daysOverdue != 1 ? "s" : "")} overdue",
+                "Broker", task.LinkedEntityId!.Value,
+                task.Title, daysOverdue, "Review Now");
+        }).ToList();
+
+        return nudges;
+    }
+
     private static string? GetInitials(string? displayName)
     {
         if (string.IsNullOrWhiteSpace(displayName)) return null;

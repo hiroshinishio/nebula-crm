@@ -80,36 +80,160 @@ Define the build order, role handoffs, and integration checkpoints for F0001 (Da
 
 ## F0009 — Authentication + Role-Based Login
 
+**Updated:** 2026-03-05 — Detailed implementation assembly plan (F0009 build pass)
+
 ### Dependencies
-- F0005 authentik baseline and claim normalization
+- F0005 authentik baseline and claim normalization (complete)
 - F0009 implementation contract and broker visibility matrix:
   - `planning-mds/features/F0009-authentication-and-role-based-login/IMPLEMENTATION-CONTRACT.md`
   - `planning-mds/features/F0009-authentication-and-role-based-login/BROKER-VISIBILITY-MATRIX.md`
 - BrokerUser matrix rules in `planning-mds/security/authorization-matrix.md` section 2.10
 - BrokerUser policy rows in `planning-mds/security/policies/policy.csv`
 
+### Pre-Existing Artifacts (Do Not Re-Implement)
+
+The following are already implemented and correct as of the F0009 planning pass:
+
+| Artifact | Location | Notes |
+|----------|----------|-------|
+| Auth event bus | `experience/src/features/auth/authEvents.ts` | `session_expired`, `broker_scope_unresolvable` |
+| Session teardown hook | `experience/src/features/auth/useSessionTeardown.ts` | §2.1 teardown contract |
+| Auth event handler | `experience/src/features/auth/useAuthEventHandler.ts` | Mounted in AppInner |
+| OIDC UserManager singleton | `experience/src/features/auth/oidcUserManager.ts` | oidc-client-ts |
+| Auth feature index | `experience/src/features/auth/index.ts` | Public surface |
+| UnauthorizedPage | `experience/src/pages/UnauthorizedPage.tsx` | reason param support |
+| App.tsx auth wiring | `experience/src/App.tsx` | useAuthEventHandler, /unauthorized route |
+| API 401/403 interceptor | `experience/src/services/api.ts` | emits auth events |
+| Vite auth-mode guard plugin | `experience/vite.config.ts` | §13 build guard |
+| authModeGuard unit tests | `experience/src/features/auth/tests/authModeGuard.test.ts` | §13 coverage |
+| POST /auth/logout | `engine/src/Nebula.Api/Endpoints/AuthEndpoints.cs` | §2.1 |
+| ICurrentUserService.BrokerTenantId | `engine/src/Nebula.Application/Common/ICurrentUserService.cs` | Interface |
+| HttpCurrentUserService.BrokerTenantId | `engine/src/Nebula.Api/Services/HttpCurrentUserService.cs` | broker_tenant_id claim |
+| policy.csv §2.10 | `planning-mds/security/policies/policy.csv` | BrokerUser policy rows |
+| AuditBrokerUserRead helpers | BrokerService, DashboardService, TimelineService, TaskService | Audit logging |
+
 ### Backend Assembly Steps
-1. Add BrokerUser policy rows in Casbin policy artifact and verify matrix/policy parity.
-2. Implement broker scope resolution (`email` -> exactly one active broker; else deny).
-3. Apply scope filtering to all BrokerUser-allowed read endpoints (broker/contact/dashboard/timeline/task).
-4. Apply server-side BrokerVisible/InternalOnly field filtering for BrokerUser responses.
-5. Preserve deterministic ProblemDetails semantics for 401/403 outcomes.
+
+1. **(A) ActivityTimelineEvent.BrokerDescription migration**
+   - Add nullable `string? BrokerDescription` to `ActivityTimelineEvent` entity
+   - Generate and apply EF Core migration `20260305_F0009_BrokerDescription`
+   - Update `ActivityTimelineEventConfiguration.cs` if needed
+
+2. **(B) Broker scope resolution infrastructure**
+   - Add `GetIdByBrokerTenantIdAsync(string tenantId)` to `IBrokerRepository` + `BrokerRepository`
+   - Create `BrokerScopeUnresolvableException` in `Nebula.Application`
+   - Register global exception middleware mapping to `broker_scope_unresolvable` ProblemDetails (§6.1)
+   - Create `BrokerScopeResolver` service that reads `ICurrentUserService.BrokerTenantId` and calls the new repo method
+
+3. **(C, D) BrokerService scope + DTO filtering**
+   - `ListAsync`: if `user.Roles.Contains("BrokerUser")`, scope query to `BrokerTenantId`-resolved broker only
+   - `GetByIdAsync`: verify resolved broker ID matches requested broker ID; throw `BrokerScopeUnresolvableException` if not
+   - Create `BrokerBrokerUserDto` (excludes `RowVersion`, `IsDeactivated`) for BrokerUser responses
+
+4. **(E) ContactService BrokerUser scope + DTO**
+   - Scope contact reads to broker scope resolved from `BrokerTenantId`
+   - Create `ContactBrokerUserDto` (excludes `RowVersion`)
+
+5. **(F, G) TimelineService + BrokerDescription population**
+   - `BrokerService` mutations: populate `BrokerDescription` using templates from BROKER-VISIBILITY-MATRIX.md for approved event types
+   - `TimelineService.ListEventsAsync` for BrokerUser: filter to approved event types; return `BrokerDescription` instead of `EventDescription` in response DTO
+
+6. **(H) TaskService BrokerUser scope filter**
+   - For BrokerUser: filter tasks where `LinkedEntityType='Broker'` AND `LinkedEntityId` = resolved broker ID
+   - Return task DTO subset: `id`, `title`, `status`, `priority`, `dueDate`, `linkedEntityType`, `linkedEntityId` (omit `assignedToUserId`, audit timestamps)
+
+7. **(I) DashboardService/Repository nudge BrokerUser scope filter**
+   - For BrokerUser: filter nudges to `nudgeType='OverdueTask'` AND `linkedEntityType='Broker'` AND `linkedEntityId IN resolved broker scope`
+   - Empty result → return empty array (not 403); 403 only if scope resolution fails
+
+8. **(J) DevSeedData broker tenant mapping**
+   - Add seed row linking `broker001@example.local`'s `broker_tenant_id` to an existing test Broker entity
 
 ### Frontend Assembly Steps
-1. Add auth routes: `/login`, `/auth/callback`, `/unauthorized`.
-2. Implement OIDC code+PKCE flow via `oidc-client-ts`.
-3. Add deterministic route guard behavior and API 401/403 handling.
-4. Add role-based landing logic with precedence:
-   - `Admin > DistributionManager > DistributionUser > Underwriter > BrokerUser`
-5. Make `dev-auth` fallback explicit via feature flag only; primary flow is OIDC.
 
-### QA/Integration
-- Validate login/callback flow for all seeded identities.
-- Validate 401 redirect and 403 in-context error behavior.
-- Validate BrokerUser cross-broker denies and InternalOnly field exclusions.
-- Validate matrix vs policy parity for BrokerUser resources/actions.
-- Run security gate checklist: `planning-mds/security/F0009-security-review-checklist.md`.
-- Verify Phase 1 compensating controls (no-RLS): tenant query filters + ABAC checks + DTO filtering + audit logs.
+1. **(K) LoginPage.tsx** at `/login`
+   - Sign-in button triggers `oidcUserManager.signinRedirect()` (PKCE)
+   - If OIDC config is missing (empty authority/clientId/redirectUri): disable button, show deterministic error
+   - If IdP unavailable (signinRedirect throws): show deterministic retry guidance
+   - Under `VITE_AUTH_MODE=dev`: redirect to `/` immediately (preserve existing dev workflow)
+
+2. **(L) AuthCallbackPage.tsx** at `/auth/callback`
+   - Calls `oidcUserManager.signinRedirectCallback()`
+   - On success: resolve role from `nebula_roles` claim, redirect to role landing route
+   - On failure (state/nonce/code validation error): clear stale state, redirect to `/login?error=callback_failed`
+   - Missing/unsupported `nebula_roles`: redirect to `/unauthorized`
+   - BrokerUser without `broker_tenant_id`: redirect to `/unauthorized`
+
+3. **(M) ProtectedRoute component**
+   - If no valid OIDC session: redirect to `/login`
+   - If session exists but role not in allowedRoles: redirect to `/unauthorized`
+   - Renders `<Outlet />` on success
+
+4. **(N) useCurrentUser hook**
+   - Reads OIDC user from `oidcUserManager.getUser()`
+   - Returns `{ user, roles, isBrokerUser, isAuthenticated }`
+
+5. **(O) api.ts resolveToken update**
+   - Branch on `import.meta.env.VITE_AUTH_MODE`:
+     - `'oidc'` or unset: `(await oidcUserManager.getUser())?.access_token ?? ''`
+     - `'dev'`: `getDevToken()` (existing path unchanged)
+
+6. **(P) App.tsx route wiring**
+   - Add `/login` → `<LoginPage />`
+   - Add `/auth/callback` → `<AuthCallbackPage />`
+   - Wrap protected routes in `<ProtectedRoute>`
+   - `/login` and `/auth/callback` are public (no ProtectedRoute wrapper)
+
+### Infra Assembly Steps
+
+1. **(Q) authentik blueprint update** (`docker/authentik/blueprints/nebula-dev.yaml`)
+   - Add `BrokerUser` group
+   - Add `broker_tenant_id` scope mapping expression
+   - Add `lisa.wong@nebula.local` → DistributionUser group
+   - Add `john.miller@nebula.local` → Underwriter group
+   - Add `broker001@example.local` → BrokerUser group (with `broker_tenant_id` attribute)
+   - Add `broker_tenant_id` scope mapping to the OAuth2 provider's property_mappings
+   - All entries idempotent (use `identifiers:` correctly)
+
+2. **(R) CI assertion** (`.github/workflows/frontend-ui.yml`)
+   - Add step BEFORE `Build frontend` step: assert `VITE_AUTH_MODE != 'dev'` (per §13)
+
+3. **(S) Env templates**
+   - `experience/.env.example` — add `VITE_AUTH_MODE=oidc` with comment
+   - `experience/.env.staging` — `VITE_AUTH_MODE=oidc`
+   - `experience/.env.production` — `VITE_AUTH_MODE=oidc`
+   - `experience/.env.development.local.example` — `VITE_AUTH_MODE=dev`
+
+### QA Integration Steps
+
+1. **(T) Test plan document** — `planning-mds/features/F0009-authentication-and-role-based-login/TEST-PLAN.md`
+2. **(U) Backend unit tests**: scope resolver, BrokerDescription templates, policy deny
+3. **(V) Frontend component tests**: LoginPage error states, AuthCallbackPage failure paths, ProtectedRoute guard behavior
+4. **(W) Backend integration tests**: BrokerUser field exclusion, cross-broker deny, timeline event type filter
+5. **(X) E2E tests** (Playwright): happy path login for all 3 seeded users, session expiry, 403 in-context
+
+### Dependency Order
+
+```
+Step 1 (Backend): (A) migration → (B) scope resolver → (C–I) service layer [parallel]
+Step 2 (Backend): (J) DevSeedData
+Step 1 (Frontend): (N) useCurrentUser → (K) LoginPage → (L) AuthCallbackPage
+                   (O) api.ts → (M) ProtectedRoute → (P) App.tsx wiring [sequential]
+Step 1 (Infra):   (Q) blueprint + (R) CI + (S) env templates [parallel, independent]
+Step 2 (QA):      (T–X) tests [depends on all above]
+```
+
+Backend, Frontend, and Infra steps proceed in parallel.
+
+### QA/Integration Validation (from IMPLEMENTATION-CONTRACT.md §10)
+
+- [ ] Login redirect/callback happy path for `lisa.wong`, `john.miller`, `broker001`
+- [ ] Session-expired redirect + stale-state cleanup
+- [ ] Route guard: 401 → teardown → `/login`; 403 → in-context error
+- [ ] BrokerUser cross-scope denial (list + detail)
+- [ ] BrokerUser field filtering (no `InternalOnly` fields in responses)
+- [ ] Matrix vs policy parity check for BrokerUser actions
+- [ ] Missing/invalid `broker_tenant_id` claim deny
 
 **Checkpoint F0009‑A:** End-to-end login + broker boundary enforcement passes for all required seeded users.
 

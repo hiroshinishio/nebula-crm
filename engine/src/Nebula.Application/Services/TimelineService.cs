@@ -5,7 +5,7 @@ using Nebula.Application.Interfaces;
 
 namespace Nebula.Application.Services;
 
-public class TimelineService(ITimelineRepository timelineRepo, ILogger<TimelineService> logger)
+public class TimelineService(ITimelineRepository timelineRepo, BrokerScopeResolver scopeResolver, ILogger<TimelineService> logger)
 {
     private readonly ILogger<TimelineService> _logger = logger;
 
@@ -17,6 +17,23 @@ public class TimelineService(ITimelineRepository timelineRepo, ILogger<TimelineS
         return events.Select(e => new TimelineEventDto(
             e.Id, e.EntityType, e.EntityId, e.EventType,
             e.EventDescription, null, e.ActorDisplayName, e.OccurredAt))
+            .ToList();
+    }
+
+    /// <summary>
+    /// BrokerUser variant: returns approved event types only with BrokerDescription (F0009-S0004 §8.1).
+    /// Scoped to the resolved broker entity within the authenticated user's broker_tenant_id scope.
+    /// Throws BrokerScopeUnresolvableException if scope cannot be resolved.
+    /// </summary>
+    public async Task<IReadOnlyList<TimelineBrokerUserEventDto>> ListEventsForBrokerUserAsync(
+        int limit, ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        var events = await timelineRepo.ListEventsForBrokerUserAsync([resolvedBrokerId], limit, ct);
+        AuditBrokerUserRead(user, "broker.timeline", resolvedBrokerId, resolvedBrokerId);
+        return events.Select(e => new TimelineBrokerUserEventDto(
+            e.Id, e.EntityType, e.EntityId, e.EventType,
+            e.BrokerDescription, e.ActorDisplayName, e.OccurredAt))
             .ToList();
     }
 

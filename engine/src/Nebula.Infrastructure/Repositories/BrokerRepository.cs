@@ -53,6 +53,19 @@ public class BrokerRepository(AppDbContext db) : IBrokerRepository
         await db.Brokers.IgnoreQueryFilters()
             .AnyAsync(b => b.LicenseNumber == licenseNumber, ct);
 
+    public async Task<Guid?> GetIdByBrokerTenantIdAsync(string brokerTenantId, CancellationToken ct = default)
+    {
+        // Applies the global IsDeleted query filter — deactivated brokers do not resolve scope.
+        // Return null for zero or multiple matches so the service layer throws BrokerScopeUnresolvableException.
+        var ids = await db.Brokers
+            .Where(b => b.BrokerTenantId == brokerTenantId)
+            .Select(b => b.Id)
+            .Take(2) // early-out: we only care whether count is 0, 1, or >1
+            .ToListAsync(ct);
+
+        return ids.Count == 1 ? ids[0] : null;
+    }
+
     public async Task<bool> HasActiveSubmissionsOrRenewalsAsync(Guid brokerId, CancellationToken ct = default)
     {
         var terminalSubmission = await db.ReferenceSubmissionStatuses

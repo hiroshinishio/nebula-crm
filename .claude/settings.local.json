@@ -44,7 +44,10 @@
       "Bash(tail:*)",
       "Bash(cd:*)",
       "Bash(cat:*)",
-      "WebFetch(domain:)"
+      "WebFetch(domain:)",
+      "Bash(~/.dotnet/tools/dotnet-ef migrations:*)",
+      "Bash(node:*)",
+      "Bash(docker compose:*)"
     ]
   }
 }

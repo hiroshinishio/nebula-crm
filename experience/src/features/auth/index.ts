@@ -15,3 +15,6 @@ export { useAuthEventHandler } from './useAuthEventHandler';
 export { oidcUserManager } from './oidcUserManager';
 export { emitAuthEvent, onAuthEvent } from './authEvents';
 export type { AuthEvent } from './authEvents';
+export { useCurrentUser } from './useCurrentUser';
+export type { CurrentUser } from './useCurrentUser';
+export { ProtectedRoute } from './ProtectedRoute';

@@ -5,7 +5,7 @@ using Nebula.Application.Interfaces;
 
 namespace Nebula.Application.Services;
 
-public class TaskService(ITaskRepository taskRepo, ILogger<TaskService> logger)
+public class TaskService(ITaskRepository taskRepo, BrokerScopeResolver scopeResolver, ILogger<TaskService> logger)
 {
     private readonly ILogger<TaskService> _logger = logger;
 
@@ -28,6 +28,28 @@ public class TaskService(ITaskRepository taskRepo, ILogger<TaskService> logger)
             .ToList();
 
         AuditBrokerUserRead(user, "broker.tasks", null);
+        return new MyTasksResponseDto(summaries, totalCount);
+    }
+
+    /// <summary>
+    /// BrokerUser variant: returns tasks scoped to the resolved broker entity (F0009 §12).
+    /// Only tasks where LinkedEntityType='Broker' AND LinkedEntityId=resolvedBrokerId.
+    /// Throws BrokerScopeUnresolvableException if scope cannot be resolved.
+    /// </summary>
+    public async Task<MyTasksResponseDto> GetBrokerScopedTasksAsync(
+        int limit, ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        var (tasks, totalCount) = await taskRepo.GetBrokerScopedTasksAsync(resolvedBrokerId, limit, ct);
+        var today = DateTime.UtcNow.Date;
+        var summaries = tasks.Select(t => new TaskSummaryDto(
+            t.Id, t.Title, t.Status, t.DueDate,
+            t.LinkedEntityType, t.LinkedEntityId, null,
+            t.DueDate.HasValue && t.DueDate.Value < today && t.Status != "Done",
+            null)) // assignee display name not returned to BrokerUser
+            .ToList();
+
+        AuditBrokerUserRead(user, "broker.tasks", resolvedBrokerId, resolvedBrokerId);
         return new MyTasksResponseDto(summaries, totalCount);
     }
 

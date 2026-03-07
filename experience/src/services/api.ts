@@ -1,5 +1,6 @@
 import { getDevToken } from './dev-auth'
 import { emitAuthEvent } from '@/features/auth/authEvents'
+import { oidcUserManager } from '@/features/auth/oidcUserManager'
 
 const API_BASE = ''
 
@@ -55,9 +56,21 @@ function handleErrorIntercept(status: number, problem: ProblemDetails | null): v
   }
 }
 
+const AUTH_MODE = import.meta.env.VITE_AUTH_MODE as string | undefined
+
 async function resolveToken(): Promise<string> {
-  // In OIDC mode the token will be sourced from oidcUserManager (F0009-S0001).
-  // For now, fall through to dev token so existing behaviour is unchanged.
+  if (AUTH_MODE !== 'dev') {
+    // OIDC mode: source access token from oidc-client-ts in-memory user object.
+    const user = await oidcUserManager.getUser()
+    if (user?.access_token && !user.expired) {
+      return user.access_token
+    }
+    // No valid session — emit session_expired so the auth event handler
+    // tears down and redirects to /login. Return a never-resolving promise
+    // so the caller's request is abandoned while navigation is in flight.
+    emitAuthEvent('session_expired')
+    return new Promise<string>(() => {})
+  }
   return getDevToken()
 }
 

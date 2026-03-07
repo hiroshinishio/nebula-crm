@@ -7,7 +7,9 @@ import path from 'path'
 export default defineConfig(() => {
   const apiProxyTarget = 'http://localhost:5113'
   const apiProxyPaths = [
-    '/auth',
+    // Keep OIDC callback (`/auth/callback`) on the frontend router.
+    // Only logout should hit the API.
+    '/auth/logout',
     '/brokers',
     '/contacts',
     '/dashboard',

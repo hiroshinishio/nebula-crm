@@ -41,6 +41,21 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
         });
     }
 
+    /// <summary>
+    /// Sets BrokerTenantId on an existing broker (F0009 test helper — bypasses the API).
+    /// </summary>
+    public async Task SetBrokerTenantIdAsync(Guid brokerId, string brokerTenantId)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var broker = await db.Brokers.FindAsync(brokerId);
+        if (broker is not null)
+        {
+            broker.BrokerTenantId = brokerTenantId;
+            await db.SaveChangesAsync();
+        }
+    }
+
     public new async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();

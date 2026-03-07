@@ -30,6 +30,13 @@ public static class BrokerEndpoints
         string? q, string? status, int? page, int? pageSize,
         BrokerService svc, ICurrentUserService user, CancellationToken ct)
     {
+        // BrokerUser: scope-isolated view — only their own broker, no search/filter params honoured.
+        if (user.Roles.Contains("BrokerUser"))
+        {
+            var brokerUserResult = await svc.ListForBrokerUserAsync(user, ct);
+            return Results.Ok(new { data = brokerUserResult.Data, page = brokerUserResult.Page, pageSize = brokerUserResult.PageSize, totalCount = brokerUserResult.TotalCount, totalPages = brokerUserResult.TotalPages });
+        }
+
         if (status is not null && status is not ("Active" or "Inactive" or "Pending"))
             return ProblemDetailsHelper.ValidationError(
                 new Dictionary<string, string[]> { ["status"] = [$"Invalid status '{status}'. Must be Active, Inactive, or Pending."] });
@@ -62,6 +69,13 @@ public static class BrokerEndpoints
     private static async Task<IResult> GetBroker(
         Guid brokerId, BrokerService svc, ICurrentUserService user, CancellationToken ct)
     {
+        // BrokerUser: scope-isolated detail — throws BrokerScopeUnresolvableException (→ 403) if cross-broker.
+        if (user.Roles.Contains("BrokerUser"))
+        {
+            var brokerUserResult = await svc.GetByIdForBrokerUserAsync(brokerId, user, ct);
+            return brokerUserResult is null ? ProblemDetailsHelper.NotFound("Broker", brokerId) : Results.Ok(brokerUserResult);
+        }
+
         var result = await svc.GetByIdAsync(brokerId, user, ct);
         return result is null ? ProblemDetailsHelper.NotFound("Broker", brokerId) : Results.Ok(result);
     }

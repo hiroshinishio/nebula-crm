@@ -13,4 +13,9 @@ public interface IBrokerRepository
     Task UpdateAsync(Broker broker, CancellationToken ct = default);
     Task<bool> ExistsByLicenseAsync(string licenseNumber, CancellationToken ct = default);
     Task<bool> HasActiveSubmissionsOrRenewalsAsync(Guid brokerId, CancellationToken ct = default);
+    /// <summary>
+    /// Resolves a broker_tenant_id claim to a single active Broker.Id for BrokerUser scope enforcement (F0009 §6).
+    /// Returns null if zero or multiple active brokers match (caller must treat as scope unresolvable).
+    /// </summary>
+    Task<Guid?> GetIdByBrokerTenantIdAsync(string brokerTenantId, CancellationToken ct = default);
 }

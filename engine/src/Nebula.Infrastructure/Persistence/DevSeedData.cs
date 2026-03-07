@@ -49,6 +49,10 @@ public static class DevSeedData
     {
         await EnsureReferenceStatusesAsync(db);
 
+        // F0009: Idempotently ensure the dev broker tenant link exists even when data was
+        // already seeded before F0009 migration added the BrokerTenantId column.
+        await EnsureDevBrokerTenantIdAsync(db);
+
         if (await db.Submissions.AnyAsync()) return; // app data already seeded
 
         var rng = new Random(20260226);
@@ -82,6 +86,9 @@ public static class DevSeedData
         await db.SaveChangesAsync();
 
         var brokers = BuildBrokers(BrokerSeedCount, now, rng, userIds, mgas, programs);
+        // F0009 §9: Link the first Active broker to BrokerUser dev tenant for test identity validation.
+        var devBroker = brokers.FirstOrDefault(b => b.Status == "Active") ?? brokers[0];
+        devBroker.BrokerTenantId = BrokerUserDevTenantId;
         db.Brokers.AddRange(brokers);
         await db.SaveChangesAsync();
 
@@ -244,6 +251,9 @@ public static class DevSeedData
     // Dev seed IdP issuer (authentik local dev)
     private const string DevIdpIssuer = "http://localhost:9000/application/o/nebula/";
 
+    // BrokerUser dev seed tenant ID — must match authentik blueprint broker001 property mapping (F0009 §9).
+    internal const string BrokerUserDevTenantId = "broker001-tenant-001";
+
     private static List<UserProfile> BuildUserProfiles(DateTime now) =>
     [
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-001", Email = "sarah.chen@nebula.local", DisplayName = "Sarah Chen", Department = "Distribution", RegionsJson = "[\"West\",\"Central\"]", RolesJson = "[\"DistributionManager\"]", CreatedAt = now, UpdatedAt = now },
@@ -252,6 +262,8 @@ public static class DevSeedData
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-004", Email = "miguel.alvarez@nebula.local", DisplayName = "Miguel Alvarez", Department = "Underwriting", RegionsJson = "[\"South\"]", RolesJson = "[\"SeniorUnderwriter\"]", CreatedAt = now, UpdatedAt = now },
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-005", Email = "priya.patel@nebula.local", DisplayName = "Priya Patel", Department = "Distribution", RegionsJson = "[\"East\",\"South\"]", RolesJson = "[\"DistributionUser\"]", CreatedAt = now, UpdatedAt = now },
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-006", Email = "evan.turner@nebula.local", DisplayName = "Evan Turner", Department = "Ops", RegionsJson = "[\"Central\"]", RolesJson = "[\"Operations\"]", CreatedAt = now, UpdatedAt = now },
+        // F0009 §9: BrokerUser test identity — broker_tenant_id claim must match BrokerUserDevTenantId below.
+        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-broker001", Email = "broker001@example.local", DisplayName = "Broker User 001", Department = "External", RegionsJson = "[]", RolesJson = "[\"BrokerUser\"]", CreatedAt = now, UpdatedAt = now },
     ];
 
     private static List<Account> BuildAccounts(int count, DateTime now, Random rng, Guid[] userIds)
@@ -610,6 +622,25 @@ public static class DevSeedData
     {
         await UpsertSubmissionReferenceStatusesAsync(db);
         await UpsertRenewalReferenceStatusesAsync(db);
+    }
+
+    /// <summary>
+    /// Idempotently sets BrokerTenantId on one active broker so the BrokerUser dev identity
+    /// (broker001) can resolve their scope. Runs before the early-return so it applies even
+    /// when data was seeded before the F0009 migration added the column.
+    /// </summary>
+    private static async Task EnsureDevBrokerTenantIdAsync(AppDbContext db)
+    {
+        var alreadyLinked = await db.Brokers
+            .AnyAsync(b => b.BrokerTenantId == BrokerUserDevTenantId);
+        if (alreadyLinked) return;
+
+        var broker = await db.Brokers.FirstOrDefaultAsync(b => b.Status == "Active")
+                     ?? await db.Brokers.FirstOrDefaultAsync();
+        if (broker is null) return;
+
+        broker.BrokerTenantId = BrokerUserDevTenantId;
+        await db.SaveChangesAsync();
     }
 
     private static async Task UpsertSubmissionReferenceStatusesAsync(AppDbContext db)

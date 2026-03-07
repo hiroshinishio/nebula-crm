@@ -5,7 +5,7 @@ using Nebula.Application.Interfaces;
 
 namespace Nebula.Application.Services;
 
-public class DashboardService(IDashboardRepository dashboardRepo, ILogger<DashboardService> logger)
+public class DashboardService(IDashboardRepository dashboardRepo, BrokerScopeResolver scopeResolver, ILogger<DashboardService> logger)
 {
     private readonly ILogger<DashboardService> _logger = logger;
 
@@ -25,6 +25,18 @@ public class DashboardService(IDashboardRepository dashboardRepo, ILogger<Dashbo
     {
         var nudges = await dashboardRepo.GetNudgesAsync(userId, ct);
         AuditBrokerUserRead(user, "dashboard.nudges", null);
+        return new NudgesResponseDto(nudges);
+    }
+
+    /// <summary>
+    /// BrokerUser variant: returns only OverdueTask nudges for tasks linked to their broker scope (F0009 §14).
+    /// Empty result returned if no overdue tasks; 403 thrown only if scope cannot be resolved.
+    /// </summary>
+    public async Task<NudgesResponseDto> GetNudgesForBrokerUserAsync(ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        var nudges = await dashboardRepo.GetNudgesForBrokerUserAsync([resolvedBrokerId], ct);
+        AuditBrokerUserRead(user, "dashboard.nudges", null, resolvedBrokerId);
         return new NudgesResponseDto(nudges);
     }
 

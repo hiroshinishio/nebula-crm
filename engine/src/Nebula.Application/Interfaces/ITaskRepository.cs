@@ -6,4 +6,9 @@ public interface ITaskRepository
 {
     Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<(IReadOnlyList<TaskItem> Tasks, int TotalCount)> GetMyTasksAsync(Guid assignedToUserId, int limit, CancellationToken ct = default);
+    /// <summary>
+    /// BrokerUser variant: tasks scoped to a specific broker entity link (F0009 §12).
+    /// Returns only tasks where LinkedEntityType='Broker' AND LinkedEntityId=brokerId AND IsDeleted=false.
+    /// </summary>
+    Task<(IReadOnlyList<TaskItem> Tasks, int TotalCount)> GetBrokerScopedTasksAsync(Guid brokerId, int limit, CancellationToken ct = default);
 }

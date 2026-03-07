@@ -28,6 +28,12 @@ public static class ContactEndpoints
         Guid? brokerId, int? page, int? pageSize,
         ContactService svc, ICurrentUserService user, CancellationToken ct)
     {
+        if (user.Roles.Contains("BrokerUser"))
+        {
+            var brokerUserResult = await svc.ListForBrokerUserAsync(page ?? 1, pageSize ?? 20, user, ct);
+            return Results.Ok(new { data = brokerUserResult.Data, page = brokerUserResult.Page, pageSize = brokerUserResult.PageSize, totalCount = brokerUserResult.TotalCount, totalPages = brokerUserResult.TotalPages });
+        }
+
         var result = await svc.ListAsync(brokerId, page ?? 1, pageSize ?? 20, user, ct);
         return Results.Ok(new { data = result.Data, page = result.Page, pageSize = result.PageSize, totalCount = result.TotalCount, totalPages = result.TotalPages });
     }
@@ -54,8 +60,14 @@ public static class ContactEndpoints
     }
 
     private static async Task<IResult> GetContact(
-        Guid contactId, ContactService svc, CancellationToken ct)
+        Guid contactId, ContactService svc, ICurrentUserService user, CancellationToken ct)
     {
+        if (user.Roles.Contains("BrokerUser"))
+        {
+            var brokerUserResult = await svc.GetByIdForBrokerUserAsync(contactId, user, ct);
+            return brokerUserResult is null ? ProblemDetailsHelper.NotFound("Contact", contactId) : Results.Ok(brokerUserResult);
+        }
+
         var result = await svc.GetByIdAsync(contactId, ct);
         return result is null ? ProblemDetailsHelper.NotFound("Contact", contactId) : Results.Ok(result);
     }

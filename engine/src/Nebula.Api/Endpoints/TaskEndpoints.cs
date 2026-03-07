@@ -24,6 +24,22 @@ public static class TaskEndpoints
         int? limit, TaskService svc, ICurrentUserService user,
         IAuthorizationService authz, CancellationToken ct)
     {
+        // BrokerUser: scope-isolated tasks by linked broker entity (F0009 §12).
+        if (user.Roles.Contains("BrokerUser"))
+        {
+            // Casbin check: BrokerUser, task, read (policy.csv §2.10 — condition is 'true' for broker scope).
+            var brokerUserAuthorized = false;
+            foreach (var role in user.Roles)
+            {
+                // Use placeholder attrs — BrokerUser scope is enforced at query layer, not policy condition.
+                if (await authz.AuthorizeAsync(role, "task", "read", new Dictionary<string, object>()))
+                { brokerUserAuthorized = true; break; }
+            }
+            if (!brokerUserAuthorized) return ProblemDetailsHelper.Forbidden();
+
+            return Results.Ok(await svc.GetBrokerScopedTasksAsync(limit ?? 10, user, ct));
+        }
+
         // Ownership condition: the list is already scoped to the caller; assignee == subjectId by definition.
         var attrs = new Dictionary<string, object>
         {

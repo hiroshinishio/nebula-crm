@@ -11,6 +11,7 @@ public class BrokerService(
     IBrokerRepository brokerRepo,
     ITimelineRepository timelineRepo,
     IUnitOfWork unitOfWork,
+    BrokerScopeResolver scopeResolver,
     ILogger<BrokerService> logger)
 {
     private readonly ILogger<BrokerService> _logger = logger;
@@ -27,6 +28,40 @@ public class BrokerService(
         if (broker is null) return null;
         AuditBrokerUserRead(user, "broker.detail", id, id);
         return MaskPii(MapToDto(broker));
+    }
+
+    /// <summary>
+    /// BrokerUser variant: scope-isolated GET /brokers/{id} (F0009-S0004).
+    /// Verifies the requested broker ID is within the authenticated user's resolved scope.
+    /// Throws BrokerScopeUnresolvableException if scope cannot be resolved or doesn't match.
+    /// </summary>
+    public async Task<BrokerBrokerUserDto?> GetByIdForBrokerUserAsync(Guid id, ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        if (resolvedBrokerId != id)
+            throw new BrokerScopeUnresolvableException();
+
+        var broker = await brokerRepo.GetByIdAsync(id, ct);
+        if (broker is null) return null;
+
+        AuditBrokerUserRead(user, "broker.detail", id, resolvedBrokerId);
+        return MapToBrokerUserDto(broker);
+    }
+
+    /// <summary>
+    /// BrokerUser variant: scope-isolated GET /brokers (F0009-S0004).
+    /// Returns only the single broker within the authenticated user's resolved scope.
+    /// Throws BrokerScopeUnresolvableException if scope cannot be resolved.
+    /// </summary>
+    public async Task<PaginatedResult<BrokerBrokerUserDto>> ListForBrokerUserAsync(
+        ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        var broker = await brokerRepo.GetByIdAsync(resolvedBrokerId, ct);
+        AuditBrokerUserRead(user, "broker.list", null, resolvedBrokerId);
+
+        var items = broker is null ? [] : new List<BrokerBrokerUserDto> { MapToBrokerUserDto(broker) };
+        return new PaginatedResult<BrokerBrokerUserDto>(items, 1, 20, items.Count);
     }
 
     public async Task<PaginatedResult<BrokerDto>> ListAsync(
@@ -67,6 +102,7 @@ public class BrokerService(
             EntityId = broker.Id,
             EventType = "BrokerCreated",
             EventDescription = $"New broker \"{broker.LegalName}\" added",
+            BrokerDescription = BrokerDescriptionTemplates.BrokerCreated,
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
@@ -109,6 +145,9 @@ public class BrokerService(
         var description = oldStatus != dto.Status
             ? $"Broker \"{broker.LegalName}\" status changed from {oldStatus} to {dto.Status}"
             : $"Broker \"{broker.LegalName}\" updated";
+        var brokerDescription = eventType == "BrokerStatusChanged"
+            ? string.Format(BrokerDescriptionTemplates.BrokerStatusChanged, broker.Status)
+            : BrokerDescriptionTemplates.BrokerUpdated;
 
         var payloadJson = eventType == "BrokerStatusChanged"
             ? JsonSerializer.Serialize(new
@@ -132,6 +171,7 @@ public class BrokerService(
             EntityId = broker.Id,
             EventType = eventType,
             EventDescription = description,
+            BrokerDescription = brokerDescription,
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
@@ -223,6 +263,10 @@ public class BrokerService(
     private static BrokerDto MapToDto(Broker b) => new(
         b.Id, b.LegalName, b.LicenseNumber, b.State, b.Status,
         b.Email, b.Phone, b.CreatedAt, b.UpdatedAt, b.RowVersion, b.IsDeleted);
+
+    private static BrokerBrokerUserDto MapToBrokerUserDto(Broker b) => new(
+        b.Id, b.LegalName, b.LicenseNumber, b.State, b.Status,
+        b.Email, b.Phone, b.CreatedAt, b.UpdatedAt);
 
     private static BrokerDto MaskPii(BrokerDto dto) =>
         dto.Status == "Inactive" ? dto with { Email = null, Phone = null } : dto;

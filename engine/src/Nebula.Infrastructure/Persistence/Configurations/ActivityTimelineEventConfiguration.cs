@@ -16,6 +16,7 @@ public class ActivityTimelineEventConfiguration : IEntityTypeConfiguration<Activ
         builder.Property(e => e.EventType).IsRequired().HasMaxLength(50);
         builder.Property(e => e.EventPayloadJson).HasColumnType("jsonb");
         builder.Property(e => e.EventDescription).IsRequired().HasMaxLength(500);
+        builder.Property(e => e.BrokerDescription).HasMaxLength(500);
         builder.Property(e => e.ActorUserId).IsRequired();
         builder.Property(e => e.ActorDisplayName).HasMaxLength(200);
         builder.Property(e => e.OccurredAt).IsRequired();

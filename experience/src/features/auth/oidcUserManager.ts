@@ -34,7 +34,9 @@ export const oidcUserManager = new UserManager({
   client_id: clientId ?? '',
   redirect_uri: redirectUri ?? '',
   response_type: 'code',
-  scope: 'openid profile email',
+  // Request Nebula custom scopes so role/scope claims are present in tokens.
+  // Without these, role-based routing and API ABAC checks will fail closed.
+  scope: 'openid profile email nebula_roles broker_tenant_id',
   // Store OIDC user state in sessionStorage so it is cleared on tab close.
   // PKCE code verifier artifacts also land in sessionStorage; clearStaleState()
   // removes them on teardown.

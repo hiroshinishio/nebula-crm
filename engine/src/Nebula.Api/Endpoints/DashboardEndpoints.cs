@@ -71,6 +71,11 @@ public static class DashboardEndpoints
     {
         if (!await HasAccessAsync(user, authz, "dashboard_nudge"))
             return ProblemDetailsHelper.Forbidden();
+
+        // BrokerUser: scope-isolated nudges — OverdueTask only, linked to broker scope (F0009 §14).
+        if (user.Roles.Contains("BrokerUser"))
+            return Results.Ok(await svc.GetNudgesForBrokerUserAsync(user, ct));
+
         return Results.Ok(await svc.GetNudgesAsync(user.UserId, user, ct));
     }
 

@@ -22,6 +22,30 @@ public class TimelineRepository(AppDbContext db) : ITimelineRepository
             .ToListAsync(ct);
     }
 
+    // Approved BrokerUser-visible event types (F0009 §8.1 / BROKER-VISIBILITY-MATRIX.md).
+    private static readonly string[] BrokerUserApprovedEventTypes =
+    [
+        "BrokerCreated", "BrokerUpdated", "BrokerStatusChanged", "ContactAdded", "ContactUpdated"
+    ];
+
+    public async Task<IReadOnlyList<ActivityTimelineEvent>> ListEventsForBrokerUserAsync(
+        IReadOnlyList<Guid> brokerIds, int limit, CancellationToken ct = default)
+    {
+        // F0009 §8.1 contract:
+        //   1. EntityType = 'Broker' AND EntityId IN resolved broker scope
+        //   2. EventType IN approved types
+        //   3. Only events with non-null BrokerDescription returned
+        return await db.ActivityTimelineEvents
+            .Where(e =>
+                e.EntityType == "Broker" &&
+                brokerIds.Contains(e.EntityId) &&
+                BrokerUserApprovedEventTypes.Contains(e.EventType) &&
+                e.BrokerDescription != null)
+            .OrderByDescending(e => e.OccurredAt)
+            .Take(limit)
+            .ToListAsync(ct);
+    }
+
     public Task AddEventAsync(ActivityTimelineEvent evt, CancellationToken ct = default)
     {
         db.ActivityTimelineEvents.Add(evt);

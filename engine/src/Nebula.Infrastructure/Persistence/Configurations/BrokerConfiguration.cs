@@ -18,6 +18,7 @@ public class BrokerConfiguration : IEntityTypeConfiguration<Broker>
         builder.Property(e => e.Status).IsRequired().HasMaxLength(20);
         builder.Property(e => e.Email).HasMaxLength(255);
         builder.Property(e => e.Phone).HasMaxLength(30);
+        builder.Property(e => e.BrokerTenantId).HasMaxLength(200);
         builder.Property(e => e.ManagedByUserId);
         builder.Property(e => e.CreatedByUserId).IsRequired();
         builder.Property(e => e.UpdatedByUserId).IsRequired();
@@ -43,6 +44,10 @@ public class BrokerConfiguration : IEntityTypeConfiguration<Broker>
 
         builder.HasIndex(e => e.LicenseNumber).IsUnique()
             .HasDatabaseName("IX_Brokers_LicenseNumber");
+        builder.HasIndex(e => e.BrokerTenantId)
+            .HasDatabaseName("IX_Brokers_BrokerTenantId")
+            .IsUnique()
+            .HasFilter("\"BrokerTenantId\" IS NOT NULL");
         builder.HasIndex(e => e.ManagedByUserId)
             .HasDatabaseName("IX_Brokers_ManagedByUserId");
         builder.HasIndex(e => new { e.Status, e.IsDeleted })

@@ -12,6 +12,7 @@ public class ContactService(
     IBrokerRepository brokerRepo,
     ITimelineRepository timelineRepo,
     IUnitOfWork unitOfWork,
+    BrokerScopeResolver scopeResolver,
     ILogger<ContactService> logger)
 {
     private readonly ILogger<ContactService> _logger = logger;
@@ -21,6 +22,38 @@ public class ContactService(
         var contact = await contactRepo.GetByIdAsync(id, ct);
         if (contact is null) return null;
         return MaskPii(MapToDto(contact), contact.Broker?.Status);
+    }
+
+    /// <summary>
+    /// BrokerUser variant: scope-isolated contact read (F0009-S0004).
+    /// Verifies the contact's broker is within the authenticated user's resolved scope.
+    /// Throws BrokerScopeUnresolvableException if scope cannot be resolved or contact belongs to another broker.
+    /// </summary>
+    public async Task<ContactBrokerUserDto?> GetByIdForBrokerUserAsync(Guid id, ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        var contact = await contactRepo.GetByIdAsync(id, ct);
+        if (contact is null) return null;
+        if (contact.BrokerId != resolvedBrokerId)
+            throw new BrokerScopeUnresolvableException();
+
+        AuditBrokerUserRead(user, "broker.contacts", id, resolvedBrokerId);
+        return MapToBrokerUserDto(contact);
+    }
+
+    /// <summary>
+    /// BrokerUser variant: scope-isolated contact list (F0009-S0004).
+    /// Scopes results to the resolved broker only.
+    /// Throws BrokerScopeUnresolvableException if scope cannot be resolved.
+    /// </summary>
+    public async Task<PaginatedResult<ContactBrokerUserDto>> ListForBrokerUserAsync(
+        int page, int pageSize, ICurrentUserService user, CancellationToken ct = default)
+    {
+        var resolvedBrokerId = await scopeResolver.ResolveAsync(user, ct);
+        var result = await contactRepo.ListAsync(resolvedBrokerId, page, pageSize, ct);
+        var mapped = result.Data.Select(MapToBrokerUserDto).ToList();
+        AuditBrokerUserRead(user, "broker.contacts", resolvedBrokerId, resolvedBrokerId);
+        return new PaginatedResult<ContactBrokerUserDto>(mapped, result.Page, result.PageSize, result.TotalCount);
     }
 
     public async Task<PaginatedResult<ContactDto>> ListAsync(
@@ -58,8 +91,9 @@ public class ContactService(
         {
             EntityType = "Broker",
             EntityId = dto.BrokerId,
-            EventType = "ContactCreated",
+            EventType = "ContactAdded",
             EventDescription = $"Contact \"{contact.FullName}\" added to broker \"{broker.LegalName}\"",
+            BrokerDescription = BrokerDescriptionTemplates.ContactAdded,
             ActorUserId = user.UserId,
             ActorDisplayName = user.DisplayName,
             OccurredAt = now,
@@ -101,6 +135,7 @@ public class ContactService(
                 EntityId = contact.BrokerId.Value,
                 EventType = "ContactUpdated",
                 EventDescription = $"Contact \"{contact.FullName}\" updated",
+                BrokerDescription = BrokerDescriptionTemplates.ContactUpdated,
                 ActorUserId = user.UserId,
                 ActorDisplayName = user.DisplayName,
                 OccurredAt = now,
@@ -159,6 +194,9 @@ public class ContactService(
 
     private static ContactDto MapToDto(Contact c) => new(
         c.Id, c.BrokerId, c.AccountId, c.FullName, c.Email, c.Phone, c.Role);
+
+    private static ContactBrokerUserDto MapToBrokerUserDto(Contact c) => new(
+        c.Id, c.BrokerId ?? Guid.Empty, c.FullName, c.Email, c.Phone, c.Role, c.CreatedAt, c.UpdatedAt);
 
     private static ContactDto MaskPii(ContactDto dto, string? brokerStatus) =>
         brokerStatus == "Inactive" ? dto with { Email = null, Phone = null } : dto;

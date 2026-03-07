@@ -115,6 +115,7 @@ builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<TimelineService>();
 builder.Services.AddScoped<ReferenceDataService>();
+builder.Services.AddScoped<BrokerScopeResolver>();
 
 // Current user
 builder.Services.AddHttpContextAccessor();
@@ -141,6 +142,27 @@ app.UseExceptionHandler(exceptionApp =>
     {
         context.Response.ContentType = "application/problem+json";
         var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var exception = exceptionFeature?.Error;
+
+        // F0009 §6.1: BrokerUser scope unresolvable → 403 with discriminator code.
+        // This is NOT a session teardown trigger — the JWT is valid.
+        if (exception is BrokerScopeUnresolvableException)
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Type = "https://nebula.local/problems/broker-scope-unresolvable",
+                Title = "Broker scope could not be resolved.",
+                Status = StatusCodes.Status403Forbidden,
+                Extensions =
+                {
+                    ["code"] = "broker_scope_unresolvable",
+                    ["traceId"] = System.Diagnostics.Activity.Current?.Id ?? context.TraceIdentifier,
+                }
+            });
+            return;
+        }
+
         var statusCode = StatusCodes.Status500InternalServerError;
 
         var problem = new ProblemDetails
