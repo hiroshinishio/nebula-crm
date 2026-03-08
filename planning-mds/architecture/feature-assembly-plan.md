@@ -311,3 +311,64 @@ Navigation availability should be driven by a route registry check (e.g., `canNa
 - F0001, F0002, and F0009 stories pass acceptance criteria.
 - API contract validation passes.
 - ABAC policy enforcement verified for all roles in matrix (including BrokerUser phase-1 delta).
+
+---
+
+## F0001-S0005 Completion Pass — Nudge Cards Remaining Work
+
+**Date:** 2026-03-07
+**Owner:** Backend Developer + Frontend Developer + Quality Engineer
+**Scope:** Fix the 5 open gaps in F0001-S0005 only. No schema migrations. No new routes. No AI scope.
+
+### Scope Breakdown
+
+| Layer | Required Work | Owner |
+|-------|---------------|-------|
+| Backend (`engine/`) | (1) Add `AssignedToUserId` scope filter to stale submission + upcoming renewal queries. (2) Replace `UpdatedAt`-based staleness with last `WorkflowTransition` date for submissions. (3) Raise nudge return cap from 3 to 10. | Backend Developer |
+| Frontend (`experience/`) | (4) Add `role="alert"` to nudge card container div in `NudgeCard.tsx`. | Frontend Developer |
+| Quality | (5) Add integration test asserting nudge priority ordering: overdue tasks fill before stale submissions, stale before upcoming renewals; cap at 10. | Quality Engineer |
+| AI (`neuron/`) | Not in scope. | — |
+| DevOps/Runtime | No new infra, no migration, no env-var changes. Confirm build + tests pass. | DevOps |
+
+### Dependency Order
+
+1. **Backend** — fix `DashboardRepository.GetNudgesAsync` (all three backend items are in the same method; implement together).
+2. **Frontend** — add `role="alert"` (independent, can run in parallel with backend).
+3. **Quality** — add integration test (depends on backend fix being in place).
+4. **Self-review + CI** — lint, build, test all pass.
+
+### Integration Checkpoints
+
+- [ ] `DashboardRepository.GetNudgesAsync`: stale submissions filtered by `AssignedToUserId == userId`
+- [ ] `DashboardRepository.GetNudgesAsync`: upcoming renewals filtered by `AssignedToUserId == userId`
+- [ ] `DashboardRepository.GetNudgesAsync`: staleness days computed from last `WorkflowTransition.OccurredAt` where `ToState = submission.CurrentStatus`, not from `UpdatedAt`
+- [ ] Backend returns up to 10 nudges total (overdue tasks fill first, then stale, then upcoming)
+- [ ] `NudgeCard.tsx` card container has `role="alert"`
+- [ ] Integration test asserts priority ordering and 10-item cap
+- [ ] `dotnet test` passes
+- [ ] `pnpm --dir experience lint && pnpm --dir experience build && pnpm --dir experience test` pass
+
+### Implementation Notes
+
+**WorkflowTransition-based staleness (backend):**
+The canonical pattern already exists in `DashboardRepository.GetOpportunityItemsAsync` (lines 228–232). For nudge computation:
+1. Fetch candidate submissions: non-terminal, `AssignedToUserId == userId`.
+2. For each candidate, find the max `WorkflowTransition.OccurredAt` where `WorkflowType = "Submission"` AND `ToState = submission.CurrentStatus`. Fall back to `submission.CreatedAt` if no matching transition exists (new submission never transitioned).
+3. Filter to candidates where `(DateTime.UtcNow - transitionDate).TotalDays > 5`.
+4. Sort by most stale first. Take up to `(10 - nudges.Count)`.
+
+**Scope filter pattern:**
+Tasks already use `AssignedToUserId == userId`. Apply the same pattern to submissions and renewals.
+
+**10-item cap pattern:**
+Replace all `Take(3)` → `Take(10)` and `Take(3 - nudges.Count)` → `Take(10 - nudges.Count)`. Final return: `nudges.Take(10).ToList()`. Remove the intermediate early-return guards (or update them to `>= 10`).
+
+**Frontend `role="alert"`:**
+The card container `<div>` in `NudgeCard.tsx` receives `role="alert"` so screen readers announce new/updated nudge cards. This is the outer div, not the dismiss button.
+
+### Risks and Blockers
+
+| Item | Severity | Mitigation |
+|------|----------|------------|
+| WorkflowTransition staleness query: submissions without any transitions use `CreatedAt` as fallback — may produce inaccurate staleness for very new submissions | Low | Acceptable for MVP; documented in code comment |
+| ABAC-scope for stale/upcoming: using `AssignedToUserId == userId` as the scope proxy rather than full Casbin per-row check | Medium | Per-row Casbin check is too expensive for a nudge aggregation query; `AssignedToUserId` is the established ownership pattern for tasks and is the correct approximation here |

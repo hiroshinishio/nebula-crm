@@ -24,25 +24,6 @@ export interface CurrentUser {
 
 const AUTH_MODE = import.meta.env.VITE_AUTH_MODE as string | undefined;
 
-function parseDevTokenPayload(): CurrentUser | null {
-  try {
-    // dev-auth.ts crafts a JWT with payload in position [1]
-    const devToken = window.sessionStorage.getItem('nebula_dev_token');
-    if (!devToken) return null;
-    const payloadB64 = devToken.split('.')[1];
-    const payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-    return {
-      sub: payload.sub ?? '',
-      email: payload.email ?? payload.sub ?? '',
-      displayName: payload.name ?? payload.sub ?? '',
-      roles: Array.isArray(payload.nebula_roles) ? payload.nebula_roles : [],
-      brokerTenantId: payload.broker_tenant_id ?? null,
-    };
-  } catch {
-    return null;
-  }
-}
-
 function userFromOidcProfile(profile: Record<string, unknown>): CurrentUser {
   const roles: string[] = Array.isArray(profile['nebula_roles'])
     ? (profile['nebula_roles'] as string[])

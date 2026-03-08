@@ -42,3 +42,4 @@ This document is the working prioritization view for feature sequencing.
 - This roadmap is the authoritative Now/Next/Later view.
 - `REGISTRY.md` remains the authoritative feature inventory and ID tracker.
 - `BLUEPRINT.md` remains the baseline product/architecture source of truth.
+- Archived features are tracked under `planning-mds/features/archive/` (e.g., [F0005 — IdP Migration](./archive/F0005-idp-migration/README.md)).

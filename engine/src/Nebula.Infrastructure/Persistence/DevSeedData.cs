@@ -254,16 +254,16 @@ public static class DevSeedData
     // BrokerUser dev seed tenant ID — must match authentik blueprint broker001 property mapping (F0009 §9).
     internal const string BrokerUserDevTenantId = "broker001-tenant-001";
 
+    // IdpSubject values must match authentik usernames (sub_mode: user_username in blueprint).
+    // Each entry here corresponds to a provisioned authentik user; data is seeded to these UserProfile IDs
+    // so that logging in as the matching authentik user surfaces seeded submissions, tasks, and renewals.
     private static List<UserProfile> BuildUserProfiles(DateTime now) =>
     [
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-001", Email = "sarah.chen@nebula.local", DisplayName = "Sarah Chen", Department = "Distribution", RegionsJson = "[\"West\",\"Central\"]", RolesJson = "[\"DistributionManager\"]", CreatedAt = now, UpdatedAt = now },
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-002", Email = "john.miller@nebula.local", DisplayName = "John Miller", Department = "Underwriting", RegionsJson = "[\"East\"]", RolesJson = "[\"Underwriter\"]", CreatedAt = now, UpdatedAt = now },
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-003", Email = "lisa.wong@nebula.local", DisplayName = "Lisa Wong", Department = "Distribution", RegionsJson = "[\"West\"]", RolesJson = "[\"DistributionUser\"]", CreatedAt = now, UpdatedAt = now },
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-004", Email = "miguel.alvarez@nebula.local", DisplayName = "Miguel Alvarez", Department = "Underwriting", RegionsJson = "[\"South\"]", RolesJson = "[\"SeniorUnderwriter\"]", CreatedAt = now, UpdatedAt = now },
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-005", Email = "priya.patel@nebula.local", DisplayName = "Priya Patel", Department = "Distribution", RegionsJson = "[\"East\",\"South\"]", RolesJson = "[\"DistributionUser\"]", CreatedAt = now, UpdatedAt = now },
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-006", Email = "evan.turner@nebula.local", DisplayName = "Evan Turner", Department = "Ops", RegionsJson = "[\"Central\"]", RolesJson = "[\"Operations\"]", CreatedAt = now, UpdatedAt = now },
+        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "akadmin", Email = "akadmin@nebula.local", DisplayName = "Admin User", Department = "Operations", RegionsJson = "[\"West\",\"Central\",\"East\",\"South\"]", RolesJson = "[\"Admin\"]", CreatedAt = now, UpdatedAt = now },
+        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "john.miller", Email = "john.miller@nebula.local", DisplayName = "John Miller", Department = "Underwriting", RegionsJson = "[\"East\"]", RolesJson = "[\"Underwriter\"]", CreatedAt = now, UpdatedAt = now },
+        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "lisa.wong", Email = "lisa.wong@nebula.local", DisplayName = "Lisa Wong", Department = "Distribution", RegionsJson = "[\"West\"]", RolesJson = "[\"DistributionUser\"]", CreatedAt = now, UpdatedAt = now },
         // F0009 §9: BrokerUser test identity — broker_tenant_id claim must match BrokerUserDevTenantId below.
-        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-broker001", Email = "broker001@example.local", DisplayName = "Broker User 001", Department = "External", RegionsJson = "[]", RolesJson = "[\"BrokerUser\"]", CreatedAt = now, UpdatedAt = now },
+        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "broker001", Email = "broker001@example.local", DisplayName = "Broker User 001", Department = "External", RegionsJson = "[]", RolesJson = "[\"BrokerUser\"]", CreatedAt = now, UpdatedAt = now },
     ];
 
     private static List<Account> BuildAccounts(int count, DateTime now, Random rng, Guid[] userIds)

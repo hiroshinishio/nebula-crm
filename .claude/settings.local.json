@@ -47,7 +47,9 @@
       "WebFetch(domain:)",
       "Bash(~/.dotnet/tools/dotnet-ef migrations:*)",
       "Bash(node:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(pkill:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

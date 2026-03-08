@@ -1,6 +1,6 @@
 # F0001 — Dashboard
 
-**Status:** In Progress (4/5 stories done)
+**Status:** Done (5/5 stories done)
 **Priority:** Critical
 **Phase:** MVP
 
@@ -24,7 +24,7 @@ Role-aware dashboard with KPI cards, pipeline summary, my tasks, broker activity
 | [F0001-S0002](./F0001-S0002-view-pipeline-summary.md) | View Pipeline Summary (Mini-Kanban) | Done |
 | [F0001-S0003](./F0001-S0003-view-my-tasks-and-reminders.md) | View My Tasks | Done |
 | [F0001-S0004](./F0001-S0004-view-broker-activity-feed.md) | View Broker Activity Feed | Done |
-| [F0001-S0005](./F0001-S0005-view-nudge-cards.md) | View and Dismiss Nudge Cards | In Progress |
+| [F0001-S0005](./F0001-S0005-view-nudge-cards.md) | View and Dismiss Nudge Cards | Done |
 
 **Total Stories:** 5
-**Completed:** 4 / 5
+**Completed:** 5 / 5

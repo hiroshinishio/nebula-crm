@@ -27,7 +27,7 @@ Broker lifecycle management with search, Broker 360, contacts, and activity time
 | [F0002-S0005](./F0002-S0005-delete-broker.md) | Delete Broker | Done |
 | [F0002-S0006](./F0002-S0006-manage-broker-contacts.md) | Manage Broker Contacts | Done |
 | [F0002-S0007](./F0002-S0007-view-broker-activity-timeline.md) | View Broker Activity Timeline | Done |
-| [F0002-S0008](./F0002-S0008-reactivate-broker.md) | Reactivate Broker | Not Started |
+| [F0002-S0008](./F0002-S0008-reactivate-broker.md) | Reactivate Broker | In Progress |
 
 **Total Stories:** 8
 **Completed:** 7 / 8

@@ -14,7 +14,6 @@
 | F0002 | Broker & MGA Relationship Management | In Progress | MVP | `F0002-broker-relationship-management/` |
 | F0003 | Task Center + Reminders (API-only MVP) | Draft | MVP | `F0003-task-center/` |
 | F0004 | Task Center UI + Manager Assignment | Draft | Phase 1 | `F0004-task-center-ui-and-assignment/` |
-| F0005 | IdP Migration: Keycloak → authentik | Draft | Infrastructure Patch | `F0005-idp-migration/` |
 | F0009 | Authentication + Role-Based Login | Draft | Phase 1 | `F0009-authentication-and-role-based-login/` |
 
 ## Planned (Reserved IDs)
@@ -29,6 +28,7 @@
 
 | Feature ID | Name | Archived Date | Folder |
 |------------|------|---------------|--------|
+| F0005 | IdP Migration: Keycloak → authentik | 2026-03-07 | `archive/F0005-idp-migration/` |
 
 ## Numbering Rules
 

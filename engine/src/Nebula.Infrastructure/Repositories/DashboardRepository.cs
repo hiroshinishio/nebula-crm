@@ -302,12 +302,13 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
             .Select(s => s.Code)
             .ToListAsync(ct);
 
-        // Priority 1: Overdue tasks
+        // Priority 1: Overdue tasks assigned to this user (oldest DueDate first).
+        // Scoped to AssignedToUserId — only tasks the user owns are surfaced.
         var overdueTasks = await db.Tasks
             .Where(t => t.AssignedToUserId == userId && t.Status != "Done"
                 && t.DueDate.HasValue && t.DueDate.Value < today)
             .OrderBy(t => t.DueDate)
-            .Take(3)
+            .Take(10)
             .ToListAsync(ct);
 
         foreach (var task in overdueTasks)
@@ -320,48 +321,83 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
                 task.Title, daysOverdue, "Review Now"));
         }
 
-        if (nudges.Count >= 3) return nudges.Take(3).ToList();
+        if (nudges.Count >= 10) return nudges.Take(10).ToList();
 
-        // Priority 2: Stale submissions (>5 days in current status)
-        var fiveDaysAgo = DateTime.UtcNow.AddDays(-5);
-        var staleSubmissions = await db.Submissions
-            .Include(s => s.Account)
-            .Where(s => !terminalSubmissionStatuses.Contains(s.CurrentStatus) && s.UpdatedAt < fiveDaysAgo)
-            .OrderBy(s => s.UpdatedAt)
-            .Take(3 - nudges.Count)
+        // Priority 2: Stale submissions assigned to this user (>5 days in current status).
+        // Scoped to AssignedToUserId — only submissions the user owns are surfaced.
+        // Staleness is computed from the most recent WorkflowTransition into the submission's
+        // current status, not from UpdatedAt. Falls back to CreatedAt when no matching
+        // transition record exists (e.g. submission never changed state).
+        var candidateSubData = await db.Submissions
+            .Where(s => s.AssignedToUserId == userId
+                && !terminalSubmissionStatuses.Contains(s.CurrentStatus))
+            .Select(s => new { s.Id, s.CurrentStatus, AccountName = s.Account.Name, s.CreatedAt })
             .ToListAsync(ct);
 
-        foreach (var sub in staleSubmissions)
+        if (candidateSubData.Count > 0)
         {
-            var daysStuck = (int)(DateTime.UtcNow - sub.UpdatedAt).TotalDays;
-            nudges.Add(new NudgeCardDto(
-                "StaleSubmission", $"Follow up on {sub.Account.Name}",
-                $"{daysStuck} days in {sub.CurrentStatus}",
-                "Submission", sub.Id, sub.Account.Name, daysStuck, "Take Action"));
+            var candidateIds = candidateSubData.Select(x => x.Id).ToList();
+
+            var allSubTransitions = await db.WorkflowTransitions
+                .Where(wt => wt.WorkflowType == "Submission" && candidateIds.Contains(wt.EntityId))
+                .Select(wt => new { wt.EntityId, wt.ToState, wt.OccurredAt })
+                .ToListAsync(ct);
+
+            var transitionsBySubmission = allSubTransitions
+                .GroupBy(wt => wt.EntityId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var staleSubmissions = candidateSubData
+                .Select(s =>
+                {
+                    var enteredCurrentStatus = transitionsBySubmission.TryGetValue(s.Id, out var transitions)
+                        ? transitions
+                            .Where(wt => wt.ToState == s.CurrentStatus)
+                            .Select(wt => wt.OccurredAt)
+                            .DefaultIfEmpty(s.CreatedAt)
+                            .Max()
+                        : s.CreatedAt;
+                    var daysInStatus = (int)(DateTime.UtcNow - enteredCurrentStatus).TotalDays;
+                    return new { s.Id, s.CurrentStatus, s.AccountName, DaysInStatus = daysInStatus };
+                })
+                .Where(x => x.DaysInStatus > 5)
+                .OrderByDescending(x => x.DaysInStatus)
+                .Take(10 - nudges.Count)
+                .ToList();
+
+            foreach (var sub in staleSubmissions)
+            {
+                nudges.Add(new NudgeCardDto(
+                    "StaleSubmission", $"Follow up on {sub.AccountName}",
+                    $"{sub.DaysInStatus} days in {sub.CurrentStatus}",
+                    "Submission", sub.Id, sub.AccountName, sub.DaysInStatus, "Take Action"));
+            }
         }
 
-        if (nudges.Count >= 3) return nudges.Take(3).ToList();
+        if (nudges.Count >= 10) return nudges.Take(10).ToList();
 
-        // Priority 3: Upcoming renewals (within 14 days)
+        // Priority 3: Upcoming renewals assigned to this user (within 14 days, non-terminal).
+        // Scoped to AssignedToUserId — only renewals the user owns are surfaced.
         var fourteenDaysFromNow = today.AddDays(14);
         var upcomingRenewals = await db.Renewals
-            .Include(r => r.Account)
-            .Where(r => !terminalRenewalStatuses.Contains(r.CurrentStatus)
+            .Where(r => r.AssignedToUserId == userId
+                && !terminalRenewalStatuses.Contains(r.CurrentStatus)
                 && r.RenewalDate >= today && r.RenewalDate <= fourteenDaysFromNow)
             .OrderBy(r => r.RenewalDate)
-            .Take(3 - nudges.Count)
+            .Select(r => new { r.Id, r.CurrentStatus, AccountName = r.Account.Name, r.RenewalDate })
+            .Take(10 - nudges.Count)
             .ToListAsync(ct);
 
         foreach (var ren in upcomingRenewals)
         {
             var daysUntil = (int)(ren.RenewalDate - today).TotalDays;
             nudges.Add(new NudgeCardDto(
-                "UpcomingRenewal", $"Renewal for {ren.Account.Name}",
+                "UpcomingRenewal", $"Renewal for {ren.AccountName}",
                 $"Due in {daysUntil} day{(daysUntil != 1 ? "s" : "")}",
-                "Renewal", ren.Id, ren.Account.Name, daysUntil, "Start Outreach"));
+                "Renewal", ren.Id, ren.AccountName, daysUntil, "Start Outreach"));
         }
 
-        return nudges.Take(3).ToList();
+        return nudges.Take(10).ToList();
     }
 
     public async Task<IReadOnlyList<NudgeCardDto>> GetNudgesForBrokerUserAsync(
