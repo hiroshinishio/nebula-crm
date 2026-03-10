@@ -48,6 +48,7 @@ Ready for Build
    - Create feature folders at `planning-mds/features/F{NNNN}-{slug}/` with PRD.md, README.md, STATUS.md, GETTING-STARTED.md
    - Create stories colocated in feature folders as `F{NNNN}-S{NNNN}-{slug}.md`
    - Update `planning-mds/features/REGISTRY.md` with new features
+   - Update `planning-mds/features/ROADMAP.md` with sequence changes (`Now / Next / Later / Completed`)
 
 5. **Validate Phase A outputs:**
    - [ ] Vision and non-goals documented
@@ -63,6 +64,7 @@ Ready for Build
 - `planning-mds/examples/personas/` (optional)
 - `planning-mds/features/F{NNNN}-{slug}/` (feature folders with PRD, README, STATUS, GETTING-STARTED, and story files)
 - `planning-mds/features/REGISTRY.md` (feature index)
+- `planning-mds/features/ROADMAP.md` (prioritization/sequence view)
 
 ---
 
@@ -205,6 +207,36 @@ Replace with:
 **If User Defers Some Questions:**
 - Document as "Architect to decide" with rationale
 - Proceed to Step 2
+
+---
+
+### Step 1.75: TRACKER SYNC GATE (Mandatory)
+
+**Execution Instructions:**
+
+Before Phase A approval, synchronize and validate planning trackers:
+
+1. Ensure tracker updates are complete:
+   - `planning-mds/features/REGISTRY.md` reflects feature inventory and paths
+   - `planning-mds/features/ROADMAP.md` reflects current sequencing
+   - `planning-mds/BLUEPRINT.md` feature/story status links resolve
+
+2. Regenerate generated tracker:
+   - Run `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
+
+3. Validate trackers and stories:
+   - Run `python3 agents/product-manager/scripts/validate-stories.py planning-mds/features/F{NNNN}-{slug}/` for each touched feature
+   - Run `python3 agents/product-manager/scripts/validate-trackers.py`
+
+4. If validation fails:
+   - Fix tracker drift immediately
+   - Re-run all validation commands until passing
+
+**Gate Criteria:**
+- [ ] Story index regenerated after story file changes
+- [ ] Story validation passes
+- [ ] Tracker validation passes
+- [ ] No stale links/paths/status mismatches across tracker docs
 
 ---
 
@@ -510,6 +542,7 @@ Example: "Run the feature action for [specific feature name]"
 
 Before running plan action:
 - [ ] `planning-mds/BLUEPRINT.md` exists with Sections 0-2 (baseline context)
+- [ ] `planning-mds/features/TRACKER-GOVERNANCE.md` exists (or will be created during this run)
 - [ ] Domain glossary exists or can be created
 - [ ] User is available to provide approvals at gates
 - [ ] User has clarified business requirements

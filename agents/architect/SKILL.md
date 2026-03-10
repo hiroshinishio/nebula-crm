@@ -118,6 +118,11 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
    - Include frontend guardrails when applicable: semantic theme token usage, no raw palette UI classes, `lint:theme`, and light/dark visual smoke coverage for key screens
    - For frontend-heavy work, specify the target feature-slice placement for new code (`features/<feature>/*`) and what may remain shared
 
+11) **Enforce tracker-governance handoff**
+   - Validate planning trackers remain consistent with architecture decisions and phase state
+   - Ensure feature move/archive decisions are reflected in `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, and `BLUEPRINT.md`
+   - Flag tracker drift as a blocking handoff issue
+
 ## Capability Recommendation
 
 **Recommended Capability Tier:** High (complex architecture reasoning)
@@ -134,6 +139,9 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
 
 **Required Resources:**
 - `planning-mds/BLUEPRINT.md` - Sections 0-3 (Phase A outputs)
+- `planning-mds/features/TRACKER-GOVERNANCE.md` - tracker sync contract
+- `planning-mds/features/REGISTRY.md` - feature state/path inventory
+- `planning-mds/features/ROADMAP.md` - active sequencing
 - `planning-mds/domain/` - Solution-specific domain knowledge
 - `planning-mds/examples/architecture/` - Solution-specific architecture examples
 - `planning-mds/architecture/SOLUTION-PATTERNS.md` - Solution-specific architectural patterns
@@ -349,8 +357,9 @@ Before declaring work complete, verify each deliverable:
 4. Cross-check JSON Schemas against OpenAPI request/response definitions — schemas must align
 5. Cross-check ERD entities and relationships against data model tables — every entity in the tables must appear in the ERD
 6. Verify C4 L2 container diagram reflects all services present in docker-compose (or equivalent)
-7. If inconsistencies found → fix, re-validate
-8. Only declare Definition of Done when all cross-checks pass
+7. Validate tracker consistency when planning trackers were touched during architecture updates (manually or by delegating `agents/product-manager/scripts/validate-trackers.py`)
+8. If inconsistencies found → fix, re-validate
+9. Only declare Definition of Done when all cross-checks pass
 
 ## Definition of Done
 
@@ -369,6 +378,7 @@ Before declaring work complete, verify each deliverable:
 - NFRs measurable
 - ADRs recorded for major decisions
 - Validation strategy documented (JSON Schema for both frontend and backend)
+- Tracker-governance checks pass when planning trackers changed
 - No TODOs remain
 
 ## Troubleshooting

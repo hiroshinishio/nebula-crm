@@ -14,6 +14,11 @@ Tracks all features by ID, name, and status. Place as `REGISTRY.md` at `planning
 
 **Next Available Feature Number:** F{NNNN}
 
+**Planning Views:**
+- Roadmap sequencing (`Now / Next / Later`): `planning-mds/features/ROADMAP.md`
+- Story rollup index: `planning-mds/features/STORY-INDEX.md`
+- Governance contract: `planning-mds/features/TRACKER-GOVERNANCE.md`
+
 ## Active Features
 
 | Feature ID | Name | Status | Phase | Folder |
@@ -33,3 +38,9 @@ Tracks all features by ID, name, and status. Place as `REGISTRY.md` at `planning
 - Numbers are assigned sequentially — never reuse a retired number
 - Story IDs within a feature follow `F{NNNN}-S{NNNN}` (e.g., `F0001-S0001`)
 - Update **Next Available Feature Number** whenever a new feature is added
+
+## Sync Rules
+
+- Update REGISTRY whenever a feature is created, renamed, re-scoped, marked done, or archived.
+- Keep folder paths exact and valid (`F{NNNN}-{slug}/` for active, `archive/F{NNNN}-{slug}/` for archived).
+- After registry edits, regenerate story index and run tracker validation.

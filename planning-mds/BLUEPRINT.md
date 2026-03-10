@@ -27,6 +27,17 @@ IMPORTANT RULES:
 - If there is ambiguity, list questions and propose minimal default assumptions labeled clearly.
 - No scope creep. Build only what’s specified for the current phase.
 
+### Tracker Governance (Mandatory)
+
+Planning trackers must stay in sync at all times. Treat stale tracker state as a process defect.
+
+- Governance contract: `planning-mds/features/TRACKER-GOVERNANCE.md`
+- Required validations before declaring planning or feature execution complete:
+  - `python3 agents/product-manager/scripts/validate-stories.py planning-mds/features/F{NNNN}-{slug}/` (run for each touched feature)
+  - `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
+  - `python3 agents/product-manager/scripts/validate-trackers.py`
+- Do not mark any planning/build/feature gate complete while tracker validation errors remain.
+
 ---
 
 ## 1) Product Context

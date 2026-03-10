@@ -744,7 +744,7 @@ Each agent validates their own work before proceeding to code review:
        [ User enters reason: "These are planned for Phase 2 per ADR-015" ]
        ```
      - Log approval decision with justification to audit trail
-     - Proceed to Step 7 (Build Complete)
+     - Proceed to Step 6.75 (Tracker Sync Gate)
 
    - **"Cancel Build":**
      - Abort build action
@@ -771,7 +771,7 @@ Each agent validates their own work before proceeding to code review:
 
    **Handling:**
    - **"Approve":**
-     - Proceed to Step 7 (Build Complete)
+     - Proceed to Step 6.75 (Tracker Sync Gate)
 
    - **"Fix Issues Anyway":**
      - Return to developer agents to fix issues
@@ -802,7 +802,7 @@ Each agent validates their own work before proceeding to code review:
 
    **Handling:**
    - **"Approve":**
-     - Proceed to Step 7 (Build Complete)
+     - Proceed to Step 6.75 (Tracker Sync Gate)
 
 5. **Machine-Readable Gate State:**
 
@@ -893,6 +893,36 @@ This is an informational gate for release readiness reporting and does not block
 
 ---
 
+### Step 6.75: TRACKER SYNC GATE (Mandatory)
+
+**Execution Instructions:**
+
+Before Build Complete, synchronize planning trackers with the implemented state:
+
+1. Update tracker documents:
+   - `planning-mds/features/F{NNNN}-{slug}/STATUS.md` for each delivered feature
+   - `planning-mds/features/REGISTRY.md` for status/path transitions
+   - `planning-mds/features/ROADMAP.md` for sequencing/completion placement
+   - `planning-mds/BLUEPRINT.md` feature/story status snapshot (if changed)
+
+2. Regenerate story index when story files changed:
+   - `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
+
+3. Validate tracker coherence:
+   - `python3 agents/product-manager/scripts/validate-trackers.py`
+
+4. If validation fails:
+   - Treat as blocking
+   - Fix tracker drift and re-run until passing
+
+**Gate Criteria:**
+- [ ] STATUS files updated for delivered features
+- [ ] REGISTRY/ROADMAP/BLUEPRINT synchronized
+- [ ] STORY-INDEX regenerated when required
+- [ ] Tracker validation passes
+
+---
+
 ### Step 7: Build Complete
 
 **Execution Instructions:**
@@ -976,6 +1006,7 @@ All features implemented and approved! ✓
 - [ ] Security review approved
 - [ ] Application runtime containers run successfully
 - [ ] All acceptance criteria met
+- [ ] Tracker sync gate passed (REGISTRY/ROADMAP/STORY-INDEX/BLUEPRINT/STATUS)
 
 ---
 
@@ -984,6 +1015,7 @@ All features implemented and approved! ✓
 Before running build action:
 - [ ] Plan action completed (requirements + architecture defined)
 - [ ] SOLUTION-PATTERNS.md exists and is up-to-date
+- [ ] Tracker governance contract available (`planning-mds/features/TRACKER-GOVERNANCE.md`)
 - [ ] User stories have clear acceptance criteria
 - [ ] User is available for approval gates
 
@@ -1007,3 +1039,4 @@ Before running build action:
 - Critical issues block approval; high issues require explicit mitigation justification if approved
 - Can re-run steps if approval gates fail
 - All patterns in SOLUTION-PATTERNS.md must be followed
+- Tracker sync gate is mandatory before Build Complete

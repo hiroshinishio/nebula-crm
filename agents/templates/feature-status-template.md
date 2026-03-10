@@ -12,7 +12,7 @@ Tracks completion progress for a feature. Place as `STATUS.md` inside each featu
 
 # F{NNNN} — [Feature Name] — Status
 
-**Overall Status:** [Not Started | In Progress | Complete | Archived]
+**Overall Status:** [Draft | In Progress | Done | Archived]
 **Last Updated:** [YYYY-MM-DD]
 
 ## Story Checklist
@@ -47,6 +47,21 @@ Tracks completion progress for a feature. Place as `STATUS.md` inside each featu
 - [ ] Migration(s) applied
 - [ ] API documentation updated
 - [ ] No TODOs remain in code
+
+## Deferred Non-Blocking Follow-ups (Optional)
+
+Use this section only when the feature is still `Done` and deferred items are explicitly non-blocking.
+
+| Follow-up | Why deferred | Tracking link | Owner |
+|-----------|--------------|---------------|-------|
+| [Item] | [Rationale] | [Issue/Story/Doc] | [Role/Name] |
+
+## Tracker Sync Checklist
+
+- [ ] `planning-mds/features/REGISTRY.md` status/path aligned
+- [ ] `planning-mds/features/ROADMAP.md` section aligned (`Now/Next/Later/Completed`)
+- [ ] `planning-mds/features/STORY-INDEX.md` regenerated
+- [ ] `planning-mds/BLUEPRINT.md` feature/story status links aligned
 
 ## Archival Criteria
 

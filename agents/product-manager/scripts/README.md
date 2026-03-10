@@ -29,3 +29,12 @@ python agents/product-manager/scripts/generate-story-index.py planning-mds/featu
 ```
 
 Outputs `planning-mds/features/STORY-INDEX.md`.
+
+## validate-trackers.py
+
+Validate tracker consistency across `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, and `BLUEPRINT.md`:
+
+```bash
+python3 agents/product-manager/scripts/validate-trackers.py
+python3 agents/product-manager/scripts/validate-trackers.py --features-dir planning-mds/features --blueprint planning-mds/BLUEPRINT.md
+```

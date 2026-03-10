@@ -42,6 +42,7 @@ You run **in parallel with the Security agent** during the review action. Securi
 - Over-engineering and under-engineering detection
 - SOLUTION-PATTERNS.md compliance
 - Duplication and dead code
+- Tracker consistency checks when planning artifacts are changed (`REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, `BLUEPRINT.md`)
 
 ### Out of Scope
 - Security vulnerabilities — Security agent owns this
@@ -86,7 +87,7 @@ You run **in parallel with the Security agent** during the review action. Securi
 
 ## Review Dimensions
 
-Nine dimensions to check on every review. Walk through each one — don't skip.
+Nine core dimensions to check on every review. Walk through each one — don't skip.
 
 ### 1. Correctness & Logic
 - Does the code do what the acceptance criteria say?
@@ -246,6 +247,12 @@ Flag when you see:
 - Premature interfaces that will never have another implementor
 - Conversely: logic duplicated 3+ times that should be extracted
 
+### 10. Tracker Governance (when planning docs are touched)
+- If the diff includes `planning-mds/features/REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, `planning-mds/BLUEPRINT.md`, or feature `STATUS.md`, validate tracker coherence.
+- Verify archived feature links point to `planning-mds/features/archive/...`.
+- Verify `STORY-INDEX.md` reflects strict story files only (no non-story documents counted).
+- Missing tracker sync or stale links are at least **High** severity findings.
+
 ## Review Workflow
 
 ### Step 1: Gather Context
@@ -254,6 +261,7 @@ Read in this order before touching the code:
 2. `planning-mds/architecture/SOLUTION-PATTERNS.md` — the patterns this project follows
 3. The code changes
 4. The test files
+5. If planning docs changed: `planning-mds/features/TRACKER-GOVERNANCE.md` plus tracker files touched in the diff
 
 ### Step 2: Run Available Scripts (Feedback Loop)
 ```bash
@@ -264,6 +272,8 @@ python agents/code-reviewer/scripts/check-code-quality.py <path>
 sh agents/code-reviewer/scripts/check-lint.sh
 sh agents/code-reviewer/scripts/check-pr-size.sh --base main --max 500
 sh agents/code-reviewer/scripts/check-test-coverage.sh --min 80 --auto
+# Tracker consistency (when planning docs changed)
+python3 agents/product-manager/scripts/validate-trackers.py
 ```
 
 Use `--strict` with `check-lint.sh` when frontend linting is expected to exist.
@@ -340,6 +350,7 @@ The review action presents your report alongside the Security agent's report. Th
 ## Definition of Done
 
 - [ ] All 9 review dimensions checked
+- [ ] Tracker governance checks run when planning docs were in scope
 - [ ] Every finding has severity, location, and remediation
 - [ ] Acceptance criteria explicitly mapped to code
 - [ ] Report produced in the format defined in `actions/review.md`

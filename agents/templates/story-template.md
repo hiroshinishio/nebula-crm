@@ -11,6 +11,8 @@ Use this template for all user stories to ensure consistency and completeness. K
 One story per file. Story files are colocated in their feature folder at `planning-mds/features/F{NNNN}-{slug}/`.
 
 Filename convention: `F{NNNN}-S{NNNN}-{slug}.md` (e.g., `F0001-S0001-create-record.md`).
+Non-story docs in feature folders must not start with `F{NNNN}-S{NNNN}` to avoid story-index drift (for example: use `ASSEMBLY-PLAN-F0001-S0001.md`).
+The `Story ID` value must match the filename prefix exactly.
 
 ## Story Header
 
@@ -106,6 +108,8 @@ Use Given/When/Then or a checklist. Be specific and testable.
 - [ ] Audit/timeline logged (if applicable)
 - [ ] Tests pass
 - [ ] Documentation updated (if needed)
+- [ ] Story filename matches `Story ID` prefix (`F{NNNN}-S{NNNN}-...`)
+- [ ] Story index regenerated if story file was added/renamed/moved
 
 ---
 

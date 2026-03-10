@@ -5,6 +5,7 @@
 **Planning Views:**
 - Roadmap sequencing (`Now / Next / Later`): `planning-mds/features/ROADMAP.md`
 - Story rollup index: `planning-mds/features/STORY-INDEX.md`
+- Governance contract: `planning-mds/features/TRACKER-GOVERNANCE.md`
 
 ## Active Features
 

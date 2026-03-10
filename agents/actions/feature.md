@@ -491,10 +491,10 @@ Run these review agents in parallel:
    - **If "approve with justification":**
      - Capture explicit mitigation justification for remaining high issues
      - Log decision with mitigation plan
-     - Proceed to Step 5 (Feature Complete)
+     - Proceed to Step 4.5 (Tracker Sync Gate)
 
    - **If "approve":**
-     - Proceed to Step 5 (Feature Complete)
+     - Proceed to Step 4.5 (Tracker Sync Gate)
 
    - **If "reject":**
      - Capture feedback
@@ -509,6 +509,36 @@ Run these review agents in parallel:
 - [ ] High issues fixed or approved with explicit mitigation justification
 - [ ] Feature is complete vertical slice
 - [ ] User decision recorded with rationale when required
+
+---
+
+### Step 4.5: TRACKER SYNC GATE (Mandatory)
+
+**Execution Instructions:**
+
+Before declaring feature completion, update and validate planning trackers:
+
+1. Update feature and planning trackers:
+   - `planning-mds/features/F{NNNN}-{slug}/STATUS.md` (feature completion state)
+   - `planning-mds/features/REGISTRY.md` (status/path transitions, including archive moves)
+   - `planning-mds/features/ROADMAP.md` (Now/Next/Later/Completed placement)
+   - `planning-mds/BLUEPRINT.md` (feature/story status labels and links, if changed)
+
+2. Regenerate story rollup when story files changed:
+   - `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
+
+3. Validate consistency:
+   - `python3 agents/product-manager/scripts/validate-trackers.py`
+
+4. If validation fails:
+   - Treat as a blocking issue
+   - Fix tracker drift and re-run validation before completion
+
+**Gate Criteria:**
+- [ ] Feature STATUS reflects final approved state
+- [ ] REGISTRY/ROADMAP/BLUEPRINT are synchronized
+- [ ] STORY-INDEX regenerated if story files changed
+- [ ] Tracker validation passes
 
 ---
 
@@ -601,6 +631,7 @@ Feature delivered! ✓
 - [ ] All feature acceptance criteria met
 - [ ] Feature can be deployed independently
 - [ ] User decision recorded per gate rules
+- [ ] Tracker sync gate passed (REGISTRY/ROADMAP/STORY-INDEX/BLUEPRINT/STATUS)
 
 ---
 
@@ -611,6 +642,7 @@ Before running feature action:
 - [ ] Feature has clear user stories with acceptance criteria
 - [ ] Feature scope is small (2-5 days of work)
 - [ ] SOLUTION-PATTERNS.md exists
+- [ ] Tracker governance contract available (`planning-mds/features/TRACKER-GOVERNANCE.md`)
 - [ ] AI scope is explicit (if feature includes AI behavior)
 - [ ] User is available for approval
 

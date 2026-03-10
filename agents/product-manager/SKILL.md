@@ -147,6 +147,7 @@ planning-mds/features/
 - **Story IDs:** Scoped to feature — `F0001-S0001`, `F0001-S0002`, ...
 - **Folder slug:** Lowercase kebab-case — `F0001-dashboard`, `F0002-account-management`
 - **Story filename:** `F{NNNN}-S{NNNN}-{slug}.md`
+- **Non-story docs in feature folders:** must NOT start with `F{NNNN}-S{NNNN}` (prevents story-index misclassification)
 
 ### Per-Feature Documents
 
@@ -161,6 +162,18 @@ planning-mds/features/
 
 `planning-mds/features/REGISTRY.md` tracks all features with their IDs, names, statuses, and folder paths. Update it whenever a feature is created or archived.
 
+### Tracker Governance (Mandatory)
+
+Trackers must move with the work. When feature/story state changes, update tracker docs in the same change:
+
+- `planning-mds/features/REGISTRY.md` (inventory + status + path)
+- `planning-mds/features/ROADMAP.md` (Now/Next/Later/Completed sequencing)
+- `planning-mds/features/STORY-INDEX.md` (generated rollup)
+- `planning-mds/BLUEPRINT.md` (baseline feature/story status snapshot)
+- Per-feature `STATUS.md` (execution truth + deferred non-blocking follow-ups)
+
+Reference policy: `planning-mds/features/TRACKER-GOVERNANCE.md`.
+
 ## Tools & Permissions
 
 **Allowed Tools:** Read, Write, Edit, AskUserQuestion, Bash
@@ -168,6 +181,9 @@ planning-mds/features/
 **Required Resources:**
 - `planning-mds/BLUEPRINT.md` (single source of truth)
 - `planning-mds/features/REGISTRY.md` (feature number tracker)
+- `planning-mds/features/ROADMAP.md` (feature sequencing tracker)
+- `planning-mds/features/STORY-INDEX.md` (auto-generated story tracker)
+- `planning-mds/features/TRACKER-GOVERNANCE.md` (tracker sync contract)
 - `planning-mds/domain/` (solution-specific domain references)
 - `planning-mds/examples/` (solution-specific examples)
 
@@ -208,6 +224,7 @@ Solution-specific references must live in:
 
 - `validate-stories.py` (per story file — scans `planning-mds/features/F*/F*-S*.md`)
 - `generate-story-index.py` (for `planning-mds/features/`)
+- `validate-trackers.py` (cross-checks REGISTRY/ROADMAP/STORY-INDEX/BLUEPRINT consistency)
 
 ## Input Contract
 
@@ -237,19 +254,23 @@ Solution-specific references must live in:
 - Epics/features → `planning-mds/BLUEPRINT.md` (Section 3.3) and `planning-mds/features/F{NNNN}-{slug}/PRD.md`
 - Stories → colocated in feature folders as `planning-mds/features/F{NNNN}-{slug}/F{NNNN}-S{NNNN}-{slug}.md`
 - Feature registry → `planning-mds/features/REGISTRY.md`
+- Roadmap sequencing → `planning-mds/features/ROADMAP.md`
+- Story rollup → `planning-mds/features/STORY-INDEX.md` (generated)
 - Screens → `planning-mds/screens/` or `planning-mds/BLUEPRINT.md` (Section 3.5)
 - Workflows → `planning-mds/workflows/` or `planning-mds/BLUEPRINT.md` (Section 3.5)
 
 ## Self-Validation (Feedback Loop)
 
 Before declaring work complete, verify deliverables:
-1. Run `python3 agents/product-manager/scripts/validate-stories.py` on each story file (if available)
+1. Run `python3 agents/product-manager/scripts/validate-stories.py` on each new/updated story file or touched feature folder
 2. If validation fails → fix story format, re-validate
-3. Walk through each story — does every story have measurable acceptance criteria?
-4. If any AC is vague or untestable → rewrite, re-check
-5. Verify no story invents business rules not provided by stakeholders
-6. For prioritization outputs, verify framework choice matches decision type and assumptions are explicit
-7. Only declare Definition of Done when all stories validate and trace to user needs
+3. Run `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
+4. Run `python3 agents/product-manager/scripts/validate-trackers.py`
+5. Walk through each story — does every story have measurable acceptance criteria?
+6. If any AC is vague or untestable → rewrite, re-check
+7. Verify no story invents business rules not provided by stakeholders
+8. For prioritization outputs, verify framework choice matches decision type and assumptions are explicit
+9. Only declare Definition of Done when stories validate and tracker checks pass
 
 ## Definition of Done
 
@@ -257,6 +278,7 @@ Before declaring work complete, verify deliverables:
 - [ ] Personas defined
 - [ ] Features/stories written with acceptance criteria
 - [ ] Screens specified
+- [ ] REGISTRY/ROADMAP/STORY-INDEX/BLUEPRINT are in sync
 - [ ] No TODOs remain
 
 ## Troubleshooting
