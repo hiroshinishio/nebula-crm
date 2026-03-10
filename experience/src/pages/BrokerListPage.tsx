@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { BrokerStatusBadge, useBrokers } from '@/features/brokers';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { BrokerDto, BrokerStatus } from '@/features/brokers';
+import { ApiError } from '@/services/api';
 
 const STATUS_OPTIONS = ['All', 'Active', 'Inactive', 'Pending'] as const;
 
@@ -68,7 +69,7 @@ export default function BrokerListPage() {
 
           {isLoading && <BrokerListSkeleton />}
           {isError && (
-            (error as any)?.status === 403
+            error instanceof ApiError && error.status === 403
               ? <p className="py-8 text-center text-sm text-text-muted">You don't have permission to view the broker directory.</p>
               : <ErrorFallback message="Unable to load brokers." onRetry={() => refetch()} />
           )}

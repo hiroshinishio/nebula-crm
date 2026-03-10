@@ -93,7 +93,6 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
     // broker_scope_unresolvable 403): navigation is in flight via the event
     // bus. Return a promise that never resolves so downstream TanStack Query
     // callers don't process a stale result while the app is redirecting away.
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return new Promise<T>(() => {})
   }
 
