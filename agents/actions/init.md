@@ -31,7 +31,16 @@ Product Manager (initialization mode)
 
 ## Outputs
 
-### Directory Structure
+### Root-Level Framework Files
+```
+lifecycle-stage.yaml          # Lifecycle stage declaration (from agents/templates/lifecycle-stage-template.yaml)
+BOUNDARY-POLICY.md            # Generic/solution separation rules (from agents/templates/boundary-policy-template.md)
+CONTRIBUTING.md               # Framework contribution guidelines (from agents/templates/contributing-template.md)
+.github/workflows/
+  ci-gates.yml                # Starter CI workflow (from agents/templates/ci-gates-template.yml)
+```
+
+### Planning Directory Structure
 ```
 planning-mds/
 ├── BLUEPRINT.md              # Master specification (template populated)
@@ -40,6 +49,9 @@ planning-mds/
 │   └── glossary.md          # Domain-specific terminology (skeleton)
 ├── features/
 │   ├── REGISTRY.md          # Feature number tracker + index
+│   ├── ROADMAP.md           # Sequencing view (Now / Next / Later / Completed)
+│   ├── STORY-INDEX.md       # Story rollup (generated)
+│   ├── TRACKER-GOVERNANCE.md # Tracker synchronization contract
 │   └── archive/             # (empty, completed features move here)
 ├── examples/
 │   ├── personas/            # (empty, ready for PM)
@@ -52,30 +64,50 @@ planning-mds/
 ```
 
 ### Populated Files
+- **`lifecycle-stage.yaml`** - Seeded from `agents/templates/lifecycle-stage-template.yaml` with `current_stage: framework-bootstrap`
+- **`BOUNDARY-POLICY.md`** - Seeded from `agents/templates/boundary-policy-template.md`
+- **`CONTRIBUTING.md`** - Seeded from `agents/templates/contributing-template.md`
+- **`.github/workflows/ci-gates.yml`** - Seeded from `agents/templates/ci-gates-template.yml`
 - **`planning-mds/BLUEPRINT.md`** - Sections 0-2 filled with user inputs, sections 3-6 as TODOs
 - **`planning-mds/README.md`** - Overview of planning artifacts and how to use them
 - **`planning-mds/domain/glossary.md`** - Domain glossary skeleton ready for population
+- **`planning-mds/features/TRACKER-GOVERNANCE.md`** - Copied from `agents/templates/tracker-governance-template.md`
 - **`planning-mds/architecture/SOLUTION-PATTERNS.md`** - Scaffolded from `agents/templates/solution-patterns-template.md`
 
 ## Agent Responsibilities
 
 ### Product Manager (Init Mode)
 1. Interview user to gather required inputs (if not provided)
-2. Create `planning-mds/` directory structure
-3. Populate `BLUEPRINT.md` template with baseline information:
+2. Scaffold root-level framework files (skip if they already exist):
+   - Copy `agents/templates/lifecycle-stage-template.yaml` to `lifecycle-stage.yaml`
+   - Copy `agents/templates/boundary-policy-template.md` to `BOUNDARY-POLICY.md`
+   - Copy `agents/templates/contributing-template.md` to `CONTRIBUTING.md`
+   - Copy `agents/templates/ci-gates-template.yml` to `.github/workflows/ci-gates.yml`
+3. Create `planning-mds/` directory structure
+4. Populate `BLUEPRINT.md` template with baseline information:
    - Section 0: Process and roles
    - Section 1: Product context (name, domain, purpose, users, entities, workflows)
    - Section 2: Technology baseline (if specified)
    - Sections 3-6: Marked as TODO with clear instructions
-4. Create domain glossary skeleton
-5. Copy `agents/templates/solution-patterns-template.md` to `planning-mds/architecture/SOLUTION-PATTERNS.md`
-6. Validate that all required inputs are captured
+5. Create domain glossary skeleton
+6. Initialize feature trackers:
+   - Create `planning-mds/features/REGISTRY.md`
+   - Create `planning-mds/features/ROADMAP.md`
+   - Create `planning-mds/features/STORY-INDEX.md` (placeholder; regenerated when stories are added)
+   - Copy `agents/templates/tracker-governance-template.md` to `planning-mds/features/TRACKER-GOVERNANCE.md`
+7. Copy `agents/templates/solution-patterns-template.md` to `planning-mds/architecture/SOLUTION-PATTERNS.md`
+8. Validate that all required inputs are captured
 
 ## Validation Criteria
 
+- [ ] `lifecycle-stage.yaml` exists at repo root
+- [ ] `BOUNDARY-POLICY.md` exists at repo root
+- [ ] `CONTRIBUTING.md` exists at repo root
+- [ ] `.github/workflows/ci-gates.yml` exists
 - [ ] `planning-mds/BLUEPRINT.md` exists with Sections 0-2 populated
 - [ ] Directory structure matches template
 - [ ] Domain glossary skeleton created
+- [ ] `planning-mds/features/TRACKER-GOVERNANCE.md` exists
 - [ ] `planning-mds/architecture/SOLUTION-PATTERNS.md` exists
 - [ ] No placeholder text remains (or is clearly marked as TODO)
 - [ ] User can immediately proceed to Phase A (planning) or Phase B (architecture)

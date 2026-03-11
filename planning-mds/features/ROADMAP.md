@@ -40,7 +40,7 @@ This document is the working prioritization view for feature sequencing.
 | Feature | Phase | Completion State |
 |---------|-------|------------------|
 | [F0001 — Dashboard](./archive/F0001-dashboard/README.md) | MVP | Done and archived |
-| [F0002 — Broker & MGA Relationship Management](./F0002-broker-relationship-management/README.md) | MVP | Done (post-MVP hardening follow-ups tracked) |
+| [F0002 — Broker & MGA Relationship Management](./archive/F0002-broker-relationship-management/README.md) | MVP | Done and archived (post-MVP hardening follow-ups tracked) |
 | [F0005 — IdP Migration: Keycloak → authentik](./archive/F0005-idp-migration/README.md) | Foundation | Done and archived |
 | [F0009 — Authentication + Role-Based Login](./archive/F0009-authentication-and-role-based-login/README.md) | Phase 1 | Done and archived |
 

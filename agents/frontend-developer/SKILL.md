@@ -145,7 +145,7 @@ Your responsibility is to implement the **user-facing layer** (experience/) base
 - URL state → React Router (search params, route params)
 
 ### 6. Authentication & Authorization
-- Read JWT token from Keycloak
+- Read JWT token from authentik
 - Store token securely (httpOnly cookies preferred, or sessionStorage)
 - Include token in API requests (Authorization header)
 - Handle token expiration and refresh

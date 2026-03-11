@@ -5,7 +5,7 @@ using Nebula.Api.Endpoints;
 namespace Nebula.Tests.Integration;
 
 /// <summary>
-/// Integration tests for POST /api/auth/logout.
+/// Integration tests for POST /auth/logout.
 ///
 /// These tests run against the full ASP.NET Core pipeline via
 /// <see cref="CustomWebApplicationFactory"/> (Testcontainers PostgreSQL + test auth scheme).
@@ -24,7 +24,7 @@ public class AuthEndpointTests(CustomWebApplicationFactory factory) : IClassFixt
     public async Task Logout_WithoutCookie_Returns204AndClearsCookie()
     {
         // Act
-        var response = await _client.PostAsync("/api/auth/logout", content: null);
+        var response = await _client.PostAsync("/auth/logout", content: null);
 
         // Assert — status
         response.StatusCode.Should().Be(HttpStatusCode.NoContent,
@@ -42,7 +42,7 @@ public class AuthEndpointTests(CustomWebApplicationFactory factory) : IClassFixt
     public async Task Logout_WithRefreshTokenCookie_Returns204AndClearsCookie()
     {
         // Arrange — attach a refresh_token cookie to simulate a session
-        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         request.Headers.Add("Cookie", $"{AuthEndpoints.RefreshTokenCookieName}=some-opaque-refresh-token");
 
         // Act
@@ -61,7 +61,7 @@ public class AuthEndpointTests(CustomWebApplicationFactory factory) : IClassFixt
     public async Task Logout_IsAnonymous_DoesNotRequireAuthorizationHeader()
     {
         // Arrange — deliberately do NOT send any auth token
-        var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         // (no Authorization header)
 
         // Act

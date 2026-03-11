@@ -11,7 +11,7 @@ public class ContactEndpointTests(CustomWebApplicationFactory factory) : IClassF
 
     private async Task<BrokerDto> CreateBrokerAsync(string license)
     {
-        var response = await _client.PostAsJsonAsync("/api/brokers",
+        var response = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Contact Test Broker", license, "CA", null, null));
         return (await response.Content.ReadFromJsonAsync<BrokerDto>())!;
     }
@@ -22,7 +22,7 @@ public class ContactEndpointTests(CustomWebApplicationFactory factory) : IClassF
         var broker = await CreateBrokerAsync("CTT-001");
 
         var dto = new ContactCreateDto(broker.Id, "Jane Doe", "jane@example.com", "+14155551111", "Primary");
-        var response = await _client.PostAsJsonAsync("/api/contacts", dto);
+        var response = await _client.PostAsJsonAsync("/contacts", dto);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = await response.Content.ReadFromJsonAsync<ContactDto>();
@@ -34,17 +34,17 @@ public class ContactEndpointTests(CustomWebApplicationFactory factory) : IClassF
     public async Task ListContacts_FilterByBrokerId_ReturnsFiltered()
     {
         var broker = await CreateBrokerAsync("CTT-002");
-        await _client.PostAsJsonAsync("/api/contacts",
+        await _client.PostAsJsonAsync("/contacts",
             new ContactCreateDto(broker.Id, "Filter Test", "filter@test.com", "+14155552222", null));
 
-        var response = await _client.GetAsync($"/api/contacts?brokerId={broker.Id}");
+        var response = await _client.GetAsync($"/contacts?brokerId={broker.Id}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetContact_NonExistent_Returns404()
     {
-        var response = await _client.GetAsync($"/api/contacts/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/contacts/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -53,10 +53,10 @@ public class ContactEndpointTests(CustomWebApplicationFactory factory) : IClassF
     public async Task ListContacts_ReturnsPaginatedEnvelope()
     {
         var broker = await CreateBrokerAsync("CTT-PAG-001");
-        await _client.PostAsJsonAsync("/api/contacts",
+        await _client.PostAsJsonAsync("/contacts",
             new ContactCreateDto(broker.Id, "Paged Contact", "paged@test.com", "+14155553333", null));
 
-        var response = await _client.GetAsync($"/api/contacts?brokerId={broker.Id}");
+        var response = await _client.GetAsync($"/contacts?brokerId={broker.Id}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await response.Content.ReadFromJsonAsync<JsonPaginatedContactList>();
@@ -73,7 +73,7 @@ public class ContactEndpointTests(CustomWebApplicationFactory factory) : IClassF
         var broker = await CreateBrokerAsync("CTT-RV-001");
         var dto = new ContactCreateDto(broker.Id, "RV Test", "rv@test.com", "+14155554444", null);
 
-        var response = await _client.PostAsJsonAsync("/api/contacts", dto);
+        var response = await _client.PostAsJsonAsync("/contacts", dto);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var result = await response.Content.ReadFromJsonAsync<ContactDto>();

@@ -1,11 +1,17 @@
+---
+template: tracker-governance
+version: 1.0
+applies_to: product-manager, architect, code-reviewer, quality-engineer
+---
+
 # Tracker Governance Contract
 
 This document defines how planning trackers stay current and trustworthy.
 
 ## Why This Exists
 
-- `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, `BLUEPRINT.md`, and per-feature `STATUS.md` are operational controls, not optional docs.
-- Any feature/story state change must update tracker state in the same change set.
+- `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, `BLUEPRINT.md`, and per-feature `STATUS.md` are operational controls.
+- Feature/story state transitions must update tracker state in the same change set.
 
 ## Authoritative Tracker Roles
 
@@ -18,8 +24,8 @@ This document defines how planning trackers stay current and trustworthy.
 ## Ownership
 
 - Product Manager: updates tracker docs during planning changes.
-- Architect: validates tracker consistency at planning-to-build handoff.
-- Implementers: update feature `STATUS.md` whenever story state changes.
+- Architect: validates tracker consistency at planning-to-build handoff and defines required signoff roles.
+- Implementers: update feature `STATUS.md` when story state changes.
 - Code Reviewer: blocks approval when tracker drift is detected.
 - Quality Engineer: validates acceptance criteria coverage and records test signoff evidence.
 - Security Reviewer: records security signoff when included in required signoff roles.
@@ -27,22 +33,18 @@ This document defines how planning trackers stay current and trustworthy.
 ## Signoff Governance (Mandatory)
 
 - Every feature `STATUS.md` must include:
-  - `Required Signoff Roles` (set during Architect planning)
-  - `Story Signoff Provenance` (story-level execution evidence captured before closeout)
-- Architect owns the required signoff matrix at planning time and sets which roles are mandatory for completion.
-- Minimum required roles for any feature marked `Done` or moved to archive:
+  - `Required Signoff Roles`
+  - `Story Signoff Provenance`
+- Minimum required roles for features marked `Done` or moved to archive:
   - `Quality Engineer`
   - `Code Reviewer`
-- Architect adds additional required roles based on risk/scope, commonly:
-  - `Security Reviewer` for authn/authz, access control, identity/session, secrets, sensitive data boundaries, or policy changes
-  - `DevOps` for runtime/deployability or environment-contract changes
-  - `Architect` when architecture-sensitive exceptions or tradeoffs require explicit acceptance
+- Architect adds risk-based required roles (for example: `Security Reviewer`, `DevOps`, `Architect`).
 - Every required role must have story-level provenance entries for every story in scope with:
   - pass verdict (`PASS` or `APPROVED`)
   - reviewer identity
   - review date
   - concrete evidence path(s)
-- Product Manager must not mark completion or archive a feature unless all required signoffs are present and passing.
+- Product Manager must not close or archive a feature until all required signoffs pass.
 
 ## Provenance Boundary Rules (Mandatory)
 
@@ -55,17 +57,16 @@ This document defines how planning trackers stay current and trustworthy.
 ## Lifecycle Rules
 
 - Feature lifecycle states: `Draft` -> `In Progress` -> `Done` -> `Archived`.
-- `Done` means implementation is complete and signoff evidence has been captured in `STATUS.md`.
-- `Done` may include a `Deferred Non-Blocking Follow-ups` section in `STATUS.md`; deferments must not change overall completion state.
+- `Done` means implementation complete and signoff evidence captured in `STATUS.md`.
 - Archived features must:
   - live under `planning-mds/features/archive/`
   - be listed under `Archived Features` in `REGISTRY.md`
-  - appear in `ROADMAP.md` `Completed` section, not `Now/Next/Later`.
+  - appear in `ROADMAP.md` under `Completed`, not `Now/Next/Later`.
 
 ## Story File Rules
 
 - Story files must follow `F{NNNN}-S{NNNN}-{slug}.md`.
-- Non-story documents in feature folders must NOT start with `F{NNNN}-S{NNNN}`.
+- Non-story documents in feature folders must not start with `F{NNNN}-S{NNNN}`.
 - Story IDs in file content must match filename prefix.
 
 ## Mandatory Sync Triggers
@@ -97,4 +98,4 @@ All conditions must pass:
 - [ ] `STORY-INDEX.md` story count and links match current strict story files.
 - [ ] `BLUEPRINT.md` linked feature/story paths resolve and match archive status.
 - [ ] No non-story file is parsed as a story.
-- [ ] For every feature in `Done` or `Archived` state, required signoff roles have story-level passing provenance evidence for each story in `STATUS.md`.
+- [ ] For every feature in `Done` or `Archived`, required signoff roles have story-level passing provenance evidence for each story in `STATUS.md`.

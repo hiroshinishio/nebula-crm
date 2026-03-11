@@ -2,7 +2,7 @@
 
 > **Examples in this guide use `customers` and `orders` as illustrative entities.
 > These are not prescriptive — substitute your own domain entities when applying
-> these patterns. See `BOUNDARY-POLICY.md` -> "Standard Example Entities" for
+> these patterns. See `agents/BOUNDARY-POLICY.md` -> "Standard Example Entities" for
 > the full convention and field mapping.**
 
 Use this template to create `planning-mds/architecture/SOLUTION-PATTERNS.md` for a new project.

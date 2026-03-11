@@ -160,7 +160,7 @@ Status: This repository is currently focused on the agent builder framework. Pha
 
 **MVP Features:**
 - [F0001: Dashboard](features/archive/F0001-dashboard/PRD.md) - Done (Archived)
-- [F0002: Broker & MGA Relationship Management](features/F0002-broker-relationship-management/PRD.md) - Done
+- [F0002: Broker & MGA Relationship Management](features/archive/F0002-broker-relationship-management/PRD.md) - Done (Archived)
 - [F0003: Task Center + Reminders](features/F0003-task-center/PRD.md) - Draft (API-only MVP)
 - [F0005: IdP Migration: Keycloak → authentik](features/archive/F0005-idp-migration/PRD.md) - Done (Archived)
 - F0006: Submission Intake Workflow - Planned
@@ -182,15 +182,15 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - [F0001-S0005: View Nudge Cards](features/archive/F0001-dashboard/F0001-S0005-view-nudge-cards.md) - Done (Archived)
 
 **MVP Stories (Feature F0002: Broker Relationship Management):**
-- [F0002-S0001: Create Broker](features/F0002-broker-relationship-management/F0002-S0001-create-broker.md) - Done
-- [F0002-S0002: Search Brokers](features/F0002-broker-relationship-management/F0002-S0002-search-brokers.md) - Done
-- [F0002-S0003: Read Broker (Broker 360 View)](features/F0002-broker-relationship-management/F0002-S0003-read-broker.md) - Done
-- [F0002-S0004: Update Broker](features/F0002-broker-relationship-management/F0002-S0004-update-broker.md) - Done
-- [F0002-S0005: Delete Broker](features/F0002-broker-relationship-management/F0002-S0005-delete-broker.md) - Done
-- [F0002-S0006: Manage Broker Contacts](features/F0002-broker-relationship-management/F0002-S0006-manage-broker-contacts.md) - Done
-- [F0002-S0007: View Broker Activity Timeline](features/F0002-broker-relationship-management/F0002-S0007-view-broker-activity-timeline.md) - Done
-- [F0002-S0008: Reactivate Broker](features/F0002-broker-relationship-management/F0002-S0008-reactivate-broker.md) - Done
-- [F0002-S0009: Adopt Native Casbin Enforcer](features/F0002-broker-relationship-management/F0002-S0009-adopt-native-casbin-enforcer.md) - Done
+- [F0002-S0001: Create Broker](features/archive/F0002-broker-relationship-management/F0002-S0001-create-broker.md) - Done (Archived)
+- [F0002-S0002: Search Brokers](features/archive/F0002-broker-relationship-management/F0002-S0002-search-brokers.md) - Done (Archived)
+- [F0002-S0003: Read Broker (Broker 360 View)](features/archive/F0002-broker-relationship-management/F0002-S0003-read-broker.md) - Done (Archived)
+- [F0002-S0004: Update Broker](features/archive/F0002-broker-relationship-management/F0002-S0004-update-broker.md) - Done (Archived)
+- [F0002-S0005: Delete Broker](features/archive/F0002-broker-relationship-management/F0002-S0005-delete-broker.md) - Done (Archived)
+- [F0002-S0006: Manage Broker Contacts](features/archive/F0002-broker-relationship-management/F0002-S0006-manage-broker-contacts.md) - Done (Archived)
+- [F0002-S0007: View Broker Activity Timeline](features/archive/F0002-broker-relationship-management/F0002-S0007-view-broker-activity-timeline.md) - Done (Archived)
+- [F0002-S0008: Reactivate Broker](features/archive/F0002-broker-relationship-management/F0002-S0008-reactivate-broker.md) - Done (Archived)
+- [F0002-S0009: Adopt Native Casbin Enforcer](features/archive/F0002-broker-relationship-management/F0002-S0009-adopt-native-casbin-enforcer.md) - Done (Archived)
 
 **MVP Stories (Feature F0003: Task Center + Reminders — API-only):**
 - [F0003-S0001: Create Task](features/F0003-task-center/F0003-S0001-create-task.md) - Draft

@@ -25,6 +25,6 @@ Each run folder should contain:
 - Use:
   - `planning-mds/operations/evidence/frontend-ux/TEMPLATE.md`
 - CI validates this requirement with:
-  - `scripts/validate-frontend-ux-evidence.py`
+  - `agents/frontend-developer/scripts/validate-frontend-ux-evidence.py`
 
-For execution requirements, see `docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
+For execution requirements, see `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.

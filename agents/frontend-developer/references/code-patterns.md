@@ -708,24 +708,24 @@ describe('CustomerForm accessibility', () => {
 
 **Avoid (feature code spilled into globals):**
 ```ts
-// Global hook for one dashboard widget only
-src/hooks/useOpportunityFlow.ts
+// Global hook for one orders widget only
+src/hooks/useOrderFlow.ts
 
 // Global type used only by one feature
-src/types/opportunities.ts
+src/types/orders.ts
 
 // Global component tied to one domain screen
-src/components/OpportunityChart.tsx
+src/components/OrderChart.tsx
 ```
 
 **Prefer (co-located feature slice):**
 ```text
-src/features/opportunities/
-  api/opportunity-flow.ts
-  hooks/useOpportunityFlow.ts
-  types/opportunity-flow.ts
-  components/OpportunityChart.tsx
-  components/OpportunityPopover.tsx
+src/features/orders/
+  api/order-flow.ts
+  hooks/useOrderFlow.ts
+  types/order-flow.ts
+  components/OrderChart.tsx
+  components/OrderPopover.tsx
 ```
 
 **Refactor rule of thumb**

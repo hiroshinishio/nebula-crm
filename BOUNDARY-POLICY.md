@@ -78,6 +78,18 @@ This policy defines the boundary between generic, reusable agent roles (`agents/
 
 ---
 
+### Rule 5: Script Placement Boundary
+
+**Principle:** Framework-generic automation must live under `agents/`; repository-root `scripts/` is solution/runtime scoped.
+
+**Placement rules:**
+- ✅ Put reusable governance and validation scripts under `agents/**/scripts/` or `agents/scripts/`
+- ✅ Keep role-specific generic validators with their role (`agents/<role>/scripts/`)
+- ❌ Do not keep framework-generic scripts in root `scripts/`
+- ✅ Use root `scripts/` only for solution deployment/runtime/project-specific automation
+
+---
+
 ## Standard Example Entities
 
 All reference files in `agents/` that include code or API examples must use the same set of example entities. This prevents two problems: inconsistency across files (one guide uses `User/Post`, another uses `Customer/Order`), and accidental re-introduction of solution-specific entities during edits.

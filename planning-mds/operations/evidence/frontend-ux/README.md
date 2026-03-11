@@ -32,4 +32,4 @@ Start from:
 
 CI validator:
 
-- `scripts/validate-frontend-ux-evidence.py`
+- `agents/frontend-developer/scripts/validate-frontend-ux-evidence.py`

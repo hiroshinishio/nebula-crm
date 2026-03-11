@@ -111,11 +111,11 @@ As of 2026-02-08, this repository is **published as a human-orchestrated framewo
 - `agents/` - Generic, reusable agent roles, templates, and references. Copy as-is.
 - `planning-mds/` - Solution-specific requirements, examples, and decisions (Nebula CRM in this repo). Replace for a new project.
 - `blueprint-setup/` - Bootstrap guidance for starting a new project.
-- `engine/` - Backend application layer (C# .NET APIs) - currently placeholder.
-- `experience/` - Frontend application layer (React UI) - currently placeholder.
+- `engine/` - Backend application layer (C# .NET APIs) - active/in-pgoress reference implementation.
+- `experience/` - Frontend application layer (React UI) - active/in-pgoress reference implementation.
 - `neuron/` - AI intelligence layer (Python LLMs, agents, MCP) 🧠 - directory structure created.
 - `docker/agent-builder/` - Container entrypoint/runtime helpers for the builder framework.
-- `docs/` - Meta documentation and audits.
+- `agents/docs/` - Framework documentation (orchestration contract, onboarding, container strategy).
 
 ## Reuse Workflow (New Project)
 
@@ -153,7 +153,7 @@ Security note:
 - The container runs as a non-root user by default.
 - The builder container is orchestration-focused and stack-agnostic; run stack-specific compile/test/security in application runtime containers.
 
-See `docs/CONTAINER-STRATEGY.md` for builder vs application runtime separation.
+See `agents/docs/CONTAINER-STRATEGY.md` for builder vs application runtime separation.
 
 ## Tech Stack Assumptions
 
@@ -168,21 +168,21 @@ Keep the builder base runtime generic; put stack SDKs and execution tooling in t
 - `planning-mds/README.md` - What belongs in solution-specific planning.
 - `BOUNDARY-POLICY.md` - Rules that separate generic vs solution-specific content.
 - `blueprint-setup/README.md` - Bootstrap steps for a new project.
-- `docs/FAQ.md` - Common questions about reuse, stacks, and boundaries.
-- `docs/CONTAINER-STRATEGY.md` - Two-container model (builder runtime vs application runtime).
-- `docs/ORCHESTRATION-CONTRACT.md` - Orchestrator-neutral execution contract.
-- `docs/MANUAL-ORCHESTRATION-RUNBOOK.md` - Required manual execution/evidence flow for the preview release.
-- `docs/PREVIEW-RELEASE-CHECKLIST.md` - Definition of done for the initial public preview.
+- `agents/docs/FAQ.md` - Common questions about reuse, stacks, and boundaries.
+- `agents/docs/CONTAINER-STRATEGY.md` - Two-container model (builder runtime vs application runtime).
+- `agents/docs/ORCHESTRATION-CONTRACT.md` - Orchestrator-neutral execution contract.
+- `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md` - Required manual execution/evidence flow for the preview release.
+- `agents/docs/PREVIEW-RELEASE-CHECKLIST.md` - Definition of done for the initial public preview.
 - `lifecycle-stage.yaml` - Lifecycle stage declaration + required gate matrix.
-- `scripts/run-lifecycle-gates.py` - Stage-aware gate runner used locally and in CI.
+- `agents/scripts/run-lifecycle-gates.py` - Stage-aware gate runner used locally and in CI.
 
 ## Lifecycle Gates
 
 Gates are activated by lifecycle stage, not by ad-hoc command selection.
 
 ```bash
-python3 scripts/run-lifecycle-gates.py --list
-python3 scripts/run-lifecycle-gates.py
+python3 agents/scripts/run-lifecycle-gates.py --list
+python3 agents/scripts/run-lifecycle-gates.py
 ```
 
 CI runs the same command and therefore validates the gates required by `current_stage` only.
@@ -200,16 +200,17 @@ real, end-to-end example (insurance CRM). This repo intentionally contains both;
 This repository is a reference framework (specifications, templates, role definitions, and action contracts).
 It is orchestrator-agnostic and model-agnostic:
 
-- You can execute it with any agent runtime that follows `docs/ORCHESTRATION-CONTRACT.md`.
+- You can execute it with any agent runtime that follows `agents/docs/ORCHESTRATION-CONTRACT.md`.
 - Action files define composition patterns; your orchestrator maps user intents to those actions.
 - This repository does not enforce a single vendor-specific orchestration runtime.
-- Initial preview mode is human-orchestrated; use `docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
+- Initial preview mode is human-orchestrated; use `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
 - Automated orchestrator integrations are future work after framework validation.
 
 ## Boundary Policy (Short Version)
 
 - `agents/` is generic and reusable across projects.
 - `planning-mds/` is solution-specific and should be replaced for each new project.
+- Framework-generic automation scripts live under `agents/**`; root `scripts/` is solution/runtime-specific.
 - Agents read from `planning-mds/` but must not embed solution-specific requirements.
 - Templates and reusable examples live under `agents/templates/` and `agents/**/references/`.
 - Domain knowledge, examples, and decisions live under `planning-mds/`.

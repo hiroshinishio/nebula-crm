@@ -26,7 +26,7 @@ tags:
     description: Operations related to [entity description]
 
 paths:
-  /api/[entities]:
+  /[entities]:
     get:
       summary: List/search [entities]
       description: Retrieve a paginated list of [entities] with optional filtering and sorting
@@ -136,7 +136,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /api/[entities]/{id}:
+  /[entities]/{id}:
     get:
       summary: Get [entity] by ID
       description: Retrieve detailed information about a specific [entity]

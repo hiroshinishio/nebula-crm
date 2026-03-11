@@ -368,7 +368,7 @@ def main() -> int:
     parser.add_argument("--skills-dir", default="agents", help="Directory containing skill folders")
     parser.add_argument(
         "--cases",
-        default="scripts/skill-regression-cases.yaml",
+        default=str(Path(__file__).with_name("skill-regression-cases.yaml")),
         help="YAML file containing routing regression cases",
     )
     parser.add_argument(

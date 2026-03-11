@@ -3,9 +3,9 @@
 Run validation gates declared in lifecycle-stage.yaml.
 
 Usage:
-    python3 scripts/run-lifecycle-gates.py
-    python3 scripts/run-lifecycle-gates.py --list
-    python3 scripts/run-lifecycle-gates.py --stage planning
+    python3 agents/scripts/run-lifecycle-gates.py
+    python3 agents/scripts/run-lifecycle-gates.py --list
+    python3 agents/scripts/run-lifecycle-gates.py --stage planning
 """
 
 import argparse
@@ -22,7 +22,10 @@ DEFAULT_CONFIG_PATH = Path("lifecycle-stage.yaml")
 
 def load_config(path: Path) -> Dict:
     if not path.exists():
-        raise ValueError(f"Config file not found: {path}")
+        raise ValueError(
+            "Config file not found: "
+            f"{path}. Seed from agents/templates/lifecycle-stage-template.yaml"
+        )
 
     with path.open("r", encoding="utf-8") as handle:
         data = yaml.safe_load(handle)
@@ -124,7 +127,7 @@ def main() -> int:
     args = parser.parse_args()
 
     config_path = Path(args.config)
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
 
     try:
         config = load_config(config_path)

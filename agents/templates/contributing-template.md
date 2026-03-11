@@ -1,13 +1,13 @@
 # Contributing
 
-Thanks for contributing to this framework.
+Thanks for contributing to this project.
 
 ## 1) Before You Start
 
 1. Read `README.md`.
 2. Read `BOUNDARY-POLICY.md`.
 3. Confirm whether your change is:
-   - framework-generic (`agents/`), or
+   - framework-generic (`agents/`, docs), or
    - solution-specific (`planning-mds/`).
 
 ## 2) Contribution Flow

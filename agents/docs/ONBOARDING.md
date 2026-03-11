@@ -2,22 +2,21 @@
 
 Initial preview mode note:
 - Human-orchestrated execution is the default for this release.
-- Use `docs/MANUAL-ORCHESTRATION-RUNBOOK.md` for required evidence capture.
+- Use `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md` for required evidence capture.
 
 ## Step 1: Setup (15 minutes)
 
 - [ ] Clone repository
 - [ ] Read `README.md`
 - [ ] (Optional) Build/run the framework container: `docker build -t nebula-agent-builder .`
-- [ ] Review `blueprint-setup/README.md`
 - [ ] Understand `BOUNDARY-POLICY.md`
-- [ ] Review `docs/MANUAL-ORCHESTRATION-RUNBOOK.md`
-- [ ] Review `docs/PREVIEW-RELEASE-CHECKLIST.md`
+- [ ] Review `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md`
+- [ ] Review `agents/docs/PREVIEW-RELEASE-CHECKLIST.md`
 
 ## Step 2: Copy Framework (30 minutes)
 
-- [ ] Copy `agents/` to your new repo
-- [ ] Copy `blueprint-setup/` to your new repo
+- [ ] Copy `agents/` to your new repo (includes docs, templates, scripts, and all agent roles)
+- [ ] Run the `init` action to scaffold root-level framework files
 - [ ] Update root `README.md` title
 - [ ] (Optional) Adapt tech stack references
 
@@ -39,10 +38,10 @@ Initial preview mode note:
 ## Validation
 
 - [ ] Review `lifecycle-stage.yaml` and confirm `current_stage` is correct
-- [ ] Run `python3 scripts/run-lifecycle-gates.py --list`
-- [ ] Run `python3 scripts/run-lifecycle-gates.py`
+- [ ] Run `python3 agents/scripts/run-lifecycle-gates.py --list`
+- [ ] Run `python3 agents/scripts/run-lifecycle-gates.py`
 - [ ] Run `python3 agents/product-manager/scripts/validate-stories.py planning-mds/features`
 - [ ] (Optional strict mode) Run `python3 agents/product-manager/scripts/validate-stories.py --strict-warnings planning-mds/features`
 - [ ] Verify no solution-specific content in `agents/`
-- [ ] Run `python3 scripts/validate-genericness.py`
+- [ ] Run `python3 agents/scripts/validate-genericness.py`
 - [ ] Confirm all specs follow templates

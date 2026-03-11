@@ -2,7 +2,7 @@
 
 > **Examples in this guide use `customers` and `orders` as illustrative entities.
 > These are not prescriptive — substitute your own domain entities when applying
-> these patterns. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for
+> these patterns. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for
 > the full convention and field mapping.
 
 ---
@@ -973,15 +973,15 @@ Architects should define frontend visual quality constraints as enforceable rule
 Architects should define frontend module boundaries early enough that implementation agents do not spread feature code across unrelated global folders.
 
 **Required guidance for frontend-heavy features**
-- Specify the feature slice name(s) in the assembly plan (for example `features/opportunities`, `features/accounts`).
+- Specify the feature slice name(s) in the assembly plan (for example `features/customers`, `features/orders`).
 - State what code must remain feature-local vs what may be shared.
 - Prefer co-location of feature components, hooks, API modules, feature DTO/types, and tests.
 - Reserve shared/global folders for primitives, app shell, and truly cross-feature utilities.
 
 **Handoff example (good)**
-- `experience/src/features/opportunities/components/*` for Sankey/pills/popovers
-- `experience/src/features/opportunities/hooks/*` for flow/items query hooks
-- `experience/src/features/opportunities/types/*` for feature DTOs not shared elsewhere
+- `experience/src/features/orders/components/*` for list cards/status badges/popovers
+- `experience/src/features/orders/hooks/*` for fetch/mutation query hooks
+- `experience/src/features/orders/types/*` for feature DTOs not shared elsewhere
 - `experience/src/components/ui/*` only for reusable primitives
 
 **Anti-pattern to call out explicitly**
@@ -991,5 +991,5 @@ Architects should define frontend module boundaries early enough that implementa
 
 ## Version History
 
-**Version 2.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Replaced Nebula bounded contexts with generic examples. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
+**Version 2.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Replaced Nebula bounded contexts with generic examples. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
 **Version 1.0** - 2026-01-26 - Initial architecture best practices guide

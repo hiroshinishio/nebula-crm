@@ -25,7 +25,6 @@ WORKDIR /workspace
 
 COPY --chown=builder:builder README.md LICENSE BOUNDARY-POLICY.md CONTRIBUTING.md /workspace/
 COPY --chown=builder:builder agents /workspace/agents
-COPY --chown=builder:builder docs /workspace/docs
 COPY --chown=builder:builder blueprint-setup /workspace/blueprint-setup
 COPY --chown=builder:builder scripts /workspace/scripts
 COPY --chown=builder:builder docker/agent-builder/entrypoint.sh /usr/local/bin/agent-builder

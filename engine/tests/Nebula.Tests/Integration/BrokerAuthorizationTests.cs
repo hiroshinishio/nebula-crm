@@ -34,7 +34,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task ListBrokers_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.GetAsync("/api/brokers");
+        var response = await _client.GetAsync("/brokers");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -42,7 +42,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task CreateBroker_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.PostAsJsonAsync("/api/brokers",
+        var response = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Auth Test", "AUTH-001", "CA", null, null));
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -51,7 +51,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task GetBroker_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.GetAsync($"/api/brokers/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/brokers/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -59,7 +59,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task DeleteBroker_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.DeleteAsync($"/api/brokers/{Guid.NewGuid()}");
+        var response = await _client.DeleteAsync($"/brokers/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -67,7 +67,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task ReactivateBroker_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.PostAsync($"/api/brokers/{Guid.NewGuid()}/reactivate", null);
+        var response = await _client.PostAsync($"/brokers/{Guid.NewGuid()}/reactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -76,7 +76,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task ListContacts_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.GetAsync("/api/contacts");
+        var response = await _client.GetAsync("/contacts");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -84,7 +84,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task CreateContact_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.PostAsJsonAsync("/api/contacts",
+        var response = await _client.PostAsJsonAsync("/contacts",
             new ContactCreateDto(Guid.NewGuid(), "Test", "t@t.com", "+11234567890", null));
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -93,7 +93,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task DeleteContact_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.DeleteAsync($"/api/contacts/{Guid.NewGuid()}");
+        var response = await _client.DeleteAsync($"/contacts/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -102,7 +102,7 @@ public class BrokerAuthorizationTests(CustomWebApplicationFactory factory)
     public async Task GetTimeline_WithNoRoles_Returns403()
     {
         SetNoRolesContext();
-        var response = await _client.GetAsync("/api/timeline/events?entityType=Broker");
+        var response = await _client.GetAsync("/timeline/events?entityType=Broker");
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

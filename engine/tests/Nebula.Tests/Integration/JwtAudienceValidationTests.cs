@@ -48,8 +48,8 @@ public class JwtAudienceValidationTests : IClassFixture<JwtAudienceValidationFac
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        // Act — hit any protected endpoint; /api/brokers requires authentication
-        var response = await client.GetAsync("/api/brokers");
+        // Act — hit any protected endpoint; /brokers requires authentication
+        var response = await client.GetAsync("/brokers");
 
         // Assert — middleware must reject before the handler executes
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
@@ -65,7 +65,7 @@ public class JwtAudienceValidationTests : IClassFixture<JwtAudienceValidationFac
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         // Act
-        var response = await client.GetAsync("/api/brokers");
+        var response = await client.GetAsync("/brokers");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
@@ -84,7 +84,7 @@ public class JwtAudienceValidationTests : IClassFixture<JwtAudienceValidationFac
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         // Act
-        var response = await client.GetAsync("/api/brokers");
+        var response = await client.GetAsync("/brokers");
 
         // Assert — audience check passed; response is NOT 401
         // (may be 200, 403, 500, etc. depending on downstream handler — audience was accepted)

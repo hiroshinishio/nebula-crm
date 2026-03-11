@@ -1,29 +1,27 @@
 version: 1
 release_posture:
   mode: public-preview-human-orchestrated
-  summary: 'Phase B approved (2026-02-14). Implementation underway for F0001 (Dashboard)
-    and F0002 (Broker Relationship Management). CI enforces strict infra and security
-    gates at this stage.
+  summary: 'Phase B approved (2026-02-14). F0001 (Dashboard), F0002 (Broker Relationship
+    Management), and F0009 (Authentication + Role-Based Login) are completed and
+    archived. Active implementation scope is F0003 (Task Center API), F0004 (Task
+    Center UI + Manager Assignment), and F0010 (Dashboard Opportunities Refactor).
+    CI enforces strict infra and security gates at this stage.
 
     '
 current_stage: implementation
 implementation_scope:
-  active_feature: F0001-dashboard, F0002-broker-relationship-management
+  active_feature: F0003-task-center, F0004-task-center-ui-and-assignment, F0010-dashboard-opportunities-refactor
   active_stories:
-  - F0001-S0001
-  - F0001-S0002
-  - F0001-S0003
-  - F0001-S0004
-  - F0001-S0005
-  - F0002-S0001
-  - F0002-S0002
-  - F0002-S0003
-  - F0002-S0004
-  - F0002-S0005
-  - F0002-S0006
-  - F0002-S0007
-  note: "Implementation scope includes F0001 dashboard slice, F0002 broker relationship\
-    \ management stories S0001\u2013S0007 for Broker 360, contacts, and timeline."
+  - F0003-S0001
+  - F0003-S0002
+  - F0003-S0003
+  - F0010-S0001
+  - F0010-S0002
+  - F0010-S0003
+  - F0010-S0004
+  - F0010-S0005
+  note: "Implementation scope includes active F0003 and F0010 story execution;\
+    \ F0004 remains active with story decomposition pending."
 stages:
   framework-bootstrap:
     description: Framework scaffolding phase before solution implementation starts
@@ -62,12 +60,12 @@ gates:
     description: Prevent solution-specific leakage into generic framework agents.
     command:
     - python3
-    - scripts/validate-genericness.py
+    - agents/scripts/validate-genericness.py
   skill_regression:
     description: Validate skill metadata, structure quality, and routing regressions.
     command:
     - python3
-    - scripts/run-skill-regression.py
+    - agents/scripts/run-skill-regression.py
   api_contract:
     description: Validate OpenAPI structural and canonical error-contract rules.
     command:

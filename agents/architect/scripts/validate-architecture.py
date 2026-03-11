@@ -278,12 +278,13 @@ def main():
 
     file_path = sys.argv[1]
     glossary_path = sys.argv[2] if len(sys.argv) > 2 else "planning-mds/domain/glossary.md"
-    if (
-        glossary_path == "planning-mds/domain/glossary.md"
-        and not Path(glossary_path).exists()
-        and Path("planning-mds/domain/insurance-glossary.md").exists()
-    ):
-        glossary_path = "planning-mds/domain/insurance-glossary.md"
+    default_glossary = Path("planning-mds/domain/glossary.md")
+    if glossary_path == str(default_glossary) and not default_glossary.exists():
+        domain_dir = default_glossary.parent
+        candidates = sorted(path for path in domain_dir.glob("*glossary*.md") if path.is_file())
+        if len(candidates) == 1:
+            glossary_path = str(candidates[0])
+            print(f"Default glossary not found, using discovered glossary: {glossary_path}")
 
     print(f"Validating architecture specification: {file_path}")
     print(f"Using glossary: {glossary_path}")

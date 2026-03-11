@@ -2,158 +2,342 @@
 
 ## User Intent
 
-Generate comprehensive technical documentation including API documentation, README files, runbooks, and developer guides.
+Generate comprehensive technical documentation including API documentation, README files, runbooks, and developer guides based on implemented code and architecture.
 
 ## Agent Flow
 
 ```
 Technical Writer
+  ↓
+[SELF-REVIEW GATE: Validate documentation quality and accuracy]
+  ↓
+[APPROVAL GATE: User reviews documentation]
+  ↓
+Document Complete
 ```
 
-**Flow Type:** Single agent
+**Flow Type:** Single agent with review gate
 
-## Prerequisites
+---
 
-- [ ] Implementation code exists (backend and/or frontend)
-- [ ] Architecture artifacts available in `planning-mds/`
-- [ ] API endpoints are stable and tested
-- [ ] Application is deployable
+## Runtime Execution Boundary
 
-## Inputs
+- The builder runtime orchestrates documentation flow and gates; it remains stack-agnostic.
+- Documentation that references runtime behavior (API examples, CLI commands, health checks) should be verified against application runtime containers when possible.
+- The Technical Writer inspects code artifacts but does not compile or execute them — any execution validation runs in application runtime containers.
 
-### From Planning
-- `planning-mds/BLUEPRINT.md` (overview, architecture)
-- `planning-mds/architecture/` (data model, ADRs, architecture notes)
-- `planning-mds/api/` (OpenAPI/API contracts)
-- User stories and features
+---
 
-### From Codebase
-- API controllers and endpoints
-- Database schema (migrations)
-- Configuration files
-- Docker setup (Dockerfile, docker-compose.yml)
-- Environment variables
+## Execution Steps
 
-### From User
-- Documentation scope (API, README, runbooks, all)
-- Target audience (developers, operators, end users)
-- Specific areas requiring documentation
+### Step 1: Documentation Planning
 
-## Outputs
+**Execution Instructions:**
 
-### API Documentation
-- API reference documentation (OpenAPI/Swagger)
-- Endpoint descriptions
-- Request/response examples
-- Authentication/authorization guide
-- Error codes and handling
-- Rate limiting and pagination
+1. **Activate Technical Writer agent** by reading `agents/technical-writer/SKILL.md`
 
-### README Files
-- **Root README.md:**
-  - Project overview
-  - Tech stack
-  - Prerequisites
-  - Quick start guide
-  - Project structure
-  - Development setup
-  - Testing instructions
-  - Deployment guide
-  - Contributing guidelines
-  - License
+2. **Read context:**
+   - `planning-mds/BLUEPRINT.md` (project overview, architecture)
+   - `planning-mds/architecture/SOLUTION-PATTERNS.md`
+   - `planning-mds/architecture/decisions/` (ADRs)
+   - `planning-mds/api/` (OpenAPI/API contracts)
+   - `planning-mds/features/` (feature folders with stories)
+   - Existing documentation in the project
+   - Codebase: API controllers, database schema, configuration, Docker setup
 
-- **Component READMEs:**
-  - Backend README (API setup, structure)
-  - Frontend README (UI setup, structure)
-  - Database README (schema, migrations)
+3. **Determine documentation scope from user input:**
+   - `api` — API reference documentation
+   - `readme` — README files (root and component)
+   - `runbooks` — operational runbooks
+   - `guides` — developer guides
+   - `feature:{slug}` — documentation for a specific feature
+   - `all` — comprehensive documentation (default)
 
-### Runbooks
-- Deployment runbook
-- Operational runbook (monitoring, troubleshooting)
-- Database migration runbook
-- Backup and recovery runbook
-- Incident response runbook
+4. **Produce documentation plan:**
+   ```markdown
+   # Documentation Plan
 
-### Developer Guides
-- Architecture overview
-- Code organization guide
-- Development workflow
-- Testing guide
-- Debugging guide
-- Common tasks guide
+   Scope: [scope from user input]
+   Target Audience: [developers / operators / end users]
+   Date: [Date]
 
-## Agent Responsibilities
+   ## Documents to Create/Update
+   | Document | Type | Status | Location |
+   |----------|------|--------|----------|
+   | Root README.md | README | Create/Update | ./README.md |
+   | API Reference | API Docs | Create | docs/api/ |
+   | Deployment Runbook | Runbook | Create | docs/runbooks/deployment.md |
 
-### Technical Writer
-1. **API Documentation:**
-   - Generate OpenAPI specification from code
-   - Write endpoint descriptions
-   - Add request/response examples
-   - Document authentication flow
-   - Document error responses
-   - Add usage examples
+   ## Source Material
+   - API contracts: [list files]
+   - Architecture: [list files]
+   - Code: [list key directories]
+   ```
 
-2. **README Creation:**
-   - Write project overview
-   - Document tech stack and prerequisites
-   - Create quick start guide
-   - Document project structure
-   - Write development setup instructions
-   - Document testing procedures
-   - Create deployment guide
+**Completion Criteria for Step 1:**
+- [ ] Documentation plan produced
+- [ ] Target audience identified
+- [ ] Source material identified
 
-3. **Runbook Development:**
-   - Document deployment procedures
-   - Create troubleshooting guides
-   - Document common operations
-   - Add monitoring guidance
-   - Include rollback procedures
+---
 
-4. **Developer Guide Creation:**
-   - Explain architecture patterns
-   - Document code organization
-   - Describe development workflow
-   - Provide debugging tips
-   - Document common tasks
+### Step 2: Documentation Generation
 
-5. **Quality Assurance:**
-   - Validate documentation accuracy
-   - Check for completeness
-   - Ensure clarity and readability
-   - Test all examples and commands
+**Execution Instructions:**
+
+Generate documentation based on the plan. All documentation follows the target audience's needs.
+
+1. **API Documentation (when in scope):**
+   - Generate or update OpenAPI specification from code
+   - Write endpoint descriptions with purpose and behavior
+   - Add request/response examples with realistic data
+   - Document authentication and authorization requirements
+   - Document error responses (codes, ProblemDetails format)
+   - Add pagination, filtering, and sorting documentation
+   - Include usage examples (curl or SDK)
+
+2. **README Files (when in scope):**
+   - **Root README.md:**
+     - Project overview and purpose
+     - Tech stack with versions
+     - Prerequisites
+     - Quick start guide (clone → run in 5 minutes)
+     - Project structure explanation
+     - Development setup
+     - Testing instructions
+     - Deployment guide (or link to runbook)
+     - Contributing guidelines (or link to CONTRIBUTING.md)
+
+   - **Component READMEs (if multiple services):**
+     - Component-specific setup
+     - Architecture within the component
+     - Key files and directories
+
+3. **Runbooks (when in scope):**
+   - Deployment runbook (step-by-step with verification after each action)
+   - Operational runbook (monitoring, troubleshooting)
+   - Database migration runbook
+   - Backup and recovery runbook
+   - Each runbook includes rollback procedures
+
+4. **Developer Guides (when in scope):**
+   - Architecture overview with diagrams
+   - Code organization guide
+   - Development workflow (branch → PR → review → merge)
+   - Testing guide (how to run, write, and debug tests)
+   - Common tasks guide (add endpoint, add entity, add page)
+
+**Completion Criteria for Step 2:**
+- [ ] All planned documents generated
+- [ ] Content is accurate and complete
+- [ ] Examples are realistic
+
+---
+
+### Step 3: SELF-REVIEW GATE (Documentation Quality)
+
+**Execution Instructions:**
+
+Technical Writer validates documentation quality:
+
+**Accuracy:**
+- [ ] All code references match actual codebase (file paths, class names, endpoints)
+- [ ] API examples match actual request/response shapes
+- [ ] Environment variables match actual configuration
+- [ ] Prerequisites are correct and complete
+- [ ] Version numbers are current
+
+**Completeness:**
+- [ ] All endpoints documented (for API docs)
+- [ ] Quick start guide covers clone-to-running
+- [ ] Runbooks include verification and rollback steps
+- [ ] Error scenarios documented
+- [ ] Authentication/authorization documented
+
+**Clarity:**
+- [ ] No jargon without explanation
+- [ ] Steps are numbered and sequential
+- [ ] Code examples are syntax-highlighted
+- [ ] Links are valid (internal cross-references)
+- [ ] No TODO or placeholder text remains
+
+**Testability:**
+- [ ] Commands in docs can be copy-pasted and executed
+- [ ] Quick start guide works on a fresh clone
+- [ ] API examples return expected responses
+
+**If any check fails:**
+- Fix documentation quality issues
+- Re-run self-review
+- Repeat until passing
+
+**Gate Criteria:**
+- [ ] All accuracy checks pass
+- [ ] All completeness checks pass
+- [ ] All clarity checks pass
+- [ ] No placeholder content remains
+
+---
+
+### Step 4: APPROVAL GATE (Documentation Review)
+
+**Execution Instructions:**
+
+1. **Present documentation results to user:**
+   ```
+   ═══════════════════════════════════════════════════════════
+   Documentation Generation Complete
+   ═══════════════════════════════════════════════════════════
+
+   Scope: [documentation scope]
+   Target Audience: [audience]
+
+   Documents Created/Updated:
+     - [Document Name] → [file path]
+     - [Document Name] → [file path]
+     - [Document Name] → [file path]
+
+   Content Summary:
+     - API Endpoints Documented: [count]
+     - README Sections: [count]
+     - Runbook Steps: [count]
+     - Guide Sections: [count]
+     - Code Examples: [count]
+
+   Quality Check:
+     - Accuracy: ✓
+     - Completeness: ✓
+     - Clarity: ✓
+
+   ═══════════════════════════════════════════════════════════
+   Please review the generated documentation.
+   ═══════════════════════════════════════════════════════════
+   ```
+
+2. **Present approval options:**
+   ```
+   Documentation Review:
+   - "approve" — Documentation is accurate and complete
+   - "request changes" — Specify what needs to change
+   - "reject" — Major issues, needs rewrite
+   ```
+
+3. **Handle user response:**
+   - **If "approve":**
+     - Proceed to Step 5 (Document Complete)
+
+   - **If "request changes":**
+     - Ask: "What changes are needed?"
+     - Capture feedback
+     - Apply changes to documentation
+     - Return to Step 3 (re-run self-review)
+
+   - **If "reject":**
+     - Ask: "What are the major issues?"
+     - Capture feedback
+     - Return to Step 2 (regenerate documentation with feedback)
+
+**Gate Criteria:**
+- [ ] User has reviewed documentation
+- [ ] User has made explicit decision
+- [ ] Any requested changes have been applied
+
+---
+
+### Step 5: Document Complete
+
+**Execution Instructions:**
+
+Present completion summary:
+
+```
+═══════════════════════════════════════════════════════════
+Document Action Complete! ✓
+═══════════════════════════════════════════════════════════
+
+Documentation Delivered:
+  ✓ [Document type]: [file path]
+  ✓ [Document type]: [file path]
+  ✓ [Document type]: [file path]
+
+Quality:
+  ✓ Accuracy verified
+  ✓ Completeness checked
+  ✓ Examples tested
+  ✓ Links validated
+
+User Decision: APPROVED
+
+═══════════════════════════════════════════════════════════
+Next Steps:
+═══════════════════════════════════════════════════════════
+
+1. Commit documentation with code changes
+2. Publish to documentation site (if applicable)
+3. Share with team for onboarding
+4. Keep documentation updated as code evolves
+
+Documentation complete! ✓
+═══════════════════════════════════════════════════════════
+```
+
+---
 
 ## Validation Criteria
 
-### API Documentation Complete
-- [ ] All endpoints documented
-- [ ] Request/response schemas defined
-- [ ] Authentication documented
-- [ ] Error codes listed
-- [ ] Examples provided
-- [ ] OpenAPI spec generated
+**Overall Document Action Success:**
+- [ ] Documentation plan produced
+- [ ] All planned documents generated
+- [ ] Self-review gate passed (accuracy, completeness, clarity)
+- [ ] User reviewed and approved documentation
+- [ ] No TODO or placeholder content remains
+- [ ] All examples are realistic and testable
 
-### README Complete
-- [ ] Project overview clear
-- [ ] Prerequisites listed
-- [ ] Quick start works
-- [ ] Project structure explained
-- [ ] Development setup documented
-- [ ] Testing instructions clear
-- [ ] Deployment guide complete
+---
 
-### Runbooks Complete
-- [ ] Deployment steps clear
-- [ ] Troubleshooting guide helpful
-- [ ] Common operations documented
-- [ ] Monitoring setup explained
-- [ ] Rollback procedures defined
+## Prerequisites
 
-### Developer Guides Complete
-- [ ] Architecture explained
-- [ ] Code organization clear
-- [ ] Development workflow documented
-- [ ] Common tasks covered
-- [ ] Debugging guide helpful
+Before running document action:
+- [ ] Implementation code exists (backend and/or frontend)
+- [ ] Architecture artifacts available in `planning-mds/`
+- [ ] API endpoints are stable and tested
+- [ ] Application is deployable (for runbook verification)
+
+---
+
+## Documentation Best Practices
+
+### API Documentation
+- ✅ Use OpenAPI/Swagger standard
+- ✅ Include realistic examples with actual field values
+- ✅ Document error scenarios with ProblemDetails responses
+- ✅ Keep in sync with code (regenerate when endpoints change)
+- ❌ Don't use generic descriptions ("Gets data")
+- ❌ Don't skip error documentation
+
+### README Files
+- ✅ Start with quick start (clone-to-running)
+- ✅ Use clear headings and numbered steps
+- ✅ Include working, copy-pasteable commands
+- ❌ Don't assume prior knowledge of the stack
+- ❌ Don't skip prerequisites
+
+### Runbooks
+- ✅ Use numbered step-by-step format
+- ✅ Include verification steps after each major action
+- ✅ Add troubleshooting tips for common failures
+- ✅ Document rollback procedures
+- ❌ Don't use ambiguous language ("usually works")
+- ❌ Don't skip edge cases
+
+### Developer Guides
+- ✅ Explain the "why" not just "how"
+- ✅ Use diagrams for architecture
+- ✅ Link to related docs (don't duplicate)
+- ❌ Don't duplicate README content
+- ❌ Don't overwhelm with implementation details
+
+---
 
 ## Example Usage
 
@@ -161,141 +345,107 @@ Technical Writer
 ```
 User: "Document the customer management API"
 
-Document Action:
-  ↓
-Technical Writer:
-  - Reviews customer API endpoints
-  - Generates OpenAPI spec
+Agent Runtime: [Reads document.md]
+Agent Runtime: "I'll generate API documentation for customer management..."
 
-  Endpoints Documented:
-    - POST /api/customers
-    - GET /api/customers
-    - GET /api/customers/:id
-    - PUT /api/customers/:id
-    - DELETE /api/customers/:id
+[Step 1: Planning]
+  - Scope: API docs for customer endpoints
+  - Source: 5 API endpoints, OpenAPI contract, SOLUTION-PATTERNS.md
 
-  For Each Endpoint:
-    - Description
-    - Parameters
-    - Request body schema
-    - Response schema
-    - Example requests/responses
-    - Error codes
+[Step 2: Generation]
+  - POST /api/customers — documented with create example
+  - GET /api/customers — documented with pagination/filter examples
+  - GET /api/customers/:id — documented with response example
+  - PUT /api/customers/:id — documented with update example
+  - DELETE /api/customers/:id — documented with soft-delete behavior
 
-  Output:
-    - docs/api/customers.md
-    - openapi.yaml (updated)
+[Step 3: Self-review — all quality checks pass]
+
+[Step 4: Approval gate]
+Agent Runtime: "API documentation complete.
+  - 5 endpoints documented
+  - 10 request/response examples
+  - Error codes and ProblemDetails format documented
+  - Authentication requirements documented
+
+  Please review. Options: approve / request changes / reject"
+
+User: "approve"
+
+Agent Runtime: "API documentation complete! Saved to docs/api/customers.md"
 ```
 
-### Scenario 2: Complete Documentation
+### Scenario 2: Complete Documentation Suite
 ```
 User: "Generate all documentation for the application"
 
-Document Action:
-  ↓
-Technical Writer:
-  API Documentation:
-    - Generates full OpenAPI spec
-    - Documents all endpoints
-    - Adds examples and errors
+[Step 1: Planning]
+  - Scope: all (API, README, runbooks, guides)
+  - 14 documents planned
 
-  README:
-    - Root README.md
-    - backend/README.md
-    - frontend/README.md
+[Step 2: Generation]
+  - Root README.md (overview, quick start, structure)
+  - engine/README.md (backend setup, architecture)
+  - experience/README.md (frontend setup, components)
+  - docs/api/ (all endpoints)
+  - docs/runbooks/ (deployment, operations, migrations)
+  - docs/guides/ (architecture, development, testing)
 
-  Runbooks:
-    - docs/runbooks/deployment.md
-    - docs/runbooks/operations.md
-    - docs/runbooks/migrations.md
+[Step 3: Self-review — pass]
 
-  Developer Guides:
-    - docs/guides/architecture.md
-    - docs/guides/development.md
-    - docs/guides/testing.md
+[Step 4: Approval]
+Agent Runtime: "14 documentation files generated. Review?"
 
-  Output:
-    - 12 documentation files created
-    - All examples tested and verified
+User: "request changes — add troubleshooting section to deployment runbook"
+
+Agent Runtime: "Adding troubleshooting section..."
+[Updates runbook, re-runs self-review]
+
+Agent Runtime: "Updated. Review again?"
+
+User: "approve"
+
+Agent Runtime: "Documentation suite complete!"
 ```
 
-### Scenario 3: README Update
+### Scenario 3: Feature-Scoped Documentation
 ```
-User: "Update README with new deployment instructions"
+User: "Document the task management feature"
 
-Document Action:
-  ↓
-Technical Writer:
-  - Reviews current README
-  - Reads new deployment setup (Docker, docker-compose)
-  - Updates deployment section
+[Step 1: Planning]
+  - Scope: feature:task-management
+  - Source: 8 stories, 6 API endpoints, feature STATUS.md
 
-  Updates:
-    - Added Docker prerequisites
-    - Updated environment setup
-    - Added docker-compose instructions
-    - Updated troubleshooting section
+[Step 2: Generation]
+  - Feature API reference (6 endpoints)
+  - Feature user guide (task CRUD + assignment flow)
+  - Updated root README with feature overview
 
-  Output:
-    - README.md updated
-    - Deployment section verified
+[Step 3: Self-review — pass]
+
+[Step 4: Approval]
+Agent Runtime: "Feature documentation ready. Review?"
+
+User: "approve"
+
+Agent Runtime: "Task management documentation complete!"
 ```
 
-## Documentation Best Practices
-
-### API Documentation
-- ✅ Use OpenAPI/Swagger standard
-- ✅ Include realistic examples
-- ✅ Document error scenarios
-- ✅ Keep in sync with code
-- ❌ Don't use generic descriptions
-- ❌ Don't skip error documentation
-
-### README Files
-- ✅ Start with quick start
-- ✅ Use clear headings
-- ✅ Include working examples
-- ✅ Keep it up-to-date
-- ❌ Don't assume prior knowledge
-- ❌ Don't skip prerequisites
-
-### Runbooks
-- ✅ Use step-by-step format
-- ✅ Include verification steps
-- ✅ Add troubleshooting tips
-- ✅ Document rollback procedures
-- ❌ Don't skip edge cases
-- ❌ Don't use ambiguous language
-
-### Developer Guides
-- ✅ Explain the "why" not just "how"
-- ✅ Use diagrams and examples
-- ✅ Link to related docs
-- ✅ Keep guides focused
-- ❌ Don't duplicate README
-- ❌ Don't overwhelm with detail
-
-## Post-Documentation Next Steps
-
-After document action completes:
-1. Review documentation for accuracy
-2. Test all examples and commands
-3. Share with team for feedback
-4. Publish to documentation site (if applicable)
-5. Keep documentation updated with code changes
+---
 
 ## Related Actions
 
-- **After:** [build action](./build.md) or [feature action](./feature.md) - Document after building
-- **With:** [blog action](./blog.md) - Blog about new features
+- **After:** [build action](./build.md) or [feature action](./feature.md) — document after building
+- **With:** [blog action](./blog.md) — docs for reference, blogs for narrative
 - **Continuous:** Update docs when code changes
+
+---
 
 ## Notes
 
 - Documentation should be versioned with code
 - Keep docs close to code (co-located when possible)
-- Automate API doc generation from code
-- Test all commands and examples in docs
-- Use documentation as onboarding tool
-- Update docs in same PR as code changes
-- Consider documentation as part of Definition of Done
+- Automate API doc generation from code annotations when available
+- Test all commands and examples in docs before finalizing
+- Consider documentation as part of the Definition of Done
+- Update docs in the same PR as code changes

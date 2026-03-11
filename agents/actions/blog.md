@@ -8,102 +8,278 @@ Write development logs, technical articles, and blog posts about project progres
 
 ```
 Blogger
+  ↓
+[SELF-REVIEW GATE: Validate content quality and accuracy]
+  ↓
+[EDITORIAL GATE: User reviews post]
+  ↓
+Blog Complete
 ```
 
-**Flow Type:** Single agent
+**Flow Type:** Single agent with editorial gate
 
-## Prerequisites
+---
 
-- [ ] Something worth writing about (feature completed, decision made, problem solved, milestone reached)
-- [ ] Context available (code, architecture docs, ADRs, etc.)
-- [ ] Optional: Target audience identified
+## Runtime Execution Boundary
 
-## Inputs
+- The blog action runs entirely in the builder runtime. No application runtime containers are required.
+- Code examples in blog posts should be verified against the actual codebase for accuracy, but the Blogger does not execute code.
 
-### From Planning
-- `planning-mds/BLUEPRINT.md` (project context)
-- `planning-mds/architecture/decisions/` (ADRs)
-- User stories and features
+---
 
-### From Codebase
-- Recent changes (git commits, PRs)
-- Implementation details
-- Test results
-- Performance metrics
+## Execution Steps
 
-### From User
-- Topic or focus area
-- Target audience (developers, general tech, management)
-- Blog post type (devlog, tutorial, case study, retrospective)
-- Publishing destination (team blog, public blog, dev.to, etc.)
+### Step 1: Topic and Audience Planning
 
-## Outputs
+**Execution Instructions:**
 
-### Blog Posts
-Types of posts:
-- **DevLog:** Development progress updates, what was built, challenges faced
-- **Tutorial:** How-to guides, step-by-step implementations
-- **Case Study:** Deep dive into a specific problem and solution
-- **Retrospective:** Lessons learned, what went well/poorly
-- **Technical Deep Dive:** Detailed exploration of technical decisions
-- **Architecture Decision:** Explaining key architectural choices
-- **Performance:** Optimization efforts and results
+1. **Activate Blogger agent** by reading `agents/blogger/SKILL.md`
 
-### Deliverables
-- Markdown blog post
-- Code snippets (formatted and tested)
-- Diagrams (if applicable)
-- Screenshots (if applicable)
-- SEO-friendly title and description
-- Tags and categories
+2. **Read context based on topic:**
+   - `planning-mds/BLUEPRINT.md` (project context)
+   - `planning-mds/architecture/decisions/` (ADRs for decision posts)
+   - `planning-mds/features/F{NNNN}-{slug}/` (feature context: stories, STATUS.md)
+   - `planning-mds/architecture/SOLUTION-PATTERNS.md` (for pattern-focused posts)
+   - Relevant code changes (git log, implementation files)
+   - Review outputs (code review, security review reports)
+   - Test results and coverage data
 
-## Agent Responsibilities
+3. **Determine post type from user input:**
+   - `devlog` — development progress update
+   - `tutorial` — step-by-step how-to guide
+   - `case-study` — deep dive into a problem and solution
+   - `retrospective` — lessons learned reflection
+   - `deep-dive` — detailed technical exploration
+   - `decision` — explaining an architectural decision (often based on an ADR)
 
-### Blogger
-1. **Topic Selection:**
-   - Identify interesting, valuable topics
-   - Consider audience and value proposition
-   - Align with project goals
+4. **Produce editorial brief:**
+   ```markdown
+   # Editorial Brief
 
-2. **Research:**
-   - Review relevant code and docs
-   - Understand technical details
-   - Gather supporting data/metrics
-   - Collect examples
+   Topic: [topic from user]
+   Type: [post type]
+   Target Audience: [developers / general tech / management / team]
+   Estimated Length: [word count]
+   Key Points: [3-5 bullet points]
+   Code Examples Needed: [count and description]
+   Diagrams Needed: [count and description]
+   ```
 
-3. **Writing:**
-   - Create engaging title
-   - Write clear introduction (hook + value proposition)
-   - Develop main content with structure
-   - Include code examples (tested and working)
-   - Add visuals (diagrams, screenshots)
-   - Write conclusion with takeaways
-   - Add call-to-action (if applicable)
+**Completion Criteria for Step 1:**
+- [ ] Editorial brief produced
+- [ ] Target audience identified
+- [ ] Source material gathered
 
-4. **Quality:**
-   - Ensure technical accuracy
-   - Check code examples work
-   - Validate links
-   - Proofread for clarity
-   - Optimize for readability
+---
 
-5. **Publishing Prep:**
-   - Format for target platform
-   - Add metadata (tags, categories)
-   - Create SEO-friendly description
-   - Prepare social media snippets
+### Step 2: Content Creation
+
+**Execution Instructions:**
+
+1. **Write blog post following the editorial brief:**
+
+   **Structure (all post types):**
+   - **Title:** Clear, engaging, specific (not clickbait)
+   - **Introduction:** Hook + what the reader will learn (2-3 sentences)
+   - **Body:** Main content organized with headings
+   - **Code Examples:** Tested against actual codebase, syntax-highlighted
+   - **Visuals:** Diagrams or screenshots where they add clarity
+   - **Conclusion:** Key takeaways (2-3 bullet points)
+   - **Metadata:** Tags, categories, estimated reading time
+
+   **Post Type Guidelines:**
+
+   | Type | Length | Structure | Key Element |
+   |------|--------|-----------|-------------|
+   | DevLog | 800-1,200 words | What → Why → How → Challenges → Results | Progress narrative |
+   | Tutorial | 1,500-2,500 words | Prerequisites → Steps → Explanation → Examples | Copy-pasteable steps |
+   | Case Study | 1,500-2,000 words | Problem → Investigation → Solution → Results → Lessons | Before/after comparison |
+   | Retrospective | 1,000-1,500 words | Context → What went well → Challenges → Lessons → Changes | Honest reflection |
+   | Deep Dive | 1,500-2,500 words | Context → Concept → Implementation → Trade-offs → Conclusion | Technical depth |
+   | Decision | 1,000-1,500 words | Context → Options → Decision → Rationale → Consequences | Decision rationale |
+
+2. **Verify code examples:**
+   - All code snippets match actual project code
+   - Examples are complete enough to understand (not isolated fragments)
+   - No secrets, credentials, or internal URLs in examples
+   - Syntax highlighting specified for each code block
+
+3. **Save blog post:**
+   - File: `blog/{year}/{month}-{slug}.md` (or user-specified location)
+
+**Completion Criteria for Step 2:**
+- [ ] Blog post written to target length
+- [ ] All sections complete
+- [ ] Code examples verified against codebase
+
+---
+
+### Step 3: SELF-REVIEW GATE (Content Quality)
+
+**Execution Instructions:**
+
+Blogger validates post quality:
+
+**Technical Accuracy:**
+- [ ] Code examples match actual codebase
+- [ ] Architecture descriptions match SOLUTION-PATTERNS.md
+- [ ] Metrics and data are from actual project (not invented)
+- [ ] No secrets, credentials, or internal URLs
+- [ ] Technical assertions are accurate and verifiable
+
+**Content Quality:**
+- [ ] Title is clear, specific, and engaging
+- [ ] Introduction hooks the reader and states the value proposition
+- [ ] Content is well-structured with clear headings
+- [ ] Each section advances the narrative
+- [ ] Conclusion summarizes key takeaways
+- [ ] No filler content or unnecessary repetition
+
+**Readability:**
+- [ ] Appropriate for target audience (not too basic or advanced)
+- [ ] Jargon explained when first used
+- [ ] Paragraphs are focused (one idea per paragraph)
+- [ ] Code examples have surrounding explanation
+- [ ] Post length matches target range for post type
+
+**If any check fails:**
+- Fix content quality issues
+- Re-run self-review
+- Repeat until passing
+
+**Gate Criteria:**
+- [ ] All technical accuracy checks pass
+- [ ] All content quality checks pass
+- [ ] All readability checks pass
+
+---
+
+### Step 4: EDITORIAL GATE (User Review)
+
+**Execution Instructions:**
+
+1. **Present blog post summary to user:**
+   ```
+   ═══════════════════════════════════════════════════════════
+   Blog Post Ready for Review
+   ═══════════════════════════════════════════════════════════
+
+   Title: [post title]
+   Type: [post type]
+   Length: [word count] words (~[reading time] min read)
+   Audience: [target audience]
+
+   Sections:
+     - [Section 1 heading]
+     - [Section 2 heading]
+     - [Section 3 heading]
+     - ...
+
+   Code Examples: [count]
+   Diagrams: [count]
+
+   File: [file path]
+
+   ═══════════════════════════════════════════════════════════
+   Please review the post at the file path above.
+   ═══════════════════════════════════════════════════════════
+   ```
+
+2. **Present review options:**
+   ```
+   Blog Post Review:
+   - "approve" — Post is ready to publish
+   - "request changes" — Specify what needs to change
+   - "reject" — Major issues, needs rewrite
+   ```
+
+3. **Handle user response:**
+   - **If "approve":**
+     - Proceed to Step 5 (Blog Complete)
+
+   - **If "request changes":**
+     - Ask: "What changes are needed?"
+     - Capture feedback
+     - Apply changes to post
+     - Return to Step 3 (re-run self-review)
+
+   - **If "reject":**
+     - Ask: "What are the major issues?"
+     - Capture feedback
+     - Return to Step 2 (rewrite with feedback)
+
+**Gate Criteria:**
+- [ ] User has reviewed blog post
+- [ ] User has made explicit decision
+- [ ] Any requested changes have been applied
+
+---
+
+### Step 5: Blog Complete
+
+**Execution Instructions:**
+
+Present completion summary:
+
+```
+═══════════════════════════════════════════════════════════
+Blog Action Complete! ✓
+═══════════════════════════════════════════════════════════
+
+Post: [title]
+Type: [post type]
+Length: [word count] words
+File: [file path]
+
+Quality:
+  ✓ Technical accuracy verified
+  ✓ Content quality checked
+  ✓ Code examples verified against codebase
+  ✓ Readability validated
+
+User Decision: APPROVED
+
+═══════════════════════════════════════════════════════════
+Next Steps:
+═══════════════════════════════════════════════════════════
+
+1. Publish to target platform
+2. Share on social media / team channels
+3. Engage with comments and feedback
+
+Publishing Destinations:
+  - Internal: Team wiki, Confluence, Notion
+  - Public: Company blog, dev.to, Medium, Hashnode
+  - Social: LinkedIn, Twitter/X (thread format)
+  - Repo: blog/ directory (version controlled)
+
+Blog post ready to publish! ✓
+═══════════════════════════════════════════════════════════
+```
+
+---
 
 ## Validation Criteria
 
-- [ ] Title is clear and engaging
-- [ ] Introduction hooks reader and explains value
-- [ ] Content is well-structured with headings
-- [ ] Code examples are tested and work
-- [ ] Technical details are accurate
-- [ ] Visuals enhance understanding
-- [ ] Conclusion summarizes key takeaways
-- [ ] Post is proofread and polished
-- [ ] Metadata and tags added
+**Overall Blog Action Success:**
+- [ ] Editorial brief produced
+- [ ] Blog post written to target length and type
+- [ ] Self-review gate passed (accuracy, quality, readability)
+- [ ] User reviewed and approved post
+- [ ] Code examples verified against actual codebase
+- [ ] No secrets or credentials in content
+- [ ] Post saved to specified location
+
+---
+
+## Prerequisites
+
+Before running blog action:
+- [ ] Something worth writing about (feature completed, decision made, problem solved, milestone reached)
+- [ ] Context available (code, architecture docs, ADRs, review reports)
+- [ ] Optional: Target audience identified by user
+
+---
 
 ## Example Usage
 
@@ -111,141 +287,100 @@ Types of posts:
 ```
 User: "Write a devlog about building the customer management feature"
 
-Blog Action:
-  ↓
-Blogger:
-  - Reviews customer feature implementation
-  - Examines user stories and architecture
-  - Gathers code examples
+Agent Runtime: [Reads blog.md]
+Agent Runtime: "I'll create a devlog about customer management..."
 
-  Post Structure:
-    - Title: "Building Customer Management: Clean Architecture in Practice"
-    - Introduction: Challenge of managing customer relationships
-    - Feature Overview: What we built
-    - Architecture Decisions: Why we chose certain patterns
-    - Implementation Highlights: Code examples
-    - Challenges: Authorization complexity
-    - Results: Feature shipped, lessons learned
-    - Conclusion: Key takeaways
+[Step 1: Planning]
+  - Topic: Customer management feature
+  - Type: devlog
+  - Audience: developers and stakeholders
+  - Key points: clean architecture, ABAC authorization, vertical slicing
 
-  Output:
-    - blog/2026/02-customer-management-feature.md
-    - 1,200 words
-    - 5 code examples
-    - 2 diagrams
+[Step 2: Content creation]
+  - Title: "Building Customer Management: Clean Architecture in Practice"
+  - 1,100 words
+  - 5 code examples (entity, endpoint, authorization policy, test, component)
+  - 1 architecture diagram
+
+[Step 3: Self-review — all checks pass]
+
+[Step 4: Editorial gate]
+Agent Runtime: "Blog post ready for review.
+  Title: 'Building Customer Management: Clean Architecture in Practice'
+  Length: 1,100 words (~5 min read)
+  File: blog/2026/03-customer-management-feature.md
+
+  Options: approve / request changes / reject"
+
+User: "request changes — add a section about the challenges
+  we faced with authorization policy syntax"
+
+Agent Runtime: "Adding challenges section..."
+[Updates post, re-runs self-review]
+
+Agent Runtime: "Updated to 1,350 words. Review again?"
+
+User: "approve"
+
+Agent Runtime: "Blog post complete! Ready to publish."
 ```
 
-### Scenario 2: Technical Deep Dive
+### Scenario 2: Architecture Decision Post
 ```
-User: "Write about our ABAC authorization implementation"
+User: "Write about our decision to switch from Keycloak to authentik"
 
-Blog Action:
-  ↓
-Blogger:
-  - Reviews authorization architecture
-  - Studies Casbin implementation
-  - Gathers metrics and examples
+[Step 1: Planning]
+  - Reads ADR-006
+  - Type: decision
+  - Audience: technical professionals
 
-  Post Structure:
-    - Title: "ABAC with Casbin: Fine-Grained Authorization in .NET"
-    - Introduction: Authorization challenges in multi-tenant CRM
-    - Why ABAC: RBAC limitations
-    - Casbin Overview: What and why
-    - Implementation: Code walkthrough
-    - Policies: Policy examples
-    - Performance: Benchmarks
-    - Lessons: What we learned
-    - Conclusion: When to use ABAC
+[Step 2: Content creation]
+  - Title: "Why We Migrated from Keycloak to authentik"
+  - 1,300 words
+  - Covers: evaluation criteria, migration challenges,
+    blueprint gotchas, results
 
-  Output:
-    - blog/2026/02-abac-authorization-casbin.md
-    - 2,000 words
-    - 8 code examples
-    - 3 diagrams
-    - Performance benchmarks table
+[Steps 3-4: Review and approval]
+
+Agent Runtime: "Decision post complete! Saved to
+  blog/2026/03-keycloak-to-authentik-migration.md"
 ```
 
-### Scenario 3: Project Retrospective
+### Scenario 3: Technical Deep Dive
 ```
-User: "Write a retrospective on our Phase A experience"
+User: "Write a deep dive on our ABAC authorization implementation"
 
-Blog Action:
-  ↓
-Blogger:
-  - Reviews Phase A outputs
-  - Reflects on process
-  - Identifies lessons learned
+[Step 1: Planning]
+  - Type: deep-dive
+  - Audience: .NET developers interested in authorization
 
-  Post Structure:
-    - Title: "Phase A Retrospective: Requirements Done Right"
-    - Introduction: Our approach to product planning
-    - What Went Well: Vertical slicing, clear acceptance criteria
-    - Challenges: Avoiding scope creep, managing ambiguity
-    - Lessons Learned: 5 key insights
-    - Process Changes: What we'll do differently
-    - Conclusion: Advice for others
+[Step 2: Content creation]
+  - Title: "ABAC with Casbin: Fine-Grained Authorization in .NET"
+  - 2,100 words, 8 code examples, 2 diagrams
 
-  Output:
-    - blog/2026/02-phase-a-retrospective.md
-    - 1,500 words
-    - Lessons learned checklist
+[Steps 3-4: Review and approval]
+
+User: "approve"
+
+Agent Runtime: "Deep dive complete!"
 ```
 
-## Blog Post Types and Templates
-
-### DevLog
-- **Purpose:** Share development progress
-- **Length:** 800-1,200 words
-- **Structure:** What we built, why, how, challenges, results
-- **Audience:** Team, stakeholders, developers
-
-### Tutorial
-- **Purpose:** Teach how to do something
-- **Length:** 1,500-2,500 words
-- **Structure:** Prerequisites, step-by-step, explanation, examples, conclusion
-- **Audience:** Developers learning the topic
-
-### Case Study
-- **Purpose:** Deep dive into problem-solving
-- **Length:** 1,500-2,000 words
-- **Structure:** Problem, investigation, solution, results, lessons
-- **Audience:** Technical professionals
-
-### Retrospective
-- **Purpose:** Reflect on experience
-- **Length:** 1,000-1,500 words
-- **Structure:** Context, what went well, challenges, lessons, changes
-- **Audience:** Team, other practitioners
-
-## Post-Blogging Next Steps
-
-After blog action completes:
-1. Review post for accuracy and clarity
-2. Get peer review (optional)
-3. Publish to target platform
-4. Share on social media / team channels
-5. Engage with comments and feedback
+---
 
 ## Related Actions
 
-- **After:** Any action - Blog about progress or learnings
-- **With:** [document action](./document.md) - Docs for reference, blogs for narrative
+- **After:** Any action — blog about progress or learnings
+- **With:** [document action](./document.md) — docs for reference, blogs for narrative
 - **Continuous:** Blog throughout the project lifecycle
 
-## Publishing Destinations
-
-- **Internal:** Team wiki, Confluence, Notion
-- **Public:** Company blog, dev.to, Medium, Hashnode
-- **Social:** LinkedIn, Twitter/X (thread format)
-- **Version Control:** `blog/` or `docs/blog/` in repo
+---
 
 ## Notes
 
-- Blog regularly (weekly or bi-weekly) for maximum value
-- Don't wait for perfection - publish and iterate
-- Use blogs to document decisions and reasoning
-- Blogs are great for onboarding new team members
-- Consider blog posts as living documents (update over time)
+- Blog regularly (after each feature or milestone) for maximum value
+- Don't wait for perfection — publish and iterate
+- Use blogs to document decisions and reasoning (complements ADRs)
+- Blogs are excellent onboarding material for new team members
+- Be honest about challenges and failures (they are valuable)
 - Technical blogs can become documentation later
-- Celebrate wins and share learnings
-- Be honest about challenges and failures (they're valuable!)
+- Keep a blog backlog of interesting topics as you work

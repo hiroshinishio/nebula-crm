@@ -212,18 +212,6 @@ app.UseStatusCodePages(async statusCodeContext =>
 
 app.UseCors();
 
-// Transitional compatibility: accept legacy /api-prefixed paths and rewrite
-// them to the canonical root paths defined in endpoint mappings.
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/api", out var remaining))
-    {
-        context.Request.Path = remaining.HasValue ? remaining : "/";
-    }
-
-    await next();
-});
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();

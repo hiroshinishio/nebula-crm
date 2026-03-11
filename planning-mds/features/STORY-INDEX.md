@@ -22,15 +22,15 @@ Auto-generated index of all user stories across feature folders.
 
 | Story ID | Title | Priority | Phase | Persona |
 |----------|-------|----------|-------|---------|
-| [F0002-S0001](./F0002-broker-relationship-management/F0002-S0001-create-broker.md) | Create a new broker record | Critical | MVP | Distribution Manager |
-| [F0002-S0002](./F0002-broker-relationship-management/F0002-S0002-search-brokers.md) | Search brokers by name or license number | High | MVP | Distribution Manager |
-| [F0002-S0003](./F0002-broker-relationship-management/F0002-S0003-read-broker.md) | View broker details in Broker 360 | High | MVP | Distribution Manager |
-| [F0002-S0004](./F0002-broker-relationship-management/F0002-S0004-update-broker.md) | Update broker profile information | High | MVP | Distribution Manager |
-| [F0002-S0005](./F0002-broker-relationship-management/F0002-S0005-delete-broker.md) | Deactivate (soft delete) a broker | Medium | MVP | Distribution User |
-| [F0002-S0006](./F0002-broker-relationship-management/F0002-S0006-manage-broker-contacts.md) | Create, update, and remove broker contacts | High | MVP | Relationship Manager |
-| [F0002-S0007](./F0002-broker-relationship-management/F0002-S0007-view-broker-activity-timeline.md) | View broker activity timeline in Broker 360 | High | MVP | Relationship Manager or Distribution Manager |
-| [F0002-S0008](./F0002-broker-relationship-management/F0002-S0008-reactivate-broker.md) | Reactivate a deactivated broker | Medium | MVP | Distribution Manager or Admin |
-| [F0002-S0009](./F0002-broker-relationship-management/F0002-S0009-adopt-native-casbin-enforcer.md) | Replace custom authorization parser with native Casbin enforcer | Critical | MVP Hardening | Platform Security Engineer |
+| [F0002-S0001](./archive/F0002-broker-relationship-management/F0002-S0001-create-broker.md) | Create a new broker record | Critical | MVP | Distribution Manager |
+| [F0002-S0002](./archive/F0002-broker-relationship-management/F0002-S0002-search-brokers.md) | Search brokers by name or license number | High | MVP | Distribution Manager |
+| [F0002-S0003](./archive/F0002-broker-relationship-management/F0002-S0003-read-broker.md) | View broker details in Broker 360 | High | MVP | Distribution Manager |
+| [F0002-S0004](./archive/F0002-broker-relationship-management/F0002-S0004-update-broker.md) | Update broker profile information | High | MVP | Distribution Manager |
+| [F0002-S0005](./archive/F0002-broker-relationship-management/F0002-S0005-delete-broker.md) | Deactivate (soft delete) a broker | Medium | MVP | Distribution User |
+| [F0002-S0006](./archive/F0002-broker-relationship-management/F0002-S0006-manage-broker-contacts.md) | Create, update, and remove broker contacts | High | MVP | Relationship Manager |
+| [F0002-S0007](./archive/F0002-broker-relationship-management/F0002-S0007-view-broker-activity-timeline.md) | View broker activity timeline in Broker 360 | High | MVP | Relationship Manager or Distribution Manager |
+| [F0002-S0008](./archive/F0002-broker-relationship-management/F0002-S0008-reactivate-broker.md) | Reactivate a deactivated broker | Medium | MVP | Distribution Manager or Admin |
+| [F0002-S0009](./archive/F0002-broker-relationship-management/F0002-S0009-adopt-native-casbin-enforcer.md) | Replace custom authorization parser with native Casbin enforcer | Critical | MVP Hardening | Platform Security Engineer |
 
 ---
 

@@ -312,13 +312,13 @@ Your architecture specifications will be consumed by **Phase C Implementation Ag
   - Environment specifications (dev, staging, prod)
   - NFRs (availability, scalability, disaster recovery)
 - **What they'll build:** Dockerfiles, docker-compose, CI/CD pipelines, infrastructure as code
-- **Tech Stack:** Docker, PostgreSQL, Keycloak, Temporal
+- **Tech Stack:** Docker, PostgreSQL, authentik, Temporal
 - **Reference:** `agents/devops/SKILL.md`
 
 **6. Security**
 - **Needs from you:**
   - Security requirements and threat models
-  - Authentication/authorization design (Keycloak + Casbin)
+  - Authentication/authorization design (authentik + Casbin)
   - Data protection requirements (PII, encryption)
   - Compliance requirements (audit logging)
 - **What they'll review:** Authentication flows, authorization policies, data protection, API security

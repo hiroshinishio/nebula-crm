@@ -1,3 +1,4 @@
+# Skill routing regression cases for agents/** skills.
 cases:
   - id: pm_mvp_scope
     prompt: "Define the MVP scope and write user stories with acceptance criteria."

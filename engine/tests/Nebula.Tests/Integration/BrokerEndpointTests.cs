@@ -14,7 +14,7 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     {
         var dto = new BrokerCreateDto("Test Broker LLC", "TEST-LIC-001", "CA", "test@broker.com", "+14155551234");
 
-        var response = await _client.PostAsJsonAsync("/api/brokers", dto);
+        var response = await _client.PostAsJsonAsync("/brokers", dto);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = await response.Content.ReadFromJsonAsync<BrokerDto>();
@@ -27,10 +27,10 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     public async Task CreateBroker_DuplicateLicense_Returns409()
     {
         var dto = new BrokerCreateDto("First Broker", "DUP-LIC-001", "NY", null, null);
-        await _client.PostAsJsonAsync("/api/brokers", dto);
+        await _client.PostAsJsonAsync("/brokers", dto);
 
         var dto2 = new BrokerCreateDto("Second Broker", "DUP-LIC-001", "CA", null, null);
-        var response = await _client.PostAsJsonAsync("/api/brokers", dto2);
+        var response = await _client.PostAsJsonAsync("/brokers", dto2);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -38,10 +38,10 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task ListBrokers_ReturnsPagedResult()
     {
-        await _client.PostAsJsonAsync("/api/brokers",
+        await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Listed Broker", "LIST-001", "TX", null, null));
 
-        var response = await _client.GetAsync("/api/brokers?page=1&pageSize=10");
+        var response = await _client.GetAsync("/brokers?page=1&pageSize=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonPaginatedBrokerList>();
@@ -53,11 +53,11 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task GetBroker_ExistingId_Returns200()
     {
-        var create = await _client.PostAsJsonAsync("/api/brokers",
+        var create = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Get Broker", "GET-001", "WA", null, null));
         var created = await create.Content.ReadFromJsonAsync<BrokerDto>();
 
-        var response = await _client.GetAsync($"/api/brokers/{created!.Id}");
+        var response = await _client.GetAsync($"/brokers/{created!.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -65,19 +65,19 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task GetBroker_NonExistentId_Returns404()
     {
-        var response = await _client.GetAsync($"/api/brokers/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/brokers/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task UpdateBroker_WithIfMatch_Returns200()
     {
-        var create = await _client.PostAsJsonAsync("/api/brokers",
+        var create = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Update Broker", "UPD-001", "OR", null, null));
         var created = await create.Content.ReadFromJsonAsync<BrokerDto>();
 
         var updateDto = new BrokerUpdateDto("Updated Broker Name", "WA", "Active", "new@email.com", null);
-        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/brokers/{created!.Id}")
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/brokers/{created!.Id}")
         {
             Content = JsonContent.Create(updateDto),
         };
@@ -90,11 +90,11 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task DeleteBroker_ExistingBroker_Returns204()
     {
-        var create = await _client.PostAsJsonAsync("/api/brokers",
+        var create = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Delete Broker", "DEL-001", "NV", null, null));
         var created = await create.Content.ReadFromJsonAsync<BrokerDto>();
 
-        var response = await _client.DeleteAsync($"/api/brokers/{created!.Id}");
+        var response = await _client.DeleteAsync($"/brokers/{created!.Id}");
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
@@ -102,7 +102,7 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     public async Task CreateBroker_InvalidState_Returns400()
     {
         var dto = new BrokerCreateDto("Bad Broker", "BAD-001", "INVALID", null, null);
-        var response = await _client.PostAsJsonAsync("/api/brokers", dto);
+        var response = await _client.PostAsJsonAsync("/brokers", dto);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -110,14 +110,14 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task DeleteBroker_SetsStatusInactive()
     {
-        var create = await _client.PostAsJsonAsync("/api/brokers",
+        var create = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Status Inactive Test", "STAT-001", "CA", null, null));
         var created = await create.Content.ReadFromJsonAsync<BrokerDto>();
 
-        await _client.DeleteAsync($"/api/brokers/{created!.Id}");
+        await _client.DeleteAsync($"/brokers/{created!.Id}");
 
         // Admin can see deactivated brokers — verify Status=Inactive
-        var get = await _client.GetAsync($"/api/brokers/{created.Id}");
+        var get = await _client.GetAsync($"/brokers/{created.Id}");
         get.StatusCode.Should().Be(HttpStatusCode.OK);
         var broker = await get.Content.ReadFromJsonAsync<BrokerDto>();
         broker!.Status.Should().Be("Inactive");
@@ -128,13 +128,13 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task ReactivateBroker_AfterDeactivation_Returns200WithActiveStatus()
     {
-        var create = await _client.PostAsJsonAsync("/api/brokers",
+        var create = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Reactivate Test", "REACT-001", "TX", null, null));
         var created = await create.Content.ReadFromJsonAsync<BrokerDto>();
 
-        await _client.DeleteAsync($"/api/brokers/{created!.Id}");
+        await _client.DeleteAsync($"/brokers/{created!.Id}");
 
-        var response = await _client.PostAsync($"/api/brokers/{created.Id}/reactivate", null);
+        var response = await _client.PostAsync($"/brokers/{created.Id}/reactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<BrokerDto>();
@@ -145,11 +145,11 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task ReactivateBroker_AlreadyActive_Returns409()
     {
-        var create = await _client.PostAsJsonAsync("/api/brokers",
+        var create = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Already Active", "REACT-002", "NY", null, null));
         var created = await create.Content.ReadFromJsonAsync<BrokerDto>();
 
-        var response = await _client.PostAsync($"/api/brokers/{created!.Id}/reactivate", null);
+        var response = await _client.PostAsync($"/brokers/{created!.Id}/reactivate", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
@@ -157,7 +157,7 @@ public class BrokerEndpointTests(CustomWebApplicationFactory factory) : IClassFi
     [Fact]
     public async Task ReactivateBroker_NonExistent_Returns404()
     {
-        var response = await _client.PostAsync($"/api/brokers/{Guid.NewGuid()}/reactivate", null);
+        var response = await _client.PostAsync($"/brokers/{Guid.NewGuid()}/reactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

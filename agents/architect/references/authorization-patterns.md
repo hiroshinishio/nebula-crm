@@ -3,7 +3,7 @@
 > **Examples in this guide use `customers` and `orders` as illustrative entities, with
 > roles like `Sales` and `Support` demonstrating ABAC patterns. These are not
 > prescriptive — substitute your own domain entities and roles when applying these
-> patterns. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
+> patterns. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
 
 ---
 
@@ -845,6 +845,6 @@ public class CasbinPolicyRefreshService : BackgroundService
 
 ## Version History
 
-**Version 3.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Replaced domain-specific legacy role examples with generic roles (Sales/Support). See `BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
+**Version 3.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Replaced domain-specific legacy role examples with generic roles (Sales/Support). See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
 **Version 2.0** - 2026-01-31 - Comprehensive authorization guide with ABAC, Casbin, and OIDC (500 lines)
 **Version 1.0** - 2026-01-26 - Initial authorization patterns guide (55 lines)

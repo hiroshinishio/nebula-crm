@@ -89,6 +89,35 @@ This directory contains **generic, reusable** agent role definitions for buildin
   neuron/ for AI intelligence layer 🧠
 ```
 
+## Framework Files
+
+When forking or copying this framework to a new project, copy the `agents/` directory. It is self-contained and includes everything needed to run the builder framework:
+
+| Path | Purpose |
+|------|---------|
+| `agents/` (this directory) | Agent roles, actions, templates, scripts, and framework docs |
+| `agents/docs/` | Framework documentation (orchestration contract, onboarding, FAQ, container strategy) |
+| `agents/actions/` | User-facing action compositions (init, plan, build, feature, review, etc.) |
+| `agents/templates/` | Reusable artifact templates (stories, features, ADRs, lifecycle config, CI workflows) |
+| `agents/scripts/` | Framework-level validation and gate scripts |
+
+The `init` action scaffolds root-level framework files from bundled templates:
+
+| Scaffolded File | Template Source |
+|-----------------|----------------|
+| `lifecycle-stage.yaml` | `agents/templates/lifecycle-stage-template.yaml` |
+| `BOUNDARY-POLICY.md` | `agents/templates/boundary-policy-template.md` |
+| `CONTRIBUTING.md` | `agents/templates/contributing-template.md` |
+| `.github/workflows/ci-gates.yml` | `agents/templates/ci-gates-template.yml` |
+
+Files outside `agents/` that are part of the framework but live at the repo root:
+
+| File | Purpose |
+|------|---------|
+| `BOUNDARY-POLICY.md` | Separation rules between generic (`agents/`) and solution-specific (`planning-mds/`) content |
+| `lifecycle-stage.yaml` | Lifecycle stage declaration and required gate matrix |
+| `CONTRIBUTING.md` | Framework contribution guidelines |
+
 ## How to Use
 
 ### For Users
@@ -98,7 +127,7 @@ This directory contains **generic, reusable** agent role definitions for buildin
 
 ### For New Projects
 1) Copy `agents/` into a new repo
-2) Create a fresh `planning-mds/` for the new solution
+2) Run the **[init action](./actions/init.md)** to scaffold root-level framework files and `planning-mds/` structure
 3) Use the agents as-is; all solution-specific content must live in `planning-mds/`
 
 ## Single Source of Truth

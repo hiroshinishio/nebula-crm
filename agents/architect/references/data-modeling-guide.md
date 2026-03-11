@@ -2,7 +2,7 @@
 
 > **Examples in this guide use `customers` and `orders` as illustrative entities.
 > These are not prescriptive — substitute your own domain entities when applying
-> these patterns. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for
+> these patterns. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for
 > the full convention and field mapping.
 
 ---
@@ -1001,6 +1001,6 @@ public async Task<Customer> RebuildCustomerFromEventsAsync(Guid customerId)
 
 ## Version History
 
-**Version 3.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Changed many-to-many example to Product/Category. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
+**Version 3.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Changed many-to-many example to Product/Category. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
 **Version 2.0** - 2026-01-31 - Comprehensive data modeling guide with EF Core 10 and PostgreSQL patterns (350 lines)
 **Version 1.0** - 2026-01-26 - Initial data modeling guide (54 lines)

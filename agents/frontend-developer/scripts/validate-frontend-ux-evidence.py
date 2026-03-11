@@ -8,8 +8,8 @@ Evidence artifacts must live in:
   planning-mds/operations/evidence/frontend-ux/
 
 Usage:
-  python3 scripts/validate-frontend-ux-evidence.py
-  python3 scripts/validate-frontend-ux-evidence.py --base <sha> --head <sha>
+  python3 agents/frontend-developer/scripts/validate-frontend-ux-evidence.py
+  python3 agents/frontend-developer/scripts/validate-frontend-ux-evidence.py --base <sha> --head <sha>
 """
 
 from __future__ import annotations

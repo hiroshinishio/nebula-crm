@@ -52,11 +52,16 @@ Feature Complete
    - Test and release checklist for the vertical slice
 4. **Output artifact:**
    - `planning-mds/architecture/feature-assembly-plan.md` (use `agents/templates/feature-assembly-plan-template.md`)
+5. **Initialize signoff requirements in feature status:**
+   - Update `planning-mds/features/F{NNNN}-{slug}/STATUS.md` section `Required Signoff Roles`
+   - Mark baseline required roles as `Yes`: `Quality Engineer`, `Code Reviewer`
+   - Add risk-based required roles (`Security Reviewer`, `DevOps`, `Architect`) when scope warrants
 
 **Completion Criteria for Step 0:**
 - [ ] Feature assembly plan exists
 - [ ] Feature scope and handoffs are explicit
 - [ ] Integration/test checkpoints defined
+- [ ] Required signoff role matrix initialized in feature `STATUS.md`
 
 ---
 
@@ -520,6 +525,7 @@ Before declaring feature completion, update and validate planning trackers:
 
 1. Update feature and planning trackers:
    - `planning-mds/features/F{NNNN}-{slug}/STATUS.md` (feature completion state)
+   - `STATUS.md` required signoff matrix + story signoff provenance entries
    - `planning-mds/features/REGISTRY.md` (status/path transitions, including archive moves)
    - `planning-mds/features/ROADMAP.md` (Now/Next/Later/Completed placement)
    - `planning-mds/BLUEPRINT.md` (feature/story status labels and links, if changed)
@@ -539,6 +545,34 @@ Before declaring feature completion, update and validate planning trackers:
 - [ ] REGISTRY/ROADMAP/BLUEPRINT are synchronized
 - [ ] STORY-INDEX regenerated if story files changed
 - [ ] Tracker validation passes
+
+---
+
+### Step 4.6: SIGNOFF GATE (Mandatory)
+
+**Execution Instructions:**
+
+Before setting feature status to `Done` or moving to archive, verify role signoffs:
+
+1. Read `planning-mds/features/F{NNNN}-{slug}/STATUS.md`:
+   - `Required Signoff Roles` matrix (planning baseline)
+   - `Story Signoff Provenance` (execution evidence)
+2. For every role marked `Required = Yes`, confirm ledger has:
+   - a row per story in scope
+   - `PASS` (or `APPROVED`) verdict
+   - reviewer identity
+   - review date
+   - concrete evidence path(s) to solution artifacts (not `agents/**`)
+3. If any required role is missing or non-pass:
+   - Block feature closeout
+   - Route back to the owning reviewer role
+4. Only after all required signoffs pass:
+   - Keep `Overall Status` as `Done` (active) or proceed with archive transition
+
+**Gate Criteria:**
+- [ ] Every required signoff role has a passing ledger entry
+- [ ] Every required signoff includes reviewer/date/evidence
+- [ ] No `Done`/`Archived` transition occurs without passing required signoffs
 
 ---
 
@@ -642,7 +676,7 @@ Before running feature action:
 - [ ] Feature has clear user stories with acceptance criteria
 - [ ] Feature scope is small (2-5 days of work)
 - [ ] SOLUTION-PATTERNS.md exists
-- [ ] Tracker governance contract available (`planning-mds/features/TRACKER-GOVERNANCE.md`)
+- [ ] Tracker governance contract available (`planning-mds/features/TRACKER-GOVERNANCE.md`, seeded from `agents/templates/tracker-governance-template.md` when missing)
 - [ ] AI scope is explicit (if feature includes AI behavior)
 - [ ] User is available for approval
 

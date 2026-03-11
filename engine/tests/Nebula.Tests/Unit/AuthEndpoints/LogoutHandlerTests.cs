@@ -8,7 +8,7 @@ using Nebula.Api.Endpoints;
 namespace Nebula.Tests.Unit.AuthEndpoints;
 
 /// <summary>
-/// Unit tests for the POST /api/auth/logout handler.
+/// Unit tests for the POST /auth/logout handler.
 ///
 /// The handler is tested by calling <see cref="AuthEndpoints.LogoutAsync"/> directly
 /// with a <see cref="DefaultHttpContext"/> and a stub <see cref="IHttpClientFactory"/>,

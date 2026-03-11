@@ -43,4 +43,5 @@ Tracks all features by ID, name, and status. Place as `REGISTRY.md` at `planning
 
 - Update REGISTRY whenever a feature is created, renamed, re-scoped, marked done, or archived.
 - Keep folder paths exact and valid (`F{NNNN}-{slug}/` for active, `archive/F{NNNN}-{slug}/` for archived).
+- Ensure `planning-mds/features/TRACKER-GOVERNANCE.md` exists (seed from `agents/templates/tracker-governance-template.md` when initializing a new repo).
 - After registry edits, regenerate story index and run tracker validation.

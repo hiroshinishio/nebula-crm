@@ -404,6 +404,41 @@ Execute these review agents **in parallel**:
      - Do not transition
      - Re-present current state and allowed options
 
+5. **Machine-readable gate state:**
+
+   Orchestrators must be able to programmatically determine gate state:
+
+   ```json
+   {
+     "gate": "review",
+     "status": "blocked" | "warning" | "acceptable",
+     "findings": {
+       "code_quality": {
+         "critical": 0,
+         "high": 1,
+         "medium": 2,
+         "low": 3
+       },
+       "security": {
+         "critical": 0,
+         "high": 0,
+         "medium": 1,
+         "low": 2
+       }
+     },
+     "totals": {
+       "critical": 0,
+       "high": 1,
+       "medium": 3,
+       "low": 5
+     },
+     "can_approve": true,
+     "requires_justification": true,
+     "available_actions": ["fix_all_high", "approve_with_justification", "reject"],
+     "blocking_issues": []
+   }
+   ```
+
 **Gate Criteria:**
 - [ ] Both reviews completed
 - [ ] Combined critical issues = 0 before approval is enabled

@@ -2,11 +2,11 @@
 
 > **Audience:** Software Architects designing AI features
 > **Purpose:** Design guidance for integrating AI/LLM capabilities into applications
-> **Related:** `docs/AI-INTEGRATION-PATTERNS.md` (choose integration pattern first)
+> **Related:** `agents/architect/references/ai-integration-patterns.md` (choose integration pattern first)
 
 ---
 
-This guide provides architects with specific patterns, contracts, and design decisions for integrating AI features. Read `docs/AI-INTEGRATION-PATTERNS.md` first to choose between AI-Optional, AI-Embedded, or AI-Centric patterns, then use this guide for detailed architecture design.
+This guide provides architects with specific patterns, contracts, and design decisions for integrating AI features. Read `agents/architect/references/ai-integration-patterns.md` first to choose between AI-Optional, AI-Embedded, or AI-Centric patterns, then use this guide for detailed architecture design.
 
 ---
 
@@ -871,7 +871,7 @@ When designing AI features, architects must deliver:
 ## 12. References
 
 **Framework Documentation:**
-- `docs/AI-INTEGRATION-PATTERNS.md` - Choose AI pattern first
+- `agents/architect/references/ai-integration-patterns.md` - Choose AI pattern first
 - `agents/ai-engineer/SKILL.md` - AI Engineer responsibilities
 - `planning-mds/examples/stories/ai-story-example.md` - Example AI story
 

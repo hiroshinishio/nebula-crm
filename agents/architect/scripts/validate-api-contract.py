@@ -74,9 +74,13 @@ class ApiContractValidator:
                 if verb in path.lower():
                     self.warnings.append(f"Path '{path}' contains verb '{verb}' - use HTTP methods instead")
 
-            # Check for non-plural resources (unless it's a singleton)
-            if not path.startswith('/api/'):
-                self.warnings.append(f"Path '{path}' doesn't start with /api/")
+            # Paths should be absolute route templates and avoid legacy /api base prefixes.
+            if not path.startswith('/'):
+                self.warnings.append(f"Path '{path}' should start with '/'")
+            if path == '/api' or path.startswith('/api/'):
+                self.errors.append(
+                    f"Path '{path}' uses forbidden legacy /api prefix; use root resource paths"
+                )
 
             # Check each method
             for method in methods:

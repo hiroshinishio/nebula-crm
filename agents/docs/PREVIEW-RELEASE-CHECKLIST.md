@@ -6,18 +6,18 @@ Use this checklist before tagging an initial public preview of the framework.
 
 - [ ] `README.md` clearly states this release is human-orchestrated.
 - [ ] `README.md` explicitly states there is no built-in automated orchestrator yet.
-- [ ] `docs/ORCHESTRATION-CONTRACT.md` includes manual-mode expectations.
-- [ ] `docs/FAQ.md` answers manual-vs-automated orchestration clearly.
+- [ ] `agents/docs/ORCHESTRATION-CONTRACT.md` includes manual-mode expectations.
+- [ ] `agents/docs/FAQ.md` answers manual-vs-automated orchestration clearly.
 
 ## 2) Boundary Discipline
 
-- [ ] `python3 scripts/validate-genericness.py` passes.
+- [ ] `python3 agents/scripts/validate-genericness.py` passes.
 - [ ] No solution-specific terms appear in `agents/` except approved exceptions.
 - [ ] Boundary policy remains consistent with validator behavior.
 
 ## 3) Manual Orchestration Reproducibility
 
-- [ ] `docs/MANUAL-ORCHESTRATION-RUNBOOK.md` exists and is linked from `README.md`.
+- [ ] `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md` exists and is linked from `README.md`.
 - [ ] At least one representative run evidence package exists under `planning-mds/operations/evidence/`.
 - [ ] Evidence package contains all required files:
   - [ ] `action-context.md`

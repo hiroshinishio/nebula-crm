@@ -229,12 +229,37 @@ class StoryValidator:
             return
         ac_text = ac_section.lower()
 
-        # Check for edge cases
-        if "edge case" not in ac_text and "error scenario" not in ac_text:
+        # Check for edge cases / negative-path outcomes (heuristic).
+        error_signal_patterns = [
+            r"\bedge cases?\b",
+            r"\berror scenarios?\b",
+            r"\bhttp\s*(4\d{2}|5\d{2})\b",
+            r"\bstatus\s*code\s*(4\d{2}|5\d{2})\b",
+            r"\b(forbidden|unauthorized|not found|conflict|bad request|denied|rejected)\b",
+        ]
+        if not self.contains_pattern(ac_section, error_signal_patterns):
             self.warnings.append("No edge cases or error scenarios documented - consider adding")
 
-        # Check for permission/authorization
-        if "permission" not in ac_text and "authorized" not in ac_text:
+        # Check for permission/authorization semantics across key sections.
+        auth_scope = "\n".join(
+            [
+                ac_section,
+                self.get_section_content("Role-Based Visibility"),
+                self.get_section_content("Non-Functional Expectations"),
+            ]
+        )
+        auth_signal_patterns = [
+            r"\bpermissions?\b",
+            r"\bauthoriz(?:e|ed|ation|ing)\b",
+            r"\bauthenticat(?:e|ed|ion|ing)\b",
+            r"\bauthz\b",
+            r"\brbac\b",
+            r"\babac\b",
+            r"\bforbidden\b",
+            r"\bunauthorized\b",
+            r"\bhttp\s*(401|403)\b",
+        ]
+        if not self.contains_pattern(auth_scope, auth_signal_patterns):
             self.warnings.append("No permission/authorization checks documented - consider adding if applicable")
 
         # Check for audit trail (if mutation involved)
@@ -248,6 +273,11 @@ class StoryValidator:
         if any(keyword in mutation_scope for keyword in mutation_keywords):
             if "timeline" not in ac_text and "audit" not in ac_text:
                 self.warnings.append("Story involves data mutation but has no audit/timeline requirements")
+
+    @staticmethod
+    def contains_pattern(text: str, patterns: List[str]) -> bool:
+        """Return True when any regex pattern matches text (case-insensitive)."""
+        return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
 
     def get_section_content(self, section_name: str) -> str:
         """Return the content of a markdown section by name (## or ###)."""

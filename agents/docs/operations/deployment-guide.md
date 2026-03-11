@@ -4,7 +4,7 @@ This document is the operations-facing deployment guide for generated applicatio
 
 ## Scope
 
-- Builder runtime orchestration is documented in `docs/CONTAINER-STRATEGY.md`.
+- Builder runtime orchestration is documented in `agents/docs/CONTAINER-STRATEGY.md`.
 - This guide covers stack-specific application runtime deployment concerns.
 
 ## Required Inputs

@@ -845,7 +845,7 @@ Each agent validates their own work before proceeding to code review:
 - ✓ **CLEAN:** If no issues, approval ENABLED
 
 **Contract Compliance:**
-This security gate enforcement aligns with `docs/ORCHESTRATION-CONTRACT.md` Section 7.4 (Quality Gate Failures):
+This security gate enforcement aligns with the orchestration contract quality-gate model:
 - Critical issues = Block (must be fixed, no override) ✅
 - High issues = Warn (user can approve with justification) ✅
 - Medium/Low issues = Acceptable (proceed, track for later) ✅
@@ -1015,7 +1015,7 @@ All features implemented and approved! ✓
 Before running build action:
 - [ ] Plan action completed (requirements + architecture defined)
 - [ ] SOLUTION-PATTERNS.md exists and is up-to-date
-- [ ] Tracker governance contract available (`planning-mds/features/TRACKER-GOVERNANCE.md`)
+- [ ] Tracker governance contract available (`planning-mds/features/TRACKER-GOVERNANCE.md`, seeded from `agents/templates/tracker-governance-template.md` when missing)
 - [ ] User stories have clear acceptance criteria
 - [ ] User is available for approval gates
 

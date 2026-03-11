@@ -111,6 +111,16 @@ Use Given/When/Then or a checklist. Be specific and testable.
 - [ ] Story filename matches `Story ID` prefix (`F{NNNN}-S{NNNN}-...`)
 - [ ] Story index regenerated if story file was added/renamed/moved
 
+## Review Provenance
+
+Story-level signoff provenance is recorded in the parent feature `STATUS.md` section:
+- `Required Signoff Roles (Set in Planning)`
+- `Story Signoff Provenance`
+
+Minimum expected provenance roles for any completed story:
+- `Quality Engineer`
+- `Code Reviewer`
+
 ---
 
 ## Example Library

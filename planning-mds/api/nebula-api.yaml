@@ -190,12 +190,14 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        "201":
           description: Broker reactivated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BrokerDto"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":

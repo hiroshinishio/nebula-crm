@@ -1,6 +1,6 @@
 # F0002 — Broker & MGA Relationship Management
 
-**Status:** Done (9/9 stories complete; non-blocking hardening follow-ups tracked)
+**Status:** Done (Archived; 9/9 stories complete; non-blocking hardening follow-ups tracked)
 **Priority:** Critical
 **Phase:** MVP
 

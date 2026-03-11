@@ -117,7 +117,7 @@ Store audit evidence in:
 
 CI validator:
 
-- `scripts/validate-frontend-ux-evidence.py`
+- `agents/frontend-developer/scripts/validate-frontend-ux-evidence.py`
 
 ---
 

@@ -11,7 +11,7 @@ It can be used with any agent runtime that can read markdown contracts and follo
 
 - A human operator executes action files and role guides directly.
 - The manual operator must still enforce all required gates and approval decisions.
-- Evidence capture is required; follow `docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
+- Evidence capture is required; follow `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
 
 ### 0.2 Automated Mode (Future)
 
@@ -496,7 +496,7 @@ def retry_with_backoff(agent_fn, max_retries=3):
   - which roles were activated
   - which artifacts were read/written
   - which approval decisions were made
-- In manual mode, store evidence for each run using `docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
+- In manual mode, store evidence for each run using `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md`.
 
 ## 9. Runtime Independence
 
@@ -570,7 +570,52 @@ Lifecycle-stage declaration is split into:
 
 ### 12.3 Required Execution Model
 
-- Execute required gates via `python3 scripts/run-lifecycle-gates.py`.
+- Execute required gates via `python3 agents/scripts/run-lifecycle-gates.py`.
 - CI must run the same command and fail on any required gate failure.
 - Changing lifecycle stage requires updating `lifecycle-stage.yaml` in version control.
 - Gate evidence used for approval decisions must correspond to the currently declared stage.
+
+## 13. Agent Context Loading
+
+When activating an agent, load context in priority order. Each agent's `SKILL.md` defines its full input/output contract; this section provides the orchestrator with a compact routing table.
+
+- **Tier 1 (Always):** Load before the agent starts. Mandatory regardless of scope.
+- **Tier 2 (Feature-Scoped):** Load narrowed to the current feature or story. Skip artifacts for unrelated features.
+- **Tier 3 (On Demand):** Load only when the agent's task specifically requires it (e.g., a reference guide for an unfamiliar pattern).
+
+### 13.1 Context Manifest
+
+| Agent | Tier 1 (Always) | Tier 2 (Feature-Scoped) | Tier 3 (On Demand) |
+|-------|-----------------|-------------------------|-------------------|
+| Product Manager | `BLUEPRINT.md` §0-2, `domain/` | — | `agents/product-manager/references/` |
+| Architect | `BLUEPRINT.md` §0-3, `SOLUTION-PATTERNS.md` | Feature stories and acceptance criteria | `agents/architect/references/`, implementation agent SKILL.md files |
+| Backend Developer | `SOLUTION-PATTERNS.md`, story file, `BLUEPRINT.md` §4 | Feature API endpoints, feature JSON schemas, feature ERD | `agents/backend-developer/references/` |
+| Frontend Developer | `SOLUTION-PATTERNS.md`, story file, screen spec | Feature API endpoints, feature JSON schemas, UX audit ruleset | `agents/frontend-developer/references/` |
+| AI Engineer | `SOLUTION-PATTERNS.md`, story file, `BLUEPRINT.md` §4 | Existing `neuron/` code for this feature | `agents/ai-engineer/references/` |
+| Quality Engineer | Story file (acceptance criteria), `SOLUTION-PATTERNS.md` | Developer test code for this feature, runtime validation outputs | `agents/quality-engineer/references/` |
+| DevOps | `SOLUTION-PATTERNS.md`, `BLUEPRINT.md` §4 (NFRs) | Existing Dockerfiles, compose files, deployment scripts | `agents/devops/references/` |
+| Code Reviewer | Story file, `SOLUTION-PATTERNS.md`, code under review | Runtime validation outputs (build, test, lint, SAST), tracker docs (if planning changed) | `agents/code-reviewer/references/` |
+| Security | `SOLUTION-PATTERNS.md`, `BLUEPRINT.md` §4.5, code under review | `planning-mds/security/` (threat model, policies), runtime scan outputs | `agents/security/references/` |
+| Technical Writer | `BLUEPRINT.md`, `SOLUTION-PATTERNS.md` | Feature code and API contracts for docs scope | `agents/technical-writer/references/` |
+| Blogger | Feature context (stories, STATUS.md, evidence) | Relevant code changes and review outputs | `agents/blogger/references/` |
+
+All paths are relative to the repository root. `BLUEPRINT.md` refers to `planning-mds/BLUEPRINT.md`; `SOLUTION-PATTERNS.md` refers to `planning-mds/architecture/SOLUTION-PATTERNS.md`. Section numbers (§) refer to BLUEPRINT.md top-level sections.
+
+### 13.2 Feature-Scoped Narrowing
+
+When an agent operates on a specific feature or story, apply these filters to avoid loading unrelated content:
+
+- **BLUEPRINT.md:** Load only sections listed in the agent's tier-1 column, not the entire file.
+- **API contracts (`planning-mds/api/`):** Load only endpoints touched by the current feature.
+- **JSON schemas (`planning-mds/schemas/`):** Load only schemas for entities the current feature modifies.
+- **ADRs (`planning-mds/architecture/decisions/`):** Load only ADRs referenced in the feature README or story files.
+- **SOLUTION-PATTERNS.md:** Always load in full. This is institutional memory and must not be summarized or filtered.
+
+### 13.3 Context Budget Guidance
+
+When operating under context window constraints:
+
+1. Tier 1 + tier 2 should fit within roughly 70% of available context, leaving 30% for agent output.
+2. If tier 1 + tier 2 exceeds this budget, summarize BLUEPRINT.md sections (keep structure, compress detail). Never summarize SOLUTION-PATTERNS.md.
+3. Prefer loading the story file verbatim over loading BLUEPRINT.md verbatim — acceptance criteria are the single source of truth for implementation agents.
+4. When a feature references many ADRs, load the ADR title and decision (skip context/consequences sections) to conserve space.

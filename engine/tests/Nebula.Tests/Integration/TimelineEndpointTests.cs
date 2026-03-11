@@ -15,7 +15,7 @@ public class TimelineEndpointTests(CustomWebApplicationFactory factory)
 
     private async Task<BrokerDto> CreateBrokerAsync(string license)
     {
-        var response = await _client.PostAsJsonAsync("/api/brokers",
+        var response = await _client.PostAsJsonAsync("/brokers",
             new BrokerCreateDto("Timeline Test Broker", license, "CA", null, null));
         return (await response.Content.ReadFromJsonAsync<BrokerDto>())!;
     }
@@ -26,7 +26,7 @@ public class TimelineEndpointTests(CustomWebApplicationFactory factory)
         var broker = await CreateBrokerAsync("TL-PAG-001");
 
         var response = await _client.GetAsync(
-            $"/api/timeline/events?entityType=Broker&entityId={broker.Id}&page=1&pageSize=50");
+            $"/timeline/events?entityType=Broker&entityId={broker.Id}&page=1&pageSize=50");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -45,7 +45,7 @@ public class TimelineEndpointTests(CustomWebApplicationFactory factory)
         var broker = await CreateBrokerAsync("TL-PAG-002");
 
         var response = await _client.GetAsync(
-            $"/api/timeline/events?entityType=Broker&entityId={broker.Id}");
+            $"/timeline/events?entityType=Broker&entityId={broker.Id}");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonPaginatedTimelineList>();
@@ -58,7 +58,7 @@ public class TimelineEndpointTests(CustomWebApplicationFactory factory)
         var broker = await CreateBrokerAsync("TL-PAG-003");
 
         var response = await _client.GetAsync(
-            $"/api/timeline/events?entityType=Broker&entityId={broker.Id}&page=2&pageSize=50");
+            $"/timeline/events?entityType=Broker&entityId={broker.Id}&page=2&pageSize=50");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await response.Content.ReadFromJsonAsync<JsonPaginatedTimelineList>();

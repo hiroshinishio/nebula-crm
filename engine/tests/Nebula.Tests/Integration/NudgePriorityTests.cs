@@ -10,7 +10,7 @@ namespace Nebula.Tests.Integration;
 
 /// <summary>
 /// Integration tests verifying nudge priority ordering (OverdueTask &gt; StaleSubmission &gt; UpcomingRenewal)
-/// and the 10-item cap returned by GET /api/dashboard/nudges.
+/// and the 10-item cap returned by GET /dashboard/nudges.
 /// F0001-S0005 acceptance criteria coverage.
 /// </summary>
 public class NudgePriorityTests(CustomWebApplicationFactory factory)
@@ -130,7 +130,7 @@ public class NudgePriorityTests(CustomWebApplicationFactory factory)
     [Fact]
     public async Task GetNudges_ReturnsAllThreeTypes_InPriorityOrder()
     {
-        var response = await _client.GetAsync("/api/dashboard/nudges");
+        var response = await _client.GetAsync("/dashboard/nudges");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<NudgesResponseDto>();
@@ -166,7 +166,7 @@ public class NudgePriorityTests(CustomWebApplicationFactory factory)
     [Fact]
     public async Task GetNudges_NeverExceedsTenItems()
     {
-        var response = await _client.GetAsync("/api/dashboard/nudges");
+        var response = await _client.GetAsync("/dashboard/nudges");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<NudgesResponseDto>();
@@ -180,7 +180,7 @@ public class NudgePriorityTests(CustomWebApplicationFactory factory)
         // The stale submission has CreatedAt = 10 days ago and no WorkflowTransitions.
         // Repository falls back to CreatedAt → 10 days in status, which exceeds the 5-day threshold.
         // This test confirms the submission appears as StaleSubmission (not filtered out).
-        var response = await _client.GetAsync("/api/dashboard/nudges");
+        var response = await _client.GetAsync("/dashboard/nudges");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content.ReadFromJsonAsync<NudgesResponseDto>();

@@ -99,7 +99,7 @@ Phase 3: Implementation (Generate Configs)
 1. **Inspect `engine/` (Backend):**
    - Detect language and framework (.NET, Java, Python, Node.js)
    - Identify database connections (PostgreSQL, MySQL, MongoDB)
-   - Find authentication configuration (Keycloak, Auth0, JWT)
+   - Find authentication configuration (authentik, Auth0, JWT)
    - Detect port configuration
    - Extract environment variable requirements
 
@@ -262,7 +262,7 @@ Phase 3: Implementation (Generate Configs)
 - Monitor database performance
 
 ### 5. Service Dependencies
-- Set up Keycloak (authentication)
+- Set up authentik (authentication)
 - Set up Temporal (workflow engine)
 - Configure service discovery
 - Manage inter-service communication
@@ -398,7 +398,7 @@ Phase 3: Implementation (Generate Configs)
 
 ### 3. Set Up Local Development
 - Create docker-compose.yml
-- Add PostgreSQL, Keycloak, Temporal services
+- Add PostgreSQL, authentik, Temporal services
 - Configure service networking
 - Add volume mounts for development
 - Test local setup
@@ -491,7 +491,7 @@ Solution-specific references:
 - `planning-mds/architecture/deployment-architecture.md` - **Created by DevOps in Phase 2**
 - `planning-mds/architecture/SOLUTION-PATTERNS.md` - DevOps patterns
 - `planning-mds/operations/` - Runbooks and operational docs
-- `docs/operations/deployment-guide.md`
+- `agents/docs/operations/deployment-guide.md`
 
 ---
 

@@ -5,7 +5,7 @@ on:
     paths:
       - 'experience/**'
       - 'planning-mds/operations/evidence/frontend-ux/**'
-      - 'scripts/validate-frontend-ux-evidence.py'
+      - 'agents/frontend-developer/scripts/validate-frontend-ux-evidence.py'
       - '.github/workflows/frontend-ui.yml'
   push:
     branches:
@@ -13,7 +13,7 @@ on:
     paths:
       - 'experience/**'
       - 'planning-mds/operations/evidence/frontend-ux/**'
-      - 'scripts/validate-frontend-ux-evidence.py'
+      - 'agents/frontend-developer/scripts/validate-frontend-ux-evidence.py'
       - '.github/workflows/frontend-ui.yml'
   workflow_dispatch:
 
@@ -35,15 +35,15 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            python3 scripts/validate-frontend-ux-evidence.py \
+            python3 agents/frontend-developer/scripts/validate-frontend-ux-evidence.py \
               --base "${{ github.event.pull_request.base.sha }}" \
               --head "${{ github.sha }}"
           elif [[ "${{ github.event_name }}" == "push" ]]; then
-            python3 scripts/validate-frontend-ux-evidence.py \
+            python3 agents/frontend-developer/scripts/validate-frontend-ux-evidence.py \
               --base "${{ github.event.before }}" \
               --head "${{ github.sha }}"
           else
-            python3 scripts/validate-frontend-ux-evidence.py
+            python3 agents/frontend-developer/scripts/validate-frontend-ux-evidence.py
           fi
 
       - name: Setup pnpm

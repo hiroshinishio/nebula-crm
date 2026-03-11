@@ -12,7 +12,7 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
     [Fact]
     public async Task GetKpis_Returns200WithCorrectShape()
     {
-        var response = await _client.GetAsync("/api/dashboard/kpis");
+        var response = await _client.GetAsync("/dashboard/kpis");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var kpis = await response.Content.ReadFromJsonAsync<DashboardKpisDto>();
@@ -24,7 +24,7 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
     [Fact]
     public async Task GetOpportunities_Returns200WithCorrectShape()
     {
-        var response = await _client.GetAsync("/api/dashboard/opportunities");
+        var response = await _client.GetAsync("/dashboard/opportunities");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var opportunities = await response.Content.ReadFromJsonAsync<DashboardOpportunitiesDto>();
@@ -36,7 +36,7 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
     [Fact]
     public async Task GetOpportunityFlow_Returns200WithCorrectShape()
     {
-        var response = await _client.GetAsync("/api/dashboard/opportunities/flow?entityType=submission&periodDays=180");
+        var response = await _client.GetAsync("/dashboard/opportunities/flow?entityType=submission&periodDays=180");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var flow = await response.Content.ReadFromJsonAsync<OpportunityFlowDto>();
@@ -49,21 +49,21 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
     [Fact]
     public async Task GetNudges_Returns200()
     {
-        var response = await _client.GetAsync("/api/dashboard/nudges");
+        var response = await _client.GetAsync("/dashboard/nudges");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetMyTasks_Returns200()
     {
-        var response = await _client.GetAsync("/api/my/tasks");
+        var response = await _client.GetAsync("/my/tasks");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
     public async Task GetTimelineEvents_Returns200()
     {
-        var response = await _client.GetAsync("/api/timeline/events?entityType=Broker");
+        var response = await _client.GetAsync("/timeline/events?entityType=Broker");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

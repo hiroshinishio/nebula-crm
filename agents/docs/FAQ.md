@@ -11,16 +11,16 @@ Yes. The framework is domain-agnostic. See `blueprint-setup/examples/` for non-i
 ## What do I copy to start a new project?
 
 Copy:
-- `agents/`
-- `blueprint-setup/`
-- `README.md` (update title and project framing)
+- `agents/` (includes framework docs, templates, scripts, and all agent roles)
 
 Create new:
 - `planning-mds/` from scratch
 
+The `init` action scaffolds root-level framework files (`lifecycle-stage.yaml`, `BOUNDARY-POLICY.md`, `CONTRIBUTING.md`, starter CI workflow) from templates bundled in `agents/`.
+
 ## Where do I find a step-by-step onboarding checklist?
 
-See `docs/ONBOARDING.md`.
+See `agents/docs/ONBOARDING.md`.
 
 ## How do I know if something belongs in agents/ vs planning-mds/?
 
@@ -40,8 +40,8 @@ No. The initial public preview is human-orchestrated. A human operator runs acti
 
 ## How do I execute the framework in manual mode?
 
-Use `docs/MANUAL-ORCHESTRATION-RUNBOOK.md`. It defines required evidence capture for approvals, gate decisions, and artifact traceability.
+Use `agents/docs/MANUAL-ORCHESTRATION-RUNBOOK.md`. It defines required evidence capture for approvals, gate decisions, and artifact traceability.
 
 ## How do I know if the repo is complete enough for preview release?
 
-Use `docs/PREVIEW-RELEASE-CHECKLIST.md` and ensure every required item is checked before tagging a public preview.
+Use `agents/docs/PREVIEW-RELEASE-CHECKLIST.md` and ensure every required item is checked before tagging a public preview.

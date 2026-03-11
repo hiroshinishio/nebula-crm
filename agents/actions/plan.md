@@ -47,6 +47,7 @@ Ready for Build
    - Create `planning-mds/examples/personas/*.md` (if detailed personas needed)
    - Create feature folders at `planning-mds/features/F{NNNN}-{slug}/` with PRD.md, README.md, STATUS.md, GETTING-STARTED.md
    - Create stories colocated in feature folders as `F{NNNN}-S{NNNN}-{slug}.md`
+   - Ensure `planning-mds/features/TRACKER-GOVERNANCE.md` exists (copy from `agents/templates/tracker-governance-template.md` if missing)
    - Update `planning-mds/features/REGISTRY.md` with new features
    - Update `planning-mds/features/ROADMAP.md` with sequence changes (`Now / Next / Later / Completed`)
 
@@ -217,6 +218,7 @@ Replace with:
 Before Phase A approval, synchronize and validate planning trackers:
 
 1. Ensure tracker updates are complete:
+   - `planning-mds/features/TRACKER-GOVERNANCE.md` exists and reflects required signoff governance
    - `planning-mds/features/REGISTRY.md` reflects feature inventory and paths
    - `planning-mds/features/ROADMAP.md` reflects current sequencing
    - `planning-mds/BLUEPRINT.md` feature/story status links resolve
@@ -233,6 +235,7 @@ Before Phase A approval, synchronize and validate planning trackers:
    - Re-run all validation commands until passing
 
 **Gate Criteria:**
+- [ ] Tracker governance contract exists
 - [ ] Story index regenerated after story file changes
 - [ ] Story validation passes
 - [ ] Tracker validation passes
@@ -542,7 +545,7 @@ Example: "Run the feature action for [specific feature name]"
 
 Before running plan action:
 - [ ] `planning-mds/BLUEPRINT.md` exists with Sections 0-2 (baseline context)
-- [ ] `planning-mds/features/TRACKER-GOVERNANCE.md` exists (or will be created during this run)
+- [ ] `planning-mds/features/TRACKER-GOVERNANCE.md` exists (or will be created from `agents/templates/tracker-governance-template.md` during this run)
 - [ ] Domain glossary exists or can be created
 - [ ] User is available to provide approvals at gates
 - [ ] User has clarified business requirements

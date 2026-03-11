@@ -32,7 +32,12 @@ Outputs `planning-mds/features/STORY-INDEX.md`.
 
 ## validate-trackers.py
 
-Validate tracker consistency across `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, and `BLUEPRINT.md`:
+Validate tracker consistency across `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, and `BLUEPRINT.md`.
+Also validates `STATUS.md` closeout signoff governance for features marked `Done`/`Archived`:
+- required signoff matrix exists
+- baseline required roles (`Quality Engineer`, `Code Reviewer`) are marked required
+- required roles have story-level passing provenance entries with reviewer/date/evidence
+- PASS evidence cannot reference `agents/**`; it must point to solution artifacts
 
 ```bash
 python3 agents/product-manager/scripts/validate-trackers.py

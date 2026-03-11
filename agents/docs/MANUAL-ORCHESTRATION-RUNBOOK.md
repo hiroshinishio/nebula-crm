@@ -7,7 +7,7 @@ This runbook defines how to execute the framework in the initial public preview,
 Use this document with:
 - `agents/actions/*.md`
 - `agents/<role>/SKILL.md`
-- `docs/ORCHESTRATION-CONTRACT.md`
+- `agents/docs/ORCHESTRATION-CONTRACT.md`
 
 ## Scope
 
@@ -51,7 +51,7 @@ Every run must include these files:
 - include command exit codes
 
 5. `lifecycle-gates.log`
-- output of `python3 scripts/run-lifecycle-gates.py`
+- output of `python3 agents/scripts/run-lifecycle-gates.py`
 - if stage override is used, include the exact command
 
 ## Execution Procedure
@@ -75,7 +75,7 @@ Every run must include these files:
 - do not bypass required gates
 
 5. Run lifecycle gates
-- execute `python3 scripts/run-lifecycle-gates.py`
+- execute `python3 agents/scripts/run-lifecycle-gates.py`
 - append output and exit status to `lifecycle-gates.log`
 
 6. Close the run
@@ -93,4 +93,4 @@ A manual run is complete only if:
 ## Release Usage
 
 Before publishing a preview release, verify manual-run completeness with:
-- `docs/PREVIEW-RELEASE-CHECKLIST.md`
+- `agents/docs/PREVIEW-RELEASE-CHECKLIST.md`

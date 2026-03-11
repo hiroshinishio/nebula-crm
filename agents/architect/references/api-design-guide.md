@@ -2,7 +2,7 @@
 
 > **Examples in this guide use `customers` and `orders` as illustrative entities.
 > These are not prescriptive — substitute your own domain entities when applying
-> these patterns. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for
+> these patterns. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for
 > the full convention and field mapping.
 
 ---
@@ -232,7 +232,7 @@ var response = new CustomerResponse
 
 ### 2.3 Standard Error Contract
 
-Nebula standardizes on RFC Problem Details with media type `application/problem+json`.
+Use RFC Problem Details with media type `application/problem+json`.
 
 Reference:
 - `planning-mds/architecture/api-guidelines-profile.md`
@@ -241,7 +241,7 @@ Reference:
 **Example Error Response (403):**
 ```json
 {
-  "type": "https://nebula.local/problems/policy-denied",
+  "type": "https://api.example.com/problems/policy-denied",
   "title": "Forbidden",
   "status": 403,
   "code": "policy_denied",
@@ -803,6 +803,6 @@ openapi-generator-cli generate \
 
 ## Version History
 
-**Version 3.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Removed Nebula-specific recommendations. See `BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
+**Version 3.0** - 2026-02-03 - Replaced all solution-specific entities with standard generic set (customers/orders). Removed Nebula-specific recommendations. See `agents/BOUNDARY-POLICY.md` → "Standard Example Entities" for the convention.
 **Version 2.0** - 2026-01-31 - Comprehensive API design guide with .NET 10 Minimal APIs (400 lines)
 **Version 1.0** - 2026-01-26 - Initial API design guide (64 lines)

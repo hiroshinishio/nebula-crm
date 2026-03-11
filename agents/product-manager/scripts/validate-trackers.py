@@ -7,6 +7,7 @@ Validates planning tracker consistency across:
 - planning-mds/features/ROADMAP.md
 - planning-mds/features/STORY-INDEX.md
 - planning-mds/BLUEPRINT.md
+- feature STATUS closeout signoff governance for Done/Archived features
 
 Usage:
     python3 agents/product-manager/scripts/validate-trackers.py
@@ -25,10 +26,69 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 FEATURE_ID_RE = re.compile(r"F\d{4}")
 STRICT_STORY_FILE_RE = re.compile(r"^F\d{4}-S\d{4}-.+\.md$")
+ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}$")
+
+ROLE_ALIAS_MAP = {
+    "qe": "qualityengineer",
+    "qualityassurance": "qualityengineer",
+    "qualityengineer": "qualityengineer",
+    "codereviewer": "codereviewer",
+    "reviewer": "codereviewer",
+    "security": "securityreviewer",
+    "securityreviewer": "securityreviewer",
+    "devops": "devops",
+    "architect": "architect",
+}
+
+BASELINE_REQUIRED_SIGNOFF_ROLES = {
+    "qualityengineer": "Quality Engineer",
+    "codereviewer": "Code Reviewer",
+}
 
 
 def _strip_code(value: str) -> str:
     return value.strip().strip("`")
+
+
+def _normalize_role(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.casefold())
+
+
+def _canonical_role(value: str) -> str:
+    normalized = _normalize_role(value)
+    return ROLE_ALIAS_MAP.get(normalized, normalized)
+
+
+def _extract_first_section(content: str, headings: Sequence[str]) -> str:
+    for heading in headings:
+        section = _extract_section(content, heading)
+        if section:
+            return section
+    return ""
+
+
+def _is_required_flag(value: str) -> bool:
+    normalized = value.strip().casefold()
+    return normalized in {
+        "yes",
+        "y",
+        "true",
+        "required",
+        "must",
+        "[x]",
+        "x",
+        "✅",
+    }
+
+
+def _is_pass_verdict(value: str) -> bool:
+    normalized = value.strip().casefold()
+    return normalized in {"pass", "approved"}
+
+
+def _has_meaningful_value(value: str) -> bool:
+    normalized = value.strip().casefold()
+    return normalized not in {"", "-", "n/a", "na", "tbd", "none"}
 
 
 def _extract_section(content: str, heading: str) -> str:
@@ -209,6 +269,172 @@ class TrackerValidator:
         status_match = re.search(r"\*\*Overall Status:\*\*\s*(.+)", content)
         if not status_match:
             self.add_error(str(status_file), "Missing '**Overall Status:**' line")
+            return
+
+        overall_status = status_match.group(1).strip()
+        if self._is_done_or_archived(overall_status):
+            self._validate_signoff_sections(feature_id, status_file, content)
+
+    def _is_done_or_archived(self, overall_status: str) -> bool:
+        normalized = overall_status.casefold()
+        return "done" in normalized or "archived" in normalized
+
+    def _validate_signoff_sections(self, feature_id: str, status_file: Path, content: str) -> None:
+        required_section = _extract_first_section(
+            content,
+            [
+                "Required Signoff Roles",
+                "Required Signoff Roles (Set in Planning)",
+            ],
+        )
+        if not required_section:
+            self.add_error(
+                str(status_file),
+                f"{feature_id} is Done/Archived but missing 'Required Signoff Roles' section",
+            )
+            return
+
+        required_rows = _parse_table(required_section)
+        if not required_rows:
+            self.add_error(
+                str(status_file),
+                f"{feature_id} is Done/Archived but 'Required Signoff Roles' table is missing or malformed",
+            )
+            return
+
+        required_roles: Dict[str, str] = {}
+        for row in required_rows:
+            role = row.get("Role", "").strip()
+            if not role:
+                continue
+            required_flag = row.get("Required", "").strip()
+            if _is_required_flag(required_flag):
+                canonical = _canonical_role(role)
+                required_roles[canonical] = role
+
+        if not required_roles:
+            self.add_error(
+                str(status_file),
+                f"{feature_id} is Done/Archived but no required signoff roles are marked 'Yes'",
+            )
+            return
+
+        for canonical, label in BASELINE_REQUIRED_SIGNOFF_ROLES.items():
+            if canonical not in required_roles:
+                self.add_error(
+                    str(status_file),
+                    f"{feature_id} is Done/Archived but baseline required signoff role is missing: {label}",
+                )
+
+        story_ids = self._extract_story_ids_from_status(content, status_file)
+        if not story_ids:
+            self.add_error(
+                str(status_file),
+                f"{feature_id} is Done/Archived but no story IDs were found in Story Checklist/Stories table",
+            )
+            return
+
+        provenance_section = _extract_first_section(
+            content,
+            [
+                "Story Signoff Provenance",
+                "Story Sign-off Provenance",
+            ],
+        )
+        if not provenance_section:
+            self.add_error(
+                str(status_file),
+                f"{feature_id} is Done/Archived but missing 'Story Signoff Provenance' section",
+            )
+            return
+
+        provenance_rows = _parse_table(provenance_section)
+        if not provenance_rows:
+            self.add_error(
+                str(status_file),
+                f"{feature_id} is Done/Archived but 'Story Signoff Provenance' table is missing or malformed",
+            )
+            return
+
+        passing_pairs: Dict[Tuple[str, str], bool] = {}
+        for row in provenance_rows:
+            story_cell = row.get("Story", "").strip()
+            story_match = re.search(r"F\d{4}-S\d{4}", story_cell)
+            if not story_match:
+                continue
+
+            story_id = story_match.group(0)
+            role = row.get("Role", "").strip()
+            if not role:
+                continue
+
+            canonical = _canonical_role(role)
+            verdict = row.get("Verdict", "").strip()
+            reviewer = row.get("Reviewer", "").strip()
+            evidence = row.get("Evidence", "").strip()
+            date_value = row.get("Date", "").strip()
+
+            if _is_pass_verdict(verdict):
+                if not reviewer:
+                    self.add_error(
+                        str(status_file),
+                        f"Story provenance PASS row for {story_id} role '{role}' is missing reviewer",
+                    )
+                    continue
+                if not _has_meaningful_value(evidence):
+                    self.add_error(
+                        str(status_file),
+                        f"Story provenance PASS row for {story_id} role '{role}' is missing evidence",
+                    )
+                    continue
+                if "agents/" in evidence.casefold():
+                    self.add_error(
+                        str(status_file),
+                        (
+                            f"Story provenance PASS row for {story_id} role '{role}' references "
+                            "agents/ in evidence; use solution artifacts (planning-mds/, code, tests, CI outputs)"
+                        ),
+                    )
+                    continue
+                if not ISO_DATE_RE.fullmatch(date_value):
+                    self.add_error(
+                        str(status_file),
+                        f"Story provenance PASS row for {story_id} role '{role}' has invalid date: {date_value!r}",
+                    )
+                    continue
+                passing_pairs[(story_id, canonical)] = True
+
+        for story_id in story_ids:
+            for canonical, display_role in required_roles.items():
+                if not passing_pairs.get((story_id, canonical), False):
+                    self.add_error(
+                        str(status_file),
+                        f"Required role '{display_role}' is missing PASS/APPROVED provenance for story {story_id}",
+                    )
+
+    def _extract_story_ids_from_status(self, content: str, status_file: Path) -> List[str]:
+        section = _extract_first_section(content, ["Story Checklist", "Stories"])
+        if not section:
+            return []
+
+        rows = _parse_table(section)
+        story_ids: List[str] = []
+        seen = set()
+
+        for row in rows:
+            story_cell = row.get("Story", "").strip()
+            match = re.search(r"F\d{4}-S\d{4}", story_cell)
+            if not match:
+                continue
+            story_id = match.group(0)
+            if story_id not in seen:
+                story_ids.append(story_id)
+                seen.add(story_id)
+
+        if not story_ids:
+            self.add_warning(str(status_file), "No parseable story IDs found in story status table")
+
+        return story_ids
 
     def load_roadmap(self) -> List[RoadmapEntry]:
         content = self.read_file(self.roadmap_path)

@@ -173,6 +173,7 @@ Trackers must move with the work. When feature/story state changes, update track
 - Per-feature `STATUS.md` (execution truth + deferred non-blocking follow-ups)
 
 Reference policy: `planning-mds/features/TRACKER-GOVERNANCE.md`.
+If missing, create it from `agents/templates/tracker-governance-template.md` before continuing.
 
 ## Tools & Permissions
 
@@ -193,6 +194,7 @@ Reference policy: `planning-mds/features/TRACKER-GOVERNANCE.md`.
 - `agents/templates/feature-status-template.md`
 - `agents/templates/feature-getting-started-template.md`
 - `agents/templates/feature-registry-template.md`
+- `agents/templates/tracker-governance-template.md`
 - `agents/templates/story-template.md`
 - `agents/templates/persona-template.md`
 - `agents/templates/screen-spec-template.md`

@@ -7,9 +7,9 @@ Pulls the blocked term list from the domain glossary — no hardcoded
 terms in this script.
 
 Usage:
-    python3 validate-genericness.py [--glossary <path>] [--agents-dir <path>]
-    python3 validate-genericness.py
-    python3 validate-genericness.py --glossary planning-mds/domain/glossary.md
+    python3 agents/scripts/validate-genericness.py [--glossary <path>] [--agents-dir <path>]
+    python3 agents/scripts/validate-genericness.py
+    python3 agents/scripts/validate-genericness.py --glossary planning-mds/domain/glossary.md
 """
 
 import sys
@@ -139,7 +139,7 @@ def scan_directory(agents_dir: str, terms: list) -> list:
     )
 
     # Files explicitly allowed to contain blocked terms
-    skip_files = {'TECH-STACK-ADAPTATION.md'}
+    skip_files = {'TECH-STACK-ADAPTATION.md', Path(__file__).name}
 
     # Term-scoped exception rules for legitimate generic usage.
     # Each blocked term has to be covered by an explicit rule to skip a line.
@@ -227,13 +227,14 @@ def main():
     )
     args = parser.parse_args()
 
-    # Backward compatibility for older repos before glossary path normalization.
-    if (
-        args.glossary == 'planning-mds/domain/glossary.md'
-        and not Path(args.glossary).exists()
-        and Path('planning-mds/domain/insurance-glossary.md').exists()
-    ):
-        args.glossary = 'planning-mds/domain/insurance-glossary.md'
+    # Fallback: if default glossary path is missing, auto-discover a single glossary file.
+    default_glossary = Path('planning-mds/domain/glossary.md')
+    if args.glossary == str(default_glossary) and not default_glossary.exists():
+        domain_dir = default_glossary.parent
+        candidates = sorted(path for path in domain_dir.glob('*glossary*.md') if path.is_file())
+        if len(candidates) == 1:
+            args.glossary = str(candidates[0])
+            print(f"[Info] Default glossary not found; using discovered glossary: {args.glossary}")
 
     print(f"Validating genericness of {args.agents_dir}/")
     print("-" * 60)
