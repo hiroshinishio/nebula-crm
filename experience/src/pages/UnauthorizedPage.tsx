@@ -14,8 +14,8 @@ export function UnauthorizedPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-2xl font-semibold text-gray-900">Access Denied</h1>
-      <p className="max-w-md text-gray-600">{message}</p>
+      <h1 className="text-2xl font-semibold text-text-primary">Access Denied</h1>
+      <p className="max-w-md text-text-secondary">{message}</p>
       <a href="/" className="text-sm text-blue-600 underline hover:text-blue-800">
         Return to home
       </a>

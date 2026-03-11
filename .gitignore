@@ -20,6 +20,10 @@ obj/
 **/obj/**
 **/bin\\Debug/**
 **/bin\\Release/**
+**/bin*Debug/**
+**/bin*Release/**
+**/obj*Debug/**
+**/obj*Release/**
 *.user
 *.suo
 *.csproj.user

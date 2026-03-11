@@ -90,7 +90,7 @@ export function AuthCallbackPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center">
-      <p className="text-sm text-gray-500">Completing sign-in…</p>
+      <p className="text-sm text-text-muted">Completing sign-in…</p>
     </main>
   );
 }
