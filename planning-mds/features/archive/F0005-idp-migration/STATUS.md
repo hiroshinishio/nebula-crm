@@ -29,7 +29,7 @@
 | Quality Engineer | Quality Engineer agent | PASS | `engine/tests/Nebula.Tests/Integration/JwtAudienceValidationTests.cs`; `engine/tests/Nebula.Tests/Integration/AuthEndpointTests.cs` | 2026-03-05 | Authentication baseline tests validated post-migration behavior. |
 | Code Reviewer | Code Reviewer agent | PASS | `planning-mds/features/archive/F0005-idp-migration/STATUS.md` | 2026-03-05 | Migration scope reviewed and blocking defects resolved before downstream feature work. |
 | Security Reviewer | Security agent | PASS | `planning-mds/security/authorization-review.md`; `planning-mds/security/implementation-security-review.md` | 2026-03-05 | Identity/authorization controls reviewed against migration outputs. |
-| DevOps | DevOps agent | PASS | `docker-compose.yml`; `docker/authentik/blueprints/nebula-dev.yaml`; `agents/docs/operations/deployment-guide.md` | 2026-03-05 | Runtime stack changes and env contract verified for local deployment. |
+| DevOps | DevOps agent | PASS | `docker-compose.yml`; `docker/authentik/blueprints/nebula-dev.yaml`; `planning-mds/features/archive/F0005-idp-migration/GETTING-STARTED.md` | 2026-03-05 | Runtime stack changes and env contract verified for local deployment. |
 
 ## Story Signoff Provenance
 
@@ -42,15 +42,15 @@
 | F0005-S0002 | Quality Engineer | Quality Engineer agent | PASS | `engine/tests/Nebula.Tests/Integration/JwtAudienceValidationTests.cs` | 2026-03-05 | Claims normalization and audience validation behavior verified. |
 | F0005-S0002 | Code Reviewer | Code Reviewer agent | PASS | `planning-mds/features/archive/F0005-idp-migration/STATUS.md` | 2026-03-05 | Story accepted in migration completion review. |
 | F0005-S0002 | Security Reviewer | Security agent | PASS | `planning-mds/security/authorization-review.md` | 2026-03-05 | Claims and authorization implications reviewed. |
-| F0005-S0002 | DevOps | DevOps agent | PASS | `agents/docs/operations/deployment-guide.md` | 2026-03-05 | Environment contract updates validated for runtime startup. |
+| F0005-S0002 | DevOps | DevOps agent | PASS | `docker-compose.yml`; `planning-mds/features/archive/F0005-idp-migration/GETTING-STARTED.md` | 2026-03-05 | Environment contract updates validated for runtime startup. |
 | F0005-S0003 | Quality Engineer | Quality Engineer agent | PASS | `engine/tests/Nebula.Tests/Integration/AuthEndpointTests.cs` | 2026-03-05 | Frontend token-source compatibility verified against backend auth path. |
 | F0005-S0003 | Code Reviewer | Code Reviewer agent | PASS | `planning-mds/features/archive/F0005-idp-migration/STATUS.md` | 2026-03-05 | Story accepted in migration completion review. |
 | F0005-S0003 | Security Reviewer | Security agent | PASS | `planning-mds/security/implementation-security-review.md` | 2026-03-05 | Dev-auth and OIDC migration security constraints reviewed. |
-| F0005-S0003 | DevOps | DevOps agent | PASS | `agents/docs/operations/deployment-guide.md` | 2026-03-05 | Frontend runtime configuration guidance validated. |
+| F0005-S0003 | DevOps | DevOps agent | PASS | `docker-compose.yml`; `planning-mds/features/archive/F0005-idp-migration/GETTING-STARTED.md` | 2026-03-05 | Frontend runtime configuration guidance validated. |
 | F0005-S0004 | Quality Engineer | Quality Engineer agent | PASS | `engine/tests/Nebula.Tests/Integration/JwtAudienceValidationTests.cs` | 2026-03-05 | Principal key migration behavior validated against auth flows. |
 | F0005-S0004 | Code Reviewer | Code Reviewer agent | PASS | `planning-mds/features/archive/F0005-idp-migration/STATUS.md` | 2026-03-05 | Story accepted in migration completion review. |
 | F0005-S0004 | Security Reviewer | Security agent | PASS | `planning-mds/security/authorization-review.md` | 2026-03-05 | Identity mapping implications reviewed for access controls. |
-| F0005-S0004 | DevOps | DevOps agent | PASS | `agents/docs/operations/deployment-guide.md` | 2026-03-05 | Migration/deployment sequencing verified for runtime readiness. |
+| F0005-S0004 | DevOps | DevOps agent | PASS | `docker-compose.yml`; `planning-mds/features/archive/F0005-idp-migration/GETTING-STARTED.md` | 2026-03-05 | Migration/deployment sequencing verified for runtime readiness. |
 
 ## Architecture Gate
 

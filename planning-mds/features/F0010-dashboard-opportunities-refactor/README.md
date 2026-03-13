@@ -1,6 +1,6 @@
 # F0010 — Dashboard Opportunities Refactor (Pipeline Board + Insight Views)
 
-**Status:** Draft
+**Status:** Done
 **Priority:** High
 **Phase:** MVP
 
@@ -25,11 +25,11 @@ Refactors the dashboard Opportunities experience to make Pipeline Board the defa
 
 | ID | Title | Status |
 |----|-------|--------|
-| [F0010-S0001](./F0010-S0001-replace-sankey-with-pipeline-board-default.md) | Replace Sankey default with Pipeline Board | Not Started |
-| [F0010-S0002](./F0010-S0002-add-opportunity-aging-heatmap-view.md) | Add Opportunities Aging Heatmap view | Not Started |
-| [F0010-S0003](./F0010-S0003-add-opportunity-composition-treemap-view.md) | Add Opportunities Composition Treemap view | Not Started |
-| [F0010-S0004](./F0010-S0004-add-opportunity-hierarchy-sunburst-view.md) | Add Opportunities Hierarchy Sunburst view | Not Started |
-| [F0010-S0005](./F0010-S0005-unify-drilldown-responsive-and-accessibility.md) | Unify drilldown, responsive layout, and accessibility | Not Started |
+| [F0010-S0001](./F0010-S0001-replace-sankey-with-pipeline-board-default.md) | Replace Sankey default with Pipeline Board | Done |
+| [F0010-S0002](./F0010-S0002-add-opportunity-aging-heatmap-view.md) | Add Opportunities Aging Heatmap view | Done |
+| [F0010-S0003](./F0010-S0003-add-opportunity-composition-treemap-view.md) | Add Opportunities Composition Treemap view | Done |
+| [F0010-S0004](./F0010-S0004-add-opportunity-hierarchy-sunburst-view.md) | Add Opportunities Hierarchy Sunburst view | Done |
+| [F0010-S0005](./F0010-S0005-unify-drilldown-responsive-and-accessibility.md) | Unify drilldown, responsive layout, and accessibility | Done |
 
 **Total Stories:** 5
-**Completed:** 0 / 5
+**Completed:** 5 / 5

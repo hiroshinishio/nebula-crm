@@ -2,7 +2,7 @@
 
 Auto-generated index of all user stories across feature folders.
 
-**Total Stories:** 31
+**Total Stories:** 36
 
 ---
 
@@ -79,11 +79,23 @@ Auto-generated index of all user stories across feature folders.
 
 ---
 
+## F0011 — Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)
+
+| Story ID | Title | Priority | Phase | Persona |
+|----------|-------|----------|-------|---------|
+| [F0011-S0001](./F0011-dashboard-opportunities-flow-modernization/F0011-S0001-replace-pipeline-board-with-connected-flow-default.md) | Replace Pipeline Board tiles with connected flow-first canvas default | High | MVP | Distribution User or Underwriter |
+| [F0011-S0002](./F0011-dashboard-opportunities-flow-modernization/F0011-S0002-add-terminal-outcomes-rail-and-drilldowns.md) | Add terminal outcomes rail and outcome drilldowns | High | MVP | Distribution Manager or Underwriter |
+| [F0011-S0003](./F0011-dashboard-opportunities-flow-modernization/F0011-S0003-apply-modern-opportunities-visual-system.md) | Apply modern opportunities visual system (dark depth + stage emphasis) | Medium | MVP | dashboard user |
+| [F0011-S0004](./F0011-dashboard-opportunities-flow-modernization/F0011-S0004-rebalance-secondary-insights-as-mini-views.md) | Rebalance secondary insights as mini-views | Medium | MVP | Relationship Manager or Program Manager |
+| [F0011-S0005](./F0011-dashboard-opportunities-flow-modernization/F0011-S0005-ensure-responsive-and-accessibility-parity.md) | Ensure responsive and accessibility parity for new opportunities flow | High | MVP | dashboard user on desktop, tablet, or phone |
+
+---
+
 ## Summary by Phase
 
 | Phase | Count |
 |-------|-------|
-| MVP | 21 |
+| MVP | 26 |
 | MVP Hardening | 1 |
 | Phase 1 | 5 |
 | Unspecified | 4 |
@@ -95,8 +107,8 @@ Auto-generated index of all user stories across feature folders.
 | Priority | Count |
 |----------|-------|
 | Critical | 6 |
-| High | 16 |
-| Medium | 5 |
+| High | 19 |
+| Medium | 7 |
 
 ---
 

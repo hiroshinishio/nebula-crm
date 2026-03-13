@@ -1,6 +1,6 @@
 # Feature Registry
 
-**Next Available Feature Number:** F0011
+**Next Available Feature Number:** F0012
 
 **Planning Views:**
 - Roadmap sequencing (`Now / Next / Later`): `planning-mds/features/ROADMAP.md`
@@ -14,6 +14,7 @@
 | F0003 | Task Center + Reminders (API-only MVP) | Draft | MVP | `F0003-task-center/` |
 | F0004 | Task Center UI + Manager Assignment | Draft | Phase 1 | `F0004-task-center-ui-and-assignment/` |
 | F0010 | Dashboard Opportunities Refactor (Pipeline Board + Insight Views) | Done | MVP | `F0010-dashboard-opportunities-refactor/` |
+| F0011 | Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes) | Draft | MVP | `F0011-dashboard-opportunities-flow-modernization/` |
 
 ## Planned (Reserved IDs)
 

@@ -7,6 +7,15 @@ namespace Nebula.Api.Endpoints;
 
 public static class DashboardEndpoints
 {
+    private static readonly HashSet<string> SupportedOutcomeKeys =
+    [
+        "bound",
+        "no_quote",
+        "declined",
+        "expired",
+        "lost_competitor",
+    ];
+
     public static IEndpointRouteBuilder MapDashboardEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/dashboard")
@@ -15,6 +24,8 @@ public static class DashboardEndpoints
 
         group.MapGet("/kpis", GetKpis);
         group.MapGet("/opportunities", GetOpportunities);
+        group.MapGet("/opportunities/outcomes", GetOpportunityOutcomes);
+        group.MapGet("/opportunities/outcomes/{outcomeKey}/items", GetOpportunityOutcomeItems);
         group.MapGet("/opportunities/flow", GetOpportunityFlow);
         group.MapGet("/opportunities/{entityType}/{status}/items", GetOpportunityItems);
         group.MapGet("/opportunities/aging", GetOpportunityAging);
@@ -33,11 +44,12 @@ public static class DashboardEndpoints
     }
 
     private static async Task<IResult> GetOpportunities(
+        int? periodDays,
         DashboardService svc, IAuthorizationService authz, ICurrentUserService user, CancellationToken ct)
     {
         if (!await HasAccessAsync(user, authz, "dashboard_pipeline"))
             return ProblemDetailsHelper.Forbidden();
-        return Results.Ok(await svc.GetOpportunitiesAsync(ct));
+        return Results.Ok(await svc.GetOpportunitiesAsync(periodDays ?? 180, ct));
     }
 
     private static async Task<IResult> GetOpportunityFlow(
@@ -66,6 +78,37 @@ public static class DashboardEndpoints
         if (!await HasAccessAsync(user, authz, "dashboard_pipeline"))
             return ProblemDetailsHelper.Forbidden();
         return Results.Ok(await svc.GetOpportunityItemsAsync(entityType, status, ct));
+    }
+
+    private static async Task<IResult> GetOpportunityOutcomes(
+        int? periodDays,
+        DashboardService svc, IAuthorizationService authz, ICurrentUserService user, CancellationToken ct)
+    {
+        if (!await HasAccessAsync(user, authz, "dashboard_pipeline"))
+            return ProblemDetailsHelper.Forbidden();
+
+        return Results.Ok(await svc.GetOpportunityOutcomesAsync(periodDays ?? 180, ct));
+    }
+
+    private static async Task<IResult> GetOpportunityOutcomeItems(
+        string outcomeKey,
+        int? periodDays,
+        DashboardService svc, IAuthorizationService authz, ICurrentUserService user, CancellationToken ct)
+    {
+        if (!await HasAccessAsync(user, authz, "dashboard_pipeline"))
+            return ProblemDetailsHelper.Forbidden();
+
+        var normalizedKey = outcomeKey.Trim().ToLowerInvariant();
+        if (!SupportedOutcomeKeys.Contains(normalizedKey))
+        {
+            return Results.BadRequest(new
+            {
+                code = "invalid_outcome_key",
+                message = "outcomeKey must be one of: bound, no_quote, declined, expired, lost_competitor.",
+            });
+        }
+
+        return Results.Ok(await svc.GetOpportunityOutcomeItemsAsync(normalizedKey, periodDays ?? 180, ct));
     }
 
     private static async Task<IResult> GetOpportunityAging(

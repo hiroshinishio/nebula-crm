@@ -34,6 +34,16 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
     }
 
     [Fact]
+    public async Task GetOpportunities_WithPeriodDays_Returns200()
+    {
+        var response = await _client.GetAsync("/dashboard/opportunities?periodDays=90");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var opportunities = await response.Content.ReadFromJsonAsync<DashboardOpportunitiesDto>();
+        opportunities.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task GetOpportunityFlow_Returns200WithCorrectShape()
     {
         var response = await _client.GetAsync("/dashboard/opportunities/flow?entityType=submission&periodDays=180");
@@ -119,6 +129,42 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
             if (entityNode.Children is { Count: > 0 })
                 entityNode.Count.Should().Be(entityNode.Children.Sum(c => c.Count));
         }
+    }
+
+    [Fact]
+    public async Task GetOpportunityOutcomes_Returns200WithCorrectShape()
+    {
+        var response = await _client.GetAsync("/dashboard/opportunities/outcomes?periodDays=180");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var outcomes = await response.Content.ReadFromJsonAsync<OpportunityOutcomesDto>();
+        outcomes.Should().NotBeNull();
+        outcomes!.PeriodDays.Should().Be(180);
+        outcomes.Outcomes.Should().NotBeNull();
+        outcomes.Outcomes.Should().Contain(o => o.Key == "bound");
+        outcomes.Outcomes.Should().Contain(o => o.Key == "no_quote");
+        outcomes.Outcomes.Should().Contain(o => o.Key == "declined");
+        outcomes.Outcomes.Should().Contain(o => o.Key == "expired");
+        outcomes.Outcomes.Should().Contain(o => o.Key == "lost_competitor");
+    }
+
+    [Fact]
+    public async Task GetOpportunityOutcomeItems_Returns200WithCorrectShape()
+    {
+        var response = await _client.GetAsync("/dashboard/opportunities/outcomes/bound/items?periodDays=180");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var items = await response.Content.ReadFromJsonAsync<OpportunityItemsDto>();
+        items.Should().NotBeNull();
+        items!.Items.Should().NotBeNull();
+        items.TotalCount.Should().BeGreaterThanOrEqualTo(0);
+    }
+
+    [Fact]
+    public async Task GetOpportunityOutcomeItems_InvalidOutcomeKey_Returns400()
+    {
+        var response = await _client.GetAsync("/dashboard/opportunities/outcomes/invalid/items?periodDays=180");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]

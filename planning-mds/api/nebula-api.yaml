@@ -580,8 +580,18 @@ paths:
       description: |
         Returns submission and renewal opportunity-stage counts grouped by
         non-terminal status. Used by the Opportunities summary widget.
-        All counts are ABAC-scoped.
+        Counts are scoped to the selected trailing window and remain ABAC-scoped.
       tags: [Dashboard]
+      parameters:
+        - name: periodDays
+          in: query
+          required: false
+          description: Trailing time window in days (capped server-side).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 730
+            default: 180
       responses:
         "200":
           description: Opportunities summary
@@ -589,6 +599,90 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DashboardOpportunities"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /dashboard/opportunities/outcomes:
+    get:
+      operationId: getDashboardOpportunityOutcomes
+      summary: Get terminal outcomes summary
+      description: |
+        Returns terminal outcome counts, percentages, and average days-to-exit
+        for opportunities in the selected trailing window.
+      tags: [Dashboard]
+      parameters:
+        - name: periodDays
+          in: query
+          required: false
+          description: Trailing time window in days (capped server-side).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 730
+            default: 180
+      responses:
+        "200":
+          description: Terminal outcomes summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpportunityOutcomes"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /dashboard/opportunities/outcomes/{outcomeKey}/items:
+    parameters:
+      - name: outcomeKey
+        in: path
+        required: true
+        description: Terminal outcome category key.
+        schema:
+          type: string
+          enum: [bound, no_quote, declined, expired, lost_competitor]
+    get:
+      operationId: getDashboardOpportunityOutcomeItems
+      summary: Get opportunity mini-cards for a terminal outcome
+      description: |
+        Returns up to 5 mini-card items for a specific terminal outcome in the
+        selected trailing window, sorted by days-to-exit descending.
+      tags: [Dashboard]
+      parameters:
+        - name: periodDays
+          in: query
+          required: false
+          description: Trailing time window in days (capped server-side).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 730
+            default: 180
+      responses:
+        "200":
+          description: Terminal outcome mini-card items
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                  - totalCount
+                properties:
+                  items:
+                    type: array
+                    maxItems: 5
+                    items:
+                      $ref: "#/components/schemas/OpportunityMiniCard"
+                  totalCount:
+                    type: integer
+                    description: Total items in this outcome category.
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -1672,6 +1766,64 @@ components:
           description: Renewal opportunity-stage counts (non-terminal only).
           items:
             $ref: "#/components/schemas/OpportunityStatusCount"
+
+    OpportunityOutcomes:
+      type: object
+      description: Terminal outcome summary for the selected trailing window.
+      required:
+        - periodDays
+        - totalExits
+        - outcomes
+      properties:
+        periodDays:
+          type: integer
+          minimum: 1
+          maximum: 730
+          example: 180
+        totalExits:
+          type: integer
+          minimum: 0
+          example: 48
+        outcomes:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpportunityOutcome"
+
+    OpportunityOutcome:
+      type: object
+      description: Aggregated terminal outcome row.
+      required:
+        - key
+        - label
+        - branchStyle
+        - count
+        - percentOfTotal
+      properties:
+        key:
+          type: string
+          enum: [bound, no_quote, declined, expired, lost_competitor]
+        label:
+          type: string
+          example: Declined
+        branchStyle:
+          type: string
+          enum: [solid, red_dashed, gray_dotted]
+        count:
+          type: integer
+          minimum: 0
+          example: 14
+        percentOfTotal:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 29.2
+        averageDaysToExit:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+          example: 7.6
 
     OpportunityStatusCount:
       type: object

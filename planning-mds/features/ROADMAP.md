@@ -18,7 +18,7 @@ This document is the working prioritization view for feature sequencing.
 
 | Feature | Phase | Why Now |
 |---------|-------|---------|
-| *(empty — pick from Next)* | | |
+| [F0011 — Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)](./F0011-dashboard-opportunities-flow-modernization/README.md) | MVP | Direct follow-up to F0010: opportunities still need a connected flow and explicit terminal outcomes to reduce triage friction. |
 
 ## Next
 

@@ -169,6 +169,7 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - [F0009: Authentication + Role-Based Login](features/archive/F0009-authentication-and-role-based-login/PRD.md) - Done (Archived; Phase 1)
 - [F0004: Task Center UI + Manager Assignment](features/F0004-task-center-ui-and-assignment/PRD.md) - Planned
 - [F0010: Dashboard Opportunities Refactor (Pipeline Board + Insight Views)](features/F0010-dashboard-opportunities-refactor/PRD.md) - Done
+- [F0011: Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)](features/F0011-dashboard-opportunities-flow-modernization/PRD.md) - Draft
 
 ### 3.4 MVP Features and Stories (vertical-slice friendly)
 
@@ -211,6 +212,13 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - [F0010-S0004: Add Opportunities Hierarchy Sunburst view](features/F0010-dashboard-opportunities-refactor/F0010-S0004-add-opportunity-hierarchy-sunburst-view.md) - Done
 - [F0010-S0005: Unify drilldown, responsive layout, and accessibility](features/F0010-dashboard-opportunities-refactor/F0010-S0005-unify-drilldown-responsive-and-accessibility.md) - Done
 
+**MVP Stories (Feature F0011: Dashboard Opportunities Flow-First Modernization):**
+- [F0011-S0001: Replace Pipeline Board tiles with connected flow-first canvas default](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0001-replace-pipeline-board-with-connected-flow-default.md) - Draft
+- [F0011-S0002: Add terminal outcomes rail and outcome drilldowns](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0002-add-terminal-outcomes-rail-and-drilldowns.md) - Draft
+- [F0011-S0003: Apply modern opportunities visual system](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0003-apply-modern-opportunities-visual-system.md) - Draft
+- [F0011-S0004: Rebalance secondary insights as mini-views](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0004-rebalance-secondary-insights-as-mini-views.md) - Draft
+- [F0011-S0005: Ensure responsive and accessibility parity](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0005-ensure-responsive-and-accessibility-parity.md) - Draft
+
 **Story Index:** See `planning-mds/features/STORY-INDEX.md` for auto-generated summary of all stories (if generated).
 
 Reference examples also live under `planning-mds/examples/stories/`.
@@ -236,7 +244,7 @@ Screen baseline details:
 
 ## 4) Phase B — Architect Spec (Public Baseline)
 
-**Status: APPROVED (2026-02-14)** — Dashboard-first architecture approved as the planning baseline. Phase C implementation is complete for F0001/F0002/F0009; keep planning artifacts current during ongoing F0010/F0003/F0004 work.
+**Status: APPROVED (2026-02-14)** — Dashboard-first architecture approved as the planning baseline. Phase C implementation is complete for F0001/F0002/F0009; keep planning artifacts current during ongoing F0011/F0003/F0004 work.
 
 This section defines the build-ready technical baseline for the reference implementation.
 

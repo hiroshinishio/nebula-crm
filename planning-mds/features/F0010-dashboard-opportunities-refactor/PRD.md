@@ -4,7 +4,7 @@
 **Feature Name:** Dashboard Opportunities Refactor (Pipeline Board + Insight Views)
 **Priority:** High
 **Phase:** MVP
-**Status:** Draft
+**Status:** Done
 
 ## Feature Statement
 

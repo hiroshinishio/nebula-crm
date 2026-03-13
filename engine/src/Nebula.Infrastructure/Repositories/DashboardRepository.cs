@@ -62,8 +62,12 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         return new DashboardKpisDto(activeBrokers, openSubmissions, renewalRate, avgTurnaroundDays);
     }
 
-    public async Task<DashboardOpportunitiesDto> GetOpportunitiesAsync(CancellationToken ct = default)
+    public async Task<DashboardOpportunitiesDto> GetOpportunitiesAsync(int periodDays = 180, CancellationToken ct = default)
     {
+        if (periodDays <= 0) periodDays = 180;
+        if (periodDays > 730) periodDays = 730;
+        var windowStart = DateTime.UtcNow.AddDays(-periodDays);
+
         var submissionStatuses = await db.ReferenceSubmissionStatuses
             .Where(s => !s.IsTerminal)
             .OrderBy(s => s.DisplayOrder)
@@ -76,7 +80,9 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
             .ToListAsync(ct);
 
         var submissionCounts = await db.Submissions
-            .Where(s => !submissionTerminalStatuses.Contains(s.CurrentStatus))
+            .Where(s =>
+                !submissionTerminalStatuses.Contains(s.CurrentStatus)
+                && s.CreatedAt >= windowStart)
             .GroupBy(s => s.CurrentStatus)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Status, g => g.Count, ct);
@@ -100,7 +106,9 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
             .ToListAsync(ct);
 
         var renewalCounts = await db.Renewals
-            .Where(r => !renewalTerminalStatuses.Contains(r.CurrentStatus))
+            .Where(r =>
+                !renewalTerminalStatuses.Contains(r.CurrentStatus)
+                && r.CreatedAt >= windowStart)
             .GroupBy(r => r.CurrentStatus)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Status, g => g.Count, ct);
@@ -287,6 +295,316 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
             return new OpportunityItemsDto(miniCards, totalCount);
         }
     }
+
+    private static readonly IReadOnlyList<OutcomeDefinition> OutcomeDefinitions =
+    [
+        new("bound", "Bound", "solid"),
+        new("no_quote", "No Quote", "red_dashed"),
+        new("declined", "Declined", "red_dashed"),
+        new("expired", "Expired", "gray_dotted"),
+        new("lost_competitor", "Lost to Competitor", "red_dashed"),
+    ];
+
+    public async Task<OpportunityOutcomesDto> GetOpportunityOutcomesAsync(
+        int periodDays,
+        CancellationToken ct = default)
+    {
+        if (periodDays <= 0) periodDays = 180;
+        if (periodDays > 730) periodDays = 730;
+        var windowStart = DateTime.UtcNow.AddDays(-periodDays);
+
+        var submissionTerminalStatuses = await db.ReferenceSubmissionStatuses
+            .Where(s => s.IsTerminal)
+            .Select(s => s.Code)
+            .ToHashSetAsync(ct);
+        var renewalTerminalStatuses = await db.ReferenceRenewalStatuses
+            .Where(s => s.IsTerminal)
+            .Select(s => s.Code)
+            .ToHashSetAsync(ct);
+
+        var submissionTransitions = await db.WorkflowTransitions
+            .Where(wt =>
+                wt.WorkflowType == "Submission"
+                && wt.OccurredAt >= windowStart
+                && submissionTerminalStatuses.Contains(wt.ToState))
+            .Select(wt => new ExitTransition(wt.EntityId, wt.ToState, wt.OccurredAt))
+            .ToListAsync(ct);
+
+        var renewalTransitions = await db.WorkflowTransitions
+            .Where(wt =>
+                wt.WorkflowType == "Renewal"
+                && wt.OccurredAt >= windowStart
+                && renewalTerminalStatuses.Contains(wt.ToState))
+            .Select(wt => new ExitTransition(wt.EntityId, wt.ToState, wt.OccurredAt))
+            .ToListAsync(ct);
+
+        var firstSubmissionExits = submissionTransitions
+            .GroupBy(t => t.EntityId)
+            .Select(g => g.OrderBy(t => t.ExitAtUtc).First())
+            .ToList();
+        var firstRenewalExits = renewalTransitions
+            .GroupBy(t => t.EntityId)
+            .Select(g => g.OrderBy(t => t.ExitAtUtc).First())
+            .ToList();
+
+        var submissionIds = firstSubmissionExits.Select(e => e.EntityId).ToList();
+        var renewalIds = firstRenewalExits.Select(e => e.EntityId).ToList();
+
+        var submissionCreatedAt = submissionIds.Count == 0
+            ? new Dictionary<Guid, DateTime>()
+            : await db.Submissions.IgnoreQueryFilters()
+                .Where(s => submissionIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.CreatedAt })
+                .ToDictionaryAsync(s => s.Id, s => s.CreatedAt, ct);
+
+        var renewalCreatedAt = renewalIds.Count == 0
+            ? new Dictionary<Guid, DateTime>()
+            : await db.Renewals.IgnoreQueryFilters()
+                .Where(r => renewalIds.Contains(r.Id))
+                .Select(r => new { r.Id, r.CreatedAt })
+                .ToDictionaryAsync(r => r.Id, r => r.CreatedAt, ct);
+
+        var exits = new List<OutcomeExitEntry>();
+
+        foreach (var exit in firstSubmissionExits)
+        {
+            if (!submissionCreatedAt.TryGetValue(exit.EntityId, out var createdAt))
+                continue;
+
+            var outcomeKey = MapOutcomeKey("submission", exit.ExitStatus);
+            if (outcomeKey is null)
+                continue;
+
+            var daysToExit = Math.Max(0, (int)(exit.ExitAtUtc - createdAt).TotalDays);
+            exits.Add(new OutcomeExitEntry(outcomeKey, daysToExit));
+        }
+
+        foreach (var exit in firstRenewalExits)
+        {
+            if (!renewalCreatedAt.TryGetValue(exit.EntityId, out var createdAt))
+                continue;
+
+            var outcomeKey = MapOutcomeKey("renewal", exit.ExitStatus);
+            if (outcomeKey is null)
+                continue;
+
+            var daysToExit = Math.Max(0, (int)(exit.ExitAtUtc - createdAt).TotalDays);
+            exits.Add(new OutcomeExitEntry(outcomeKey, daysToExit));
+        }
+
+        var grouped = exits
+            .GroupBy(e => e.OutcomeKey)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var totalExits = exits.Count;
+
+        var outcomes = OutcomeDefinitions.Select(definition =>
+        {
+            var entries = grouped.GetValueOrDefault(definition.Key, []);
+            var count = entries.Count;
+            var percent = totalExits == 0
+                ? 0
+                : Math.Round(count * 100.0 / totalExits, 1);
+            double? avgDays = count == 0
+                ? null
+                : Math.Round(entries.Average(e => e.DaysToExit), 1);
+
+            return new OpportunityOutcomeDto(
+                definition.Key,
+                definition.Label,
+                definition.BranchStyle,
+                count,
+                percent,
+                avgDays);
+        }).ToList();
+
+        return new OpportunityOutcomesDto(periodDays, totalExits, outcomes);
+    }
+
+    public async Task<OpportunityItemsDto> GetOpportunityOutcomeItemsAsync(
+        string outcomeKey,
+        int periodDays,
+        CancellationToken ct = default)
+    {
+        if (periodDays <= 0) periodDays = 180;
+        if (periodDays > 730) periodDays = 730;
+        var normalizedOutcomeKey = outcomeKey.Trim().ToLowerInvariant();
+
+        if (!OutcomeDefinitions.Any(o => o.Key == normalizedOutcomeKey))
+            throw new ArgumentOutOfRangeException(nameof(outcomeKey), "Unsupported outcome key.");
+
+        var windowStart = DateTime.UtcNow.AddDays(-periodDays);
+
+        var submissionItems = await GetOutcomeSubmissionItemsAsync(normalizedOutcomeKey, windowStart, ct);
+        var renewalItems = await GetOutcomeRenewalItemsAsync(normalizedOutcomeKey, windowStart, ct);
+
+        var combined = submissionItems
+            .Concat(renewalItems)
+            .OrderByDescending(i => i.DaysInStatus)
+            .ThenBy(i => i.EntityName)
+            .ToList();
+
+        return new OpportunityItemsDto(combined.Take(5).ToList(), combined.Count);
+    }
+
+    private async Task<IReadOnlyList<OpportunityMiniCardDto>> GetOutcomeSubmissionItemsAsync(
+        string outcomeKey,
+        DateTime windowStart,
+        CancellationToken ct)
+    {
+        var statuses = GetOutcomeStatuses(outcomeKey, "submission");
+        if (statuses.Count == 0)
+            return [];
+
+        var transitions = await db.WorkflowTransitions
+            .Where(wt =>
+                wt.WorkflowType == "Submission"
+                && wt.OccurredAt >= windowStart
+                && statuses.Contains(wt.ToState))
+            .Select(wt => new ExitTransition(wt.EntityId, wt.ToState, wt.OccurredAt))
+            .ToListAsync(ct);
+
+        if (transitions.Count == 0)
+            return [];
+
+        var firstExits = transitions
+            .GroupBy(t => t.EntityId)
+            .Select(g => g.OrderBy(t => t.ExitAtUtc).First())
+            .ToDictionary(e => e.EntityId, e => e);
+        var entityIds = firstExits.Keys.ToList();
+
+        var submissions = await db.Submissions
+            .Include(s => s.Account)
+            .Where(s => entityIds.Contains(s.Id))
+            .Select(s => new
+            {
+                s.Id,
+                s.CreatedAt,
+                s.PremiumEstimate,
+                AccountName = s.Account.Name,
+                s.AssignedToUserId,
+            })
+            .ToListAsync(ct);
+
+        var userIds = submissions.Select(s => s.AssignedToUserId).Distinct().ToList();
+        Dictionary<Guid, string?> users = userIds.Count == 0
+            ? []
+            : await db.UserProfiles
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.DisplayName })
+                .ToDictionaryAsync(u => u.Id, u => (string?)u.DisplayName, ct);
+
+        return submissions.Select(s =>
+        {
+            var exit = firstExits[s.Id];
+            var daysToExit = Math.Max(0, (int)(exit.ExitAtUtc - s.CreatedAt).TotalDays);
+            users.TryGetValue(s.AssignedToUserId, out var displayName);
+
+            return new OpportunityMiniCardDto(
+                s.Id,
+                s.AccountName,
+                (double?)s.PremiumEstimate,
+                daysToExit,
+                GetInitials(displayName),
+                displayName);
+        }).ToList();
+    }
+
+    private async Task<IReadOnlyList<OpportunityMiniCardDto>> GetOutcomeRenewalItemsAsync(
+        string outcomeKey,
+        DateTime windowStart,
+        CancellationToken ct)
+    {
+        var statuses = GetOutcomeStatuses(outcomeKey, "renewal");
+        if (statuses.Count == 0)
+            return [];
+
+        var transitions = await db.WorkflowTransitions
+            .Where(wt =>
+                wt.WorkflowType == "Renewal"
+                && wt.OccurredAt >= windowStart
+                && statuses.Contains(wt.ToState))
+            .Select(wt => new ExitTransition(wt.EntityId, wt.ToState, wt.OccurredAt))
+            .ToListAsync(ct);
+
+        if (transitions.Count == 0)
+            return [];
+
+        var firstExits = transitions
+            .GroupBy(t => t.EntityId)
+            .Select(g => g.OrderBy(t => t.ExitAtUtc).First())
+            .ToDictionary(e => e.EntityId, e => e);
+        var entityIds = firstExits.Keys.ToList();
+
+        var renewals = await db.Renewals
+            .Include(r => r.Account)
+            .Where(r => entityIds.Contains(r.Id))
+            .Select(r => new
+            {
+                r.Id,
+                r.CreatedAt,
+                AccountName = r.Account.Name,
+                r.AssignedToUserId,
+            })
+            .ToListAsync(ct);
+
+        var userIds = renewals.Select(r => r.AssignedToUserId).Distinct().ToList();
+        Dictionary<Guid, string?> users = userIds.Count == 0
+            ? []
+            : await db.UserProfiles
+                .Where(u => userIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.DisplayName })
+                .ToDictionaryAsync(u => u.Id, u => (string?)u.DisplayName, ct);
+
+        return renewals.Select(r =>
+        {
+            var exit = firstExits[r.Id];
+            var daysToExit = Math.Max(0, (int)(exit.ExitAtUtc - r.CreatedAt).TotalDays);
+            users.TryGetValue(r.AssignedToUserId, out var displayName);
+
+            return new OpportunityMiniCardDto(
+                r.Id,
+                r.AccountName,
+                null,
+                daysToExit,
+                GetInitials(displayName),
+                displayName);
+        }).ToList();
+    }
+
+    private static List<string> GetOutcomeStatuses(string outcomeKey, string workflowType) =>
+        (workflowType, outcomeKey) switch
+        {
+            ("submission", "bound") => ["Bound"],
+            ("submission", "no_quote") => ["NotQuoted"],
+            ("submission", "declined") => ["Declined"],
+            ("submission", "expired") => ["Expired"],
+            ("submission", "lost_competitor") => ["Lost", "Withdrawn"],
+            ("renewal", "bound") => ["Bound"],
+            ("renewal", "no_quote") => ["NotRenewed"],
+            ("renewal", "declined") => [],
+            ("renewal", "expired") => ["Expired", "Lapsed"],
+            ("renewal", "lost_competitor") => ["Lost", "Withdrawn"],
+            _ => [],
+        };
+
+    private static string? MapOutcomeKey(string workflowType, string statusCode) =>
+        (workflowType, statusCode) switch
+        {
+            ("submission", "Bound") => "bound",
+            ("submission", "NotQuoted") => "no_quote",
+            ("submission", "Declined") => "declined",
+            ("submission", "Expired") => "expired",
+            ("submission", "Lost") => "lost_competitor",
+            ("submission", "Withdrawn") => "lost_competitor",
+            ("renewal", "Bound") => "bound",
+            ("renewal", "NotRenewed") => "no_quote",
+            ("renewal", "Expired") => "expired",
+            ("renewal", "Lapsed") => "expired",
+            ("renewal", "Lost") => "lost_competitor",
+            ("renewal", "Withdrawn") => "lost_competitor",
+            _ => null,
+        };
 
     public async Task<IReadOnlyList<NudgeCardDto>> GetNudgesAsync(Guid userId, CancellationToken ct = default)
     {
@@ -612,6 +930,9 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
     }
 
     private sealed record EntityAgingEntry(string Status, int DaysInStatus);
+    private sealed record ExitTransition(Guid EntityId, string ExitStatus, DateTime ExitAtUtc);
+    private sealed record OutcomeExitEntry(string OutcomeKey, int DaysToExit);
+    private sealed record OutcomeDefinition(string Key, string Label, string BranchStyle);
 
     private static string? GetInitials(string? displayName)
     {
