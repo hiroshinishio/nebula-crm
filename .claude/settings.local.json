@@ -53,7 +53,8 @@
       "Bash(sh:*)",
       "Bash(gh run:*)",
       "Bash(find /mnt/c/Users/gajap/sandbox/nebula-crm -type f \\\\\\( -name \"FORK*\" -o -name \"ADOPT*\" -o -name \"*adopt*\" -o -name \"*customize*\" \\\\\\) 2>/dev/null | head -20)",
-      "Bash(npx --prefix experience tsc -b --noEmit 2>&1)"
+      "Bash(npx --prefix experience tsc -b --noEmit 2>&1)",
+      "Bash(file /mnt/c/Users/gajap/sandbox/nebula-crm/planning-mds/screens/temp/*.jpeg | head -10)"
     ]
   }
 }

@@ -18,13 +18,12 @@ This document is the working prioritization view for feature sequencing.
 
 | Feature | Phase | Why Now |
 |---------|-------|---------|
-| [F0011 — Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)](./F0011-dashboard-opportunities-flow-modernization/README.md) | MVP | Direct follow-up to F0010: opportunities still need a connected flow and explicit terminal outcomes to reduce triage friction. |
+| [F0003 — Task Center + Reminders (API-only MVP)](./F0003-task-center/README.md) | MVP | Backend task lifecycle completion strengthens dashboard/task integrity. |
 
 ## Next
 
 | Feature | Phase | Why Next |
 |---------|-------|----------|
-| [F0003 — Task Center + Reminders (API-only MVP)](./F0003-task-center/README.md) | MVP | Backend task lifecycle completion strengthens dashboard/task integrity. |
 | [F0004 — Task Center UI + Manager Assignment](./F0004-task-center-ui-and-assignment/README.md) | Phase 1 | UI rollout can follow once F0003 task API scope is implemented and stabilized. |
 
 ## Later
@@ -35,6 +34,12 @@ This document is the working prioritization view for feature sequencing.
 | F0007 — Renewal Pipeline | MVP (planned) | Follows submission workflow foundation and shared transition patterns. |
 | F0008 — Broker Insights | MVP (planned) | Higher-value once core workflow and auth foundations are stable. |
 
+## Deprecated
+
+| Feature | Superseded By | Rationale |
+|---------|---------------|-----------|
+| [F0011 — Dashboard Opportunities Flow-First Modernization](./F0011-dashboard-opportunities-flow-modernization/README.md) | F0012 | F0012 absorbs all F0011 scope (connected flow, terminal outcomes, visual system, secondary insight rebalancing, responsive parity) and goes further by eliminating the panelized model entirely in favor of a flat infographic canvas. |
+
 ## Completed
 
 | Feature | Phase | Completion State |
@@ -44,6 +49,7 @@ This document is the working prioritization view for feature sequencing.
 | [F0005 — IdP Migration: Keycloak → authentik](./archive/F0005-idp-migration/README.md) | Foundation | Done and archived |
 | [F0009 — Authentication + Role-Based Login](./archive/F0009-authentication-and-role-based-login/README.md) | Phase 1 | Done and archived |
 | [F0010 — Dashboard Opportunities Refactor (Pipeline Board + Insight Views)](./F0010-dashboard-opportunities-refactor/README.md) | MVP | Done |
+| [F0012 — Dashboard Storytelling Infographic Canvas (Flat Canvas + Collapsible Rails)](./archive/F0012-dashboard-storytelling-infographic-canvas/README.md) | MVP | Done and archived |
 
 ## Notes
 

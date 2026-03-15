@@ -25,7 +25,9 @@ public record OpportunityFlowNodeDto(
     string ColorGroup,
     int CurrentCount,
     int InflowCount,
-    int OutflowCount);
+    int OutflowCount,
+    double? AvgDwellDays = null,
+    string? Emphasis = null);
 
 public record OpportunityFlowLinkDto(
     string SourceStatus,

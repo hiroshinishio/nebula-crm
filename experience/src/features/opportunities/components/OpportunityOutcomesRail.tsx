@@ -11,12 +11,12 @@ interface OpportunityOutcomesRailProps {
 function branchStyleClass(branchStyle: string): string {
   switch (branchStyle) {
     case 'solid':
-      return 'border-l-2 border-emerald-500';
+      return 'border-l-2 border-status-success';
     case 'gray_dotted':
-      return 'border-l-2 border-dotted border-slate-400';
+      return 'border-l-2 border-dotted border-text-muted';
     case 'red_dashed':
     default:
-      return 'border-l-2 border-dashed border-rose-500';
+      return 'border-l-2 border-dashed border-status-error';
   }
 }
 
@@ -76,4 +76,3 @@ export function OpportunityOutcomesRail({
     </aside>
   );
 }
-

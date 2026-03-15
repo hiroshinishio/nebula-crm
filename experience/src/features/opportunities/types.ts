@@ -29,7 +29,15 @@ export interface OpportunityFlowNodeDto {
   currentCount: number;
   inflowCount: number;
   outflowCount: number;
+  avgDwellDays?: number | null;
+  emphasis?: OpportunityFlowEmphasis | null;
 }
+
+export type OpportunityFlowEmphasis =
+  | 'normal'
+  | 'active'
+  | 'blocked'
+  | 'bottleneck';
 
 export interface OpportunityFlowLinkDto {
   sourceStatus: string;

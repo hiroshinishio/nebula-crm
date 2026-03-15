@@ -32,6 +32,24 @@ Feature Complete
 - Stack-specific compile/test/lint/security execution must run in application runtime containers (or CI jobs built from those container definitions).
 - Review and approval decisions must cite evidence produced by those application runtime executions.
 
+## Runtime Preflight & Failure Triage (Mandatory)
+
+Before any compile/test/lint/security scan command:
+
+1. Verify required application runtime containers/jobs are running and healthy.
+   - Example (containerized stacks): `docker compose ps` + health checks/log probe.
+   - Non-containerized stacks: run the equivalent runtime readiness command(s).
+2. Record preflight evidence path (command + timestamp + result) in the feature execution log.
+3. If runtime is unavailable, restore runtime first, then re-run preflight before executing feature validation commands.
+
+If a validation command fails with runtime symptoms (for example connection refused, DNS/network resolution errors, dependency service unavailable, missing container):
+
+1. **Stop code edits immediately.**
+2. Classify failure as `runtime-blocked` in feature execution notes.
+3. Re-run runtime preflight and restore runtime health.
+4. Re-run the same failed validation command **without code changes**.
+5. Only treat it as a code defect if failure persists after runtime is healthy.
+
 ---
 
 ## Execution Steps
@@ -87,6 +105,9 @@ Validator:
 
 Execute these agents **in parallel** for the specific feature. Run AI Engineer when the feature touches `neuron/`, LLM workflows, prompts, or MCP.
 All stack-specific execution (compile/tests/scans) must run in application runtime containers produced for this project.
+
+Mandatory preflight before implementation validation runs:
+- [ ] Runtime preflight executed and recorded per `Runtime Preflight & Failure Triage (Mandatory)`
 
 **AI Scope Checklist — include AI Engineer if ANY apply:**
 - [ ] Story mentions LLM, AI, or machine learning behavior
@@ -184,6 +205,7 @@ All stack-specific execution (compile/tests/scans) must run in application runti
    - Write E2E test for feature error scenarios
    - Validate feature acceptance criteria coverage
    - Generate coverage report for feature code
+   - When host browser dependencies block Playwright (for example `libnspr4`/`libnss3` missing), run Playwright in the project runtime container (for example official Playwright Docker image matching repo `@playwright/test` version), then record the container command and result in feature execution evidence
 4. **Follow SOLUTION-PATTERNS.md:**
    - Developers own unit/component and endpoint integration tests
    - QE validates coverage and closes critical cross-tier gaps
@@ -212,6 +234,7 @@ All stack-specific execution (compile/tests/scans) must run in application runti
 **Completion Criteria for Step 1:**
 - [ ] All required agents completed feature implementation (Backend, Frontend, Quality, DevOps, and AI Engineer if AI scope)
 - [ ] Feature code compiles/builds successfully in application runtime containers
+- [ ] Runtime preflight evidence recorded before validation command execution
 - [ ] No critical errors
 
 ---
@@ -221,6 +244,10 @@ All stack-specific execution (compile/tests/scans) must run in application runti
 **Execution Instructions:**
 
 Each agent validates their feature work:
+
+Before self-review checks:
+- [ ] Re-run runtime preflight and confirm validation environment is healthy
+- [ ] If runtime failures are detected, mark `runtime-blocked`, fix runtime, and re-run unchanged validation commands before editing code
 
 1. **Backend Developer self-review:**
    - [ ] Feature API endpoints implemented per contracts
@@ -268,6 +295,7 @@ Each agent validates their feature work:
 - [ ] Architect confirms feature output matches Step 0 plan
 - [ ] All required agents pass self-review for feature
 - [ ] All feature tests passing in application runtime containers
+- [ ] Runtime preflight evidence attached for failed and passing validation runs
 - [ ] Feature deployability evidence recorded by DevOps
 - [ ] Feature works end-to-end
 
@@ -523,6 +551,8 @@ Run these review agents in parallel:
 
 Before declaring feature completion, update and validate planning trackers:
 
+0. **Activate Product Manager agent** by reading `agents/product-manager/SKILL.md`
+
 1. Update feature and planning trackers:
    - `planning-mds/features/F{NNNN}-{slug}/STATUS.md` (feature completion state)
    - `STATUS.md` required signoff matrix + story signoff provenance entries
@@ -530,18 +560,25 @@ Before declaring feature completion, update and validate planning trackers:
    - `planning-mds/features/ROADMAP.md` (Now/Next/Later/Completed placement)
    - `planning-mds/BLUEPRINT.md` (feature/story status labels and links, if changed)
 
-2. Regenerate story rollup when story files changed:
+2. For completed features (`Overall Status: Done`), move the feature folder to archive:
+   - From `planning-mds/features/F{NNNN}-{slug}/`
+   - To `planning-mds/features/archive/F{NNNN}-{slug}/`
+   - Then update any path references impacted by the move (including feature-local doc links)
+
+3. Regenerate story rollup when story files changed:
    - `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
 
-3. Validate consistency:
+4. Validate consistency:
    - `python3 agents/product-manager/scripts/validate-trackers.py`
 
-4. If validation fails:
+5. If validation fails:
    - Treat as a blocking issue
    - Fix tracker drift and re-run validation before completion
 
 **Gate Criteria:**
 - [ ] Feature STATUS reflects final approved state
+- [ ] Product Manager closeout executed for tracker sync + archive decision
+- [ ] Completed feature folders are moved to `planning-mds/features/archive/`
 - [ ] REGISTRY/ROADMAP/BLUEPRINT are synchronized
 - [ ] STORY-INDEX regenerated if story files changed
 - [ ] Tracker validation passes

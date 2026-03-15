@@ -1,14 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Nebula.Application.DTOs;
 using Nebula.Application.Interfaces;
+using Nebula.Application.Services;
 using Nebula.Infrastructure.Persistence;
 
 namespace Nebula.Infrastructure.Repositories;
 
 public class DashboardRepository(AppDbContext db) : IDashboardRepository
 {
-    public async Task<DashboardKpisDto> GetKpisAsync(CancellationToken ct = default)
+    public async Task<DashboardKpisDto> GetKpisAsync(int periodDays = 90, CancellationToken ct = default)
     {
+        periodDays = NormalizePeriodDays(periodDays, 90);
+
         var terminalSubmissionStatuses = await db.ReferenceSubmissionStatuses
             .Where(s => s.IsTerminal)
             .Select(s => s.Code)
@@ -22,11 +25,11 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         var openSubmissions = await db.Submissions
             .CountAsync(s => !terminalSubmissionStatuses.Contains(s.CurrentStatus), ct);
 
-        var ninetyDaysAgo = DateTime.UtcNow.AddDays(-90);
+        var windowStart = DateTime.UtcNow.AddDays(-periodDays);
 
-        // Renewal rate: % of renewals reaching Bound out of all that exited opportunities in 90 days
+        // Renewal rate: % of renewals reaching Bound out of all that exited opportunities in selected window.
         var exitedRenewals = await db.Renewals
-            .Where(r => terminalRenewalStatuses.Contains(r.CurrentStatus) && r.UpdatedAt >= ninetyDaysAgo)
+            .Where(r => terminalRenewalStatuses.Contains(r.CurrentStatus) && r.UpdatedAt >= windowStart)
             .ToListAsync(ct);
 
         double? renewalRate = exitedRenewals.Count > 0
@@ -37,7 +40,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         var terminalTransitions = await db.WorkflowTransitions
             .Where(wt => wt.WorkflowType == "Submission"
                 && terminalSubmissionStatuses.Contains(wt.ToState)
-                && wt.OccurredAt >= ninetyDaysAgo)
+                && wt.OccurredAt >= windowStart)
             .GroupBy(wt => wt.EntityId)
             .Select(g => new { EntityId = g.Key, FirstTerminal = g.Min(wt => wt.OccurredAt) })
             .ToListAsync(ct);
@@ -128,8 +131,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         int periodDays,
         CancellationToken ct = default)
     {
-        if (periodDays <= 0) periodDays = 180;
-        if (periodDays > 730) periodDays = 730;
+        periodDays = NormalizePeriodDays(periodDays, 180);
 
         var normalizedEntityType = entityType.Trim().ToLowerInvariant();
         var windowEnd = DateTime.UtcNow;
@@ -138,6 +140,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         string workflowType;
         List<StatusMeta> statuses;
         Dictionary<string, int> currentCounts;
+        List<CurrentEntityState> currentEntities;
 
         if (normalizedEntityType == "submission")
         {
@@ -150,6 +153,10 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
                 .GroupBy(s => s.CurrentStatus)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.Status, g => g.Count, ct);
+
+            currentEntities = await db.Submissions
+                .Select(s => new CurrentEntityState(s.Id, s.CurrentStatus, s.CreatedAt))
+                .ToListAsync(ct);
 
             workflowType = "Submission";
         }
@@ -164,6 +171,10 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
                 .GroupBy(r => r.CurrentStatus)
                 .Select(g => new { Status = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(g => g.Status, g => g.Count, ct);
+
+            currentEntities = await db.Renewals
+                .Select(r => new CurrentEntityState(r.Id, r.CurrentStatus, r.CreatedAt))
+                .ToListAsync(ct);
 
             workflowType = "Renewal";
         }
@@ -198,8 +209,17 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
             .ToList();
 
         var allStatuses = statuses.Concat(unknownStatuses).ToList();
+        var entityIds = currentEntities.Select(e => e.EntityId).ToList();
+        var allTransitions = entityIds.Count == 0
+            ? []
+            : await db.WorkflowTransitions
+                .Where(wt => wt.WorkflowType == workflowType && entityIds.Contains(wt.EntityId))
+                .Select(wt => new CurrentStatusTransition(wt.EntityId, wt.ToState, wt.OccurredAt))
+                .ToListAsync(ct);
 
-        var nodes = allStatuses.Select(s => new OpportunityFlowNodeDto(
+        var avgDwellDaysByStatus = BuildAverageDwellDaysByStatus(currentEntities, allTransitions, windowEnd);
+
+        var initialNodes = allStatuses.Select(s => new OpportunityFlowNodeDto(
             s.Code,
             s.DisplayName,
             s.IsTerminal,
@@ -207,7 +227,18 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
             s.ColorGroup ?? (s.IsTerminal ? "decision" : "intake"),
             currentCounts.GetValueOrDefault(s.Code, 0),
             inflowByStatus.GetValueOrDefault(s.Code, 0),
-            outflowByStatus.GetValueOrDefault(s.Code, 0)))
+            outflowByStatus.GetValueOrDefault(s.Code, 0),
+            avgDwellDaysByStatus.GetValueOrDefault(s.Code)))
+            .ToList();
+
+        var emphasisByStatus = OpportunityFlowNodeEmphasisCalculator.Compute(initialNodes);
+        var nodes = initialNodes
+            .Select(node => node with
+            {
+                Emphasis = node.IsTerminal
+                    ? null
+                    : emphasisByStatus.GetValueOrDefault(node.Status)
+            })
             .ToList();
 
         return new OpportunityFlowDto(
@@ -309,8 +340,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         int periodDays,
         CancellationToken ct = default)
     {
-        if (periodDays <= 0) periodDays = 180;
-        if (periodDays > 730) periodDays = 730;
+        periodDays = NormalizePeriodDays(periodDays, 180);
         var windowStart = DateTime.UtcNow.AddDays(-periodDays);
 
         var submissionTerminalStatuses = await db.ReferenceSubmissionStatuses
@@ -426,8 +456,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         int periodDays,
         CancellationToken ct = default)
     {
-        if (periodDays <= 0) periodDays = 180;
-        if (periodDays > 730) periodDays = 730;
+        periodDays = NormalizePeriodDays(periodDays, 180);
         var normalizedOutcomeKey = outcomeKey.Trim().ToLowerInvariant();
 
         if (!OutcomeDefinitions.Any(o => o.Key == normalizedOutcomeKey))
@@ -761,8 +790,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         int periodDays,
         CancellationToken ct = default)
     {
-        if (periodDays <= 0) periodDays = 180;
-        if (periodDays > 730) periodDays = 730;
+        periodDays = NormalizePeriodDays(periodDays, 180);
 
         var normalizedEntityType = entityType.Trim().ToLowerInvariant();
 
@@ -856,8 +884,7 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         int periodDays,
         CancellationToken ct = default)
     {
-        if (periodDays <= 0) periodDays = 180;
-        if (periodDays > 730) periodDays = 730;
+        periodDays = NormalizePeriodDays(periodDays, 180);
 
         // Submissions — include all statuses (active + terminal) for composition views
         var submissionStatuses = await db.ReferenceSubmissionStatuses
@@ -930,6 +957,8 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
     }
 
     private sealed record EntityAgingEntry(string Status, int DaysInStatus);
+    private sealed record CurrentEntityState(Guid EntityId, string Status, DateTime CreatedAt);
+    private sealed record CurrentStatusTransition(Guid EntityId, string ToState, DateTime OccurredAt);
     private sealed record ExitTransition(Guid EntityId, string ExitStatus, DateTime ExitAtUtc);
     private sealed record OutcomeExitEntry(string OutcomeKey, int DaysToExit);
     private sealed record OutcomeDefinition(string Key, string Label, string BranchStyle);
@@ -957,4 +986,42 @@ public class DashboardRepository(AppDbContext db) : IDashboardRepository
         bool IsTerminal,
         short DisplayOrder,
         string? ColorGroup);
+
+    private static int NormalizePeriodDays(int periodDays, int defaultDays)
+    {
+        if (periodDays <= 0)
+            return defaultDays;
+        return Math.Min(periodDays, 730);
+    }
+
+    private static Dictionary<string, double> BuildAverageDwellDaysByStatus(
+        IReadOnlyList<CurrentEntityState> entities,
+        IReadOnlyList<CurrentStatusTransition> transitions,
+        DateTime nowUtc)
+    {
+        var enteredLookup = transitions
+            .GroupBy(t => new { t.EntityId, t.ToState })
+            .ToDictionary(
+                g => (g.Key.EntityId, Status: g.Key.ToState),
+                g => g.Max(t => t.OccurredAt));
+
+        return entities
+            .GroupBy(entity => entity.Status)
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                {
+                    var dwellDays = g.Select(entity =>
+                    {
+                        var enteredAt = enteredLookup.TryGetValue((entity.EntityId, entity.Status), out var value)
+                            ? value
+                            : entity.CreatedAt;
+
+                        return Math.Max(0, (nowUtc - enteredAt).TotalDays);
+                    });
+
+                    return Math.Round(dwellDays.Average(), 1);
+                },
+                StringComparer.OrdinalIgnoreCase);
+    }
 }

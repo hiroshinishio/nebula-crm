@@ -1,4 +1,3 @@
-import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 interface KpiCardProps {
@@ -9,7 +8,7 @@ interface KpiCardProps {
 
 export function KpiCard({ label, value, isLoading }: KpiCardProps) {
   return (
-    <Card className="gradient-accent-top pt-6">
+    <article className="min-w-0">
       <p className="text-xs font-medium uppercase tracking-wider text-text-muted">{label}</p>
       {isLoading ? (
         <Skeleton className="mt-2 h-10 w-24" />
@@ -18,6 +17,6 @@ export function KpiCard({ label, value, isLoading }: KpiCardProps) {
           {value ?? '—'}
         </p>
       )}
-    </Card>
+    </article>
   );
 }

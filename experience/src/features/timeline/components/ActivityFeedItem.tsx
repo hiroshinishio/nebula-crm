@@ -37,27 +37,18 @@ export function ActivityFeedItem({ event, isLast = false }: ActivityFeedItemProp
 
   return (
     <div className="group relative pl-8 pr-1">
-      {!isLast && (
-        <span
-          aria-hidden="true"
-          className="absolute left-[8px] top-5 bottom-[-6px] w-px bg-border-muted/80"
-        />
-      )}
+      {isLast && <span className="sr-only">Last activity item</span>}
 
       <span
         aria-hidden="true"
-        className="absolute left-[4px] top-3 h-2.5 w-2.5 rounded-full ring-2 ring-surface-panel"
+        className="absolute left-[4px] top-3 h-2.5 w-2.5 rounded-full"
         style={{ backgroundColor: accent }}
-      />
-      <span
-        aria-hidden="true"
-        className="absolute left-[13px] top-[14px] h-px w-3 bg-border-muted/80"
       />
 
       <div className="rounded-md px-1 py-2 transition-colors group-hover:bg-surface-panel/40">
         <div className="mb-1 flex items-center gap-2">
           <span
-            className="rounded border border-border-muted/80 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-text-muted"
+            className="rounded bg-surface-main/55 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-text-muted"
             title={event.eventType}
           >
             {shortType(event.eventType)}

@@ -4,10 +4,10 @@ description: "Defines product requirements, user stories, acceptance criteria, a
 compatibility: ["manual-orchestration-contract"]
 metadata:
   allowed-tools: "Read Write Edit AskUserQuestion Bash(python:*)"
-  version: "2.1.0"
+  version: "2.1.1"
   author: "Nebula Framework Team"
   tags: ["product", "requirements", "planning"]
-  last_updated: "2026-02-14"
+  last_updated: "2026-03-14"
 ---
 
 # Product Manager Agent
@@ -175,6 +175,23 @@ Trackers must move with the work. When feature/story state changes, update track
 Reference policy: `planning-mds/features/TRACKER-GOVERNANCE.md`.
 If missing, create it from `agents/templates/tracker-governance-template.md` before continuing.
 
+### Archive Transition (Mandatory for Completed Features)
+
+When a feature reaches final approved completion (`Done` with no remaining blocking work), Product Manager owns archive transition as part of closeout:
+
+1. Move feature folder from:
+   - `planning-mds/features/F{NNNN}-{slug}/`
+   - to `planning-mds/features/archive/F{NNNN}-{slug}/`
+2. Update tracker/docs links and status labels to archived paths/state:
+   - `planning-mds/features/REGISTRY.md`
+   - `planning-mds/features/ROADMAP.md`
+   - `planning-mds/BLUEPRINT.md`
+   - feature `README.md` and `STATUS.md` (if path/status references changed)
+3. Re-run story index and tracker validation after move:
+   - `python3 agents/product-manager/scripts/generate-story-index.py planning-mds/features/`
+   - `python3 agents/product-manager/scripts/validate-trackers.py`
+4. Do not declare closeout complete until archive transition validation passes.
+
 ## Tools & Permissions
 
 **Allowed Tools:** Read, Write, Edit, AskUserQuestion, Bash
@@ -272,7 +289,9 @@ Before declaring work complete, verify deliverables:
 6. If any AC is vague or untestable → rewrite, re-check
 7. Verify no story invents business rules not provided by stakeholders
 8. For prioritization outputs, verify framework choice matches decision type and assumptions are explicit
-9. Only declare Definition of Done when stories validate and tracker checks pass
+9. For completed features, execute mandatory archive transition and path/status updates
+10. Re-run story index + tracker validation after archive move
+11. Only declare Definition of Done when stories validate, tracker checks pass, and archive transition is complete (for completed features)
 
 ## Definition of Done
 
@@ -281,6 +300,7 @@ Before declaring work complete, verify deliverables:
 - [ ] Features/stories written with acceptance criteria
 - [ ] Screens specified
 - [ ] REGISTRY/ROADMAP/STORY-INDEX/BLUEPRINT are in sync
+- [ ] Completed feature moved to `planning-mds/features/archive/` and links updated
 - [ ] No TODOs remain
 
 ## Troubleshooting

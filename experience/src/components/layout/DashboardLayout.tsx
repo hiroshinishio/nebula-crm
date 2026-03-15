@@ -7,10 +7,11 @@ import { TopBar } from './TopBar';
 
 interface DashboardLayoutProps {
   title?: string;
+  flatCanvas?: boolean;
   children: React.ReactNode;
 }
 
-export function DashboardLayout({ title, children }: DashboardLayoutProps) {
+export function DashboardLayout({ title, flatCanvas = false, children }: DashboardLayoutProps) {
   const sidebarValue = useSidebarProvider();
   const [chatCollapsed, setChatCollapsed] = useState(() => {
     return localStorage.getItem('nebula-chat-panel-collapsed') === 'true';
@@ -39,6 +40,7 @@ export function DashboardLayout({ title, children }: DashboardLayoutProps) {
       {!chatFullscreen && (
         <ContentArea
           title={title}
+          flatCanvas={flatCanvas}
           chatCollapsed={chatCollapsed}
           onToggleChatCollapsed={toggleChatCollapsed}
           onOpenMobileChat={toggleChatFullscreen}
@@ -52,12 +54,14 @@ export function DashboardLayout({ title, children }: DashboardLayoutProps) {
 
 function ContentArea({
   title,
+  flatCanvas,
   children,
   chatCollapsed,
   onToggleChatCollapsed,
   onOpenMobileChat,
 }: {
   title?: string;
+  flatCanvas: boolean;
   children: React.ReactNode;
   chatCollapsed: boolean;
   onToggleChatCollapsed: () => void;
@@ -75,7 +79,7 @@ function ContentArea({
         } as React.CSSProperties
       }
     >
-      <div className="content-inset">
+      <div className={flatCanvas ? 'content-shell-flat' : 'content-inset'}>
         <TopBar
           title={title}
           chatCollapsed={chatCollapsed}

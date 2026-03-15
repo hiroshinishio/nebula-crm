@@ -24,10 +24,10 @@ export function NudgeCard({ nudge, onDismiss }: NudgeCardProps) {
     <div
       role="alert"
       className={cn(
-        'glass-card relative rounded-xl p-4',
-        variant === 'error' && 'border-status-error/30 fx-shadow-alert-error',
-        variant === 'warning' && 'border-status-warning/30 fx-shadow-alert-warning',
-        variant === 'info' && 'border-status-info/30 fx-shadow-alert-info',
+        'relative rounded-xl bg-surface-main/55 p-4',
+        variant === 'error' && 'fx-shadow-alert-error',
+        variant === 'warning' && 'fx-shadow-alert-warning',
+        variant === 'info' && 'fx-shadow-alert-info',
       )}
     >
       <button

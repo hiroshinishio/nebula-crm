@@ -24,14 +24,16 @@ export function NudgeCardsSection() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-      {visible.slice(0, 3).map((nudge) => (
-        <NudgeCard
-          key={`${nudge.nudgeType}-${nudge.linkedEntityId}`}
-          nudge={nudge}
-          onDismiss={() => handleDismiss(nudge.nudgeType, nudge.linkedEntityId)}
-        />
-      ))}
+    <div className="canvas-section canvas-zone-tight" aria-label="Nudge zone">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {visible.slice(0, 3).map((nudge) => (
+          <NudgeCard
+            key={`${nudge.nudgeType}-${nudge.linkedEntityId}`}
+            nudge={nudge}
+            onDismiss={() => handleDismiss(nudge.nudgeType, nudge.linkedEntityId)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

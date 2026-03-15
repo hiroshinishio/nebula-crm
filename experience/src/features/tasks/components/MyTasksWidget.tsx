@@ -1,5 +1,4 @@
 import { useMyTasks } from '../hooks/useMyTasks';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { ErrorFallback } from '@/components/ui/ErrorFallback';
 import { TaskRow } from './TaskRow';
@@ -8,10 +7,10 @@ export function MyTasksWidget() {
   const { data, isLoading, isError, refetch } = useMyTasks();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>My Tasks</CardTitle>
-      </CardHeader>
+    <section className="canvas-section canvas-zone-default" aria-label="My tasks section">
+      <div className="mb-3">
+        <h2 className="text-sm font-semibold text-text-primary">My Tasks</h2>
+      </div>
 
       {isLoading && (
         <div className="space-y-2">
@@ -43,6 +42,6 @@ export function MyTasksWidget() {
           )}
         </>
       )}
-    </Card>
+    </section>
   );
 }

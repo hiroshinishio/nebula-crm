@@ -1,12 +1,15 @@
 # F0011 — Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)
 
-**Status:** Draft
-**Priority:** High
+**Status:** Deprecated
+**Superseded By:** [F0012 — Dashboard Storytelling Infographic Canvas](../archive/F0012-dashboard-storytelling-infographic-canvas/README.md)
+**Deprecation Date:** 2026-03-13
 **Phase:** MVP
 
 ## Overview
 
-Modernizes dashboard opportunities into a flow-first operational view with explicit terminal outcomes and improved cross-device readability.
+~~Modernizes dashboard opportunities into a flow-first operational view with explicit terminal outcomes and improved cross-device readability.~~
+
+**DEPRECATED:** All F0011 scope has been absorbed into F0012, which goes further by eliminating the panelized dashboard model entirely in favor of a flat infographic canvas. See [F0011 STATUS.md](./STATUS.md) for the full scope absorption mapping.
 
 ## Documents
 

@@ -350,12 +350,120 @@ This document defines the design tokens (colors, spacing, typography, shadows, e
     @apply bg-muted;
   }
 
+  /* ────────────────────────────────────────────
+     Infographic Canvas Utilities (F0012)
+     Flat canvas layout — no panel borders, card
+     wrappers, or divider lines. Zones are
+     differentiated by spacing, typography, and
+     color weight only.
+     ──────────────────────────────────────────── */
+
+  /* Base canvas section — full-bleed, borderless container.
+     Use on every top-level content zone (nudge bar, KPI band,
+     connected flow, chapter overlays, activity, my tasks). */
+  .canvas-section {
+    @apply w-full px-6 md:px-10 lg:px-16;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  /* Tight spacing between logically related zones
+     (e.g., story controls → KPI band → connected flow).
+     Uses 12px (0.75rem) vertical gap. */
+  .canvas-zone-tight {
+    @apply py-3;
+  }
+
+  /* Standard spacing between sibling content zones.
+     Uses 24px (1.5rem) vertical gap. */
+  .canvas-zone-default {
+    @apply py-6;
+  }
+
+  /* Break spacing between unrelated sections
+     (e.g., story canvas → activity feed → my tasks).
+     Uses 40px (2.5rem) vertical gap + subtle
+     background-color shift for visual separation. */
+  .canvas-zone-break {
+    @apply py-10;
+  }
+
+  .dark .canvas-zone-break {
+    background: hsl(228 22% 7%);  /* slightly lighter than --background */
+  }
+
+  .light .canvas-zone-break {
+    background: hsl(225 30% 97%); /* slightly darker than --background */
+  }
+
+  /* Chapter overlay container — holds the active overlay
+     visualization with crossfade transition. */
+  .canvas-chapter-overlay {
+    @apply relative min-h-[200px];
+    transition: opacity 150ms ease-in-out;
+  }
+
+  /* Flow node emphasis states (Friction chapter) */
+  .flow-emphasis-normal {
+    @apply opacity-100;
+  }
+
+  .flow-emphasis-active {
+    @apply ring-2 ring-accent-violet/50;
+  }
+
+  .dark .flow-emphasis-blocked {
+    @apply ring-2 ring-accent-orange/60 bg-accent-orange/10;
+  }
+
+  .light .flow-emphasis-blocked {
+    @apply ring-2 ring-accent-orange/40 bg-accent-orange/5;
+  }
+
+  .dark .flow-emphasis-bottleneck {
+    @apply ring-2 ring-accent-fuchsia/60 bg-accent-fuchsia/10;
+  }
+
+  .light .flow-emphasis-bottleneck {
+    @apply ring-2 ring-accent-fuchsia/40 bg-accent-fuchsia/5;
+  }
+
   /* Smooth theme transitions */
   * {
     @apply transition-colors duration-200;
   }
 }
 ```
+
+### Canvas Spacing Tokens
+
+The infographic canvas uses three spacing tiers to create visual hierarchy without borders or dividers:
+
+| Token                  | Vertical padding | Usage                                                    |
+|------------------------|------------------|----------------------------------------------------------|
+| `canvas-zone-tight`    | 12px (0.75rem)   | Between related zones (controls → KPIs → flow)           |
+| `canvas-zone-default`  | 24px (1.5rem)    | Between sibling content zones within the story canvas     |
+| `canvas-zone-break`    | 40px (2.5rem)    | Between major sections (story canvas → activity → tasks) |
+
+Horizontal padding scales with breakpoint via `canvas-section`: 24px mobile → 40px tablet → 64px desktop.
+
+### Canvas Color Architecture
+
+Zone separation uses background-color micro-shifts instead of borders:
+
+```
+Dark theme:
+  --background:           hsl(228 22% 6%)   ← primary canvas
+  canvas-zone-break bg:   hsl(228 22% 7%)   ← +1% lightness for break zones
+
+Light theme:
+  --background:           hsl(225 30% 98%)  ← primary canvas
+  canvas-zone-break bg:   hsl(225 30% 97%)  ← -1% lightness for break zones
+```
+
+The 1% lightness delta is perceptible but not jarring — enough to signal a section boundary without introducing visual noise.
 
 ---
 

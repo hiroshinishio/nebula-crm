@@ -39,23 +39,23 @@ for (const theme of THEMES) {
         }
 
         const value = label.parentElement?.querySelector('p.mt-1') as HTMLElement | null
-        const card = label.closest('.glass-card') as HTMLElement | null
+        const canvasBand = label.closest('.canvas-section') as HTMLElement | null
 
-        if (!value || !card) {
-          throw new Error('KPI value/card not found')
+        if (!value) {
+          throw new Error('KPI value not found')
         }
 
         return {
           labelColor: getComputedStyle(label).color,
           valueColor: getComputedStyle(value).color,
-          cardBg: getComputedStyle(card).backgroundColor,
+          bandBg: canvasBand ? getComputedStyle(canvasBand).backgroundColor : 'rgba(0, 0, 0, 0)',
           bodyBg: getComputedStyle(document.body).backgroundColor,
         }
       })
 
-      const cardBg = compositeOver(parseCssColor(metrics.cardBg), parseCssColor(metrics.bodyBg))
-      const labelContrast = contrastRatio(parseCssColor(metrics.labelColor), cardBg)
-      const valueContrast = contrastRatio(parseCssColor(metrics.valueColor), cardBg)
+      const effectiveSurface = compositeOver(parseCssColor(metrics.bandBg), parseCssColor(metrics.bodyBg))
+      const labelContrast = contrastRatio(parseCssColor(metrics.labelColor), effectiveSurface)
+      const valueContrast = contrastRatio(parseCssColor(metrics.valueColor), effectiveSurface)
 
       // Label text is intentionally de-emphasized; keep it above a minimum contrast floor.
       expect(labelContrast).toBeGreaterThan(3)

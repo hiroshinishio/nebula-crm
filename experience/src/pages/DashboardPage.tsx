@@ -1,23 +1,32 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { NudgeCardsSection } from '@/features/nudges';
-import { KpiCardsRow } from '@/features/kpis';
 import { OpportunitiesSummary } from '@/features/opportunities';
 import { MyTasksWidget } from '@/features/tasks';
 import { ActivityFeed } from '@/features/timeline';
 
 export default function DashboardPage() {
   return (
-    <DashboardLayout title="Dashboard">
-      <div className="space-y-6">
+    <DashboardLayout title="Dashboard" flatCanvas>
+      <div
+        className="mx-auto w-full"
+        style={{
+          maxWidth:
+            'min(100%, calc(100vw - var(--sidebar-width, 0rem) - var(--chat-panel-width, 0rem) - 3rem))',
+        }}
+      >
+        <div className="canvas-section canvas-zone-default">
         <p className="text-sm text-text-muted">Your opportunities at a glance</p>
-        <NudgeCardsSection />
-        <KpiCardsRow />
+        </div>
 
+        <NudgeCardsSection />
         <OpportunitiesSummary />
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_18.5rem] xl:items-start">
-          <MyTasksWidget />
+        <div className="canvas-section canvas-zone-break">
           <ActivityFeed />
+        </div>
+
+        <div className="canvas-section canvas-zone-break">
+          <MyTasksWidget />
         </div>
       </div>
     </DashboardLayout>

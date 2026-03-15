@@ -170,6 +170,7 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - [F0004: Task Center UI + Manager Assignment](features/F0004-task-center-ui-and-assignment/PRD.md) - Planned
 - [F0010: Dashboard Opportunities Refactor (Pipeline Board + Insight Views)](features/F0010-dashboard-opportunities-refactor/PRD.md) - Done
 - [F0011: Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)](features/F0011-dashboard-opportunities-flow-modernization/PRD.md) - Draft
+- [F0012: Dashboard Storytelling Infographic Refactor (Unified Canvas + Collapsible Rails)](features/archive/F0012-dashboard-storytelling-infographic-canvas/PRD.md) - Done (Archived)
 
 ### 3.4 MVP Features and Stories (vertical-slice friendly)
 
@@ -219,6 +220,13 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - [F0011-S0004: Rebalance secondary insights as mini-views](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0004-rebalance-secondary-insights-as-mini-views.md) - Draft
 - [F0011-S0005: Ensure responsive and accessibility parity](features/F0011-dashboard-opportunities-flow-modernization/F0011-S0005-ensure-responsive-and-accessibility-parity.md) - Draft
 
+**MVP Stories (Feature F0012: Dashboard Storytelling Infographic Refactor):**
+- [F0012-S0001: Unify KPI strip and opportunities into one interactive story canvas](features/archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0001-unify-kpi-and-opportunities-into-single-story-canvas.md) - Done (Archived)
+- [F0012-S0002: Add interactive story chapters and in-canvas analytical overlays](features/archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0002-build-interactive-opportunities-story-chapters-and-overlays.md) - Done (Archived)
+- [F0012-S0003: Move Activity and My Tasks below the story canvas as traditional panels](features/archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0003-reflow-dashboard-layout-with-activity-and-tasks-below-canvas.md) - Done (Archived)
+- [F0012-S0004: Preserve collapsible left nav and right Neuron rail with adaptive canvas width](features/archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0004-support-collapsible-nav-and-neuron-rails-with-adaptive-canvas-width.md) - Done (Archived)
+- [F0012-S0005: Ensure responsive, accessibility, and performance parity for storytelling dashboard](features/archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0005-ensure-responsive-accessibility-and-performance-parity-for-story-canvas.md) - Done (Archived)
+
 **Story Index:** See `planning-mds/features/STORY-INDEX.md` for auto-generated summary of all stories (if generated).
 
 Reference examples also live under `planning-mds/examples/stories/`.
@@ -244,7 +252,7 @@ Screen baseline details:
 
 ## 4) Phase B — Architect Spec (Public Baseline)
 
-**Status: APPROVED (2026-02-14)** — Dashboard-first architecture approved as the planning baseline. Phase C implementation is complete for F0001/F0002/F0009; keep planning artifacts current during ongoing F0011/F0003/F0004 work.
+**Status: APPROVED (2026-02-14)** — Dashboard-first architecture approved as the planning baseline. Phase C implementation is complete for F0001/F0002/F0009/F0012; keep planning artifacts current during ongoing F0011/F0003/F0004 work.
 
 This section defines the build-ready technical baseline for the reference implementation.
 

@@ -1,18 +1,229 @@
-# Feature Assembly Plan (F0001 + F0002 + F0009 + F0010 + F0011)
+# Feature Assembly Plan (F0001 + F0002 + F0009 + F0010 + F0012)
 
 **Owner:** Architect
 **Status:** Approved
-**Last Updated:** 2026-03-12
+**Last Updated:** 2026-03-13
 
 ## Goal
 
-Define the build order, role handoffs, and integration checkpoints for F0001 (Dashboard), F0002 (Broker Relationship Management), F0009 (Authentication + Role-Based Login), F0010 (Dashboard Opportunities Refactor), and F0011 (Dashboard Opportunities Flow-First Modernization).
+Define the build order, role handoffs, and integration checkpoints for F0001 (Dashboard), F0002 (Broker Relationship Management), F0009 (Authentication + Role-Based Login), F0010 (Dashboard Opportunities Refactor), and F0012 (Dashboard Storytelling Infographic Canvas).
+
+**Note:** F0011 (Dashboard Opportunities Flow-First Modernization) has been deprecated and superseded by F0012. All F0011 scope is absorbed into F0012. See F0011 section below for details.
 
 ---
 
-## F0011 — Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)
+## F0012 — Dashboard Storytelling Infographic Canvas (Flat Canvas + Collapsible Rails)
 
-**Updated:** 2026-03-12 — Planning assembly pass
+**Updated:** 2026-03-13 — Architecture review findings incorporated (H-ARCH-01/02, M-ARCH-01/02/03, L-ARCH-01/02/03)
+
+### Dependencies
+
+- F0010 opportunities refactor baseline (Pipeline Board + Heatmap/Treemap/Sunburst) — **Done**
+- Existing dashboard aggregates and read endpoints:
+  - `GET /dashboard/kpis` — **requires `periodDays` parameter addition (H-ARCH-01)**
+  - `GET /dashboard/opportunities`
+  - `GET /dashboard/opportunities/flow` — **requires `avgDwellDays` + `emphasis` DTO extension (H-ARCH-02)**
+  - `GET /dashboard/opportunities/outcomes`
+  - `GET /dashboard/opportunities/aging`
+  - `GET /dashboard/opportunities/hierarchy`
+  - `GET /dashboard/opportunities/{entityType}/{status}/items`
+  - `GET /dashboard/opportunities/outcomes/{outcomeKey}/items`
+  - `GET /dashboard/nudges`
+  - `GET /my/tasks`
+  - `GET /my/timeline`
+- Existing ABAC policy coverage for `dashboard_kpi`, `dashboard_pipeline`, `dashboard_nudge`
+
+### Architecture Notes
+
+**This slice replaces the panelized dashboard with a continuous flat infographic canvas. All F0011 scope (connected flow, terminal outcomes, visual system, mini-view rebalancing) is self-contained here.**
+
+No new domain entities, database migrations, or ABAC policy changes required. Focus is on:
+- Flat infographic canvas with no panel borders, card wrappers, or divider lines
+- Nudge bar integrated as top canvas section flowing into story controls
+- Connected left-to-right opportunity flow with terminal outcome branches (from F0011)
+- In-canvas chapter overlays replacing mode-separated visual tabs (chapter overlay composition pattern)
+- Activity/My Tasks as flat canvas sections below story content (layout change: side-by-side → stacked full-width)
+- Adaptive canvas width behavior with collapsible left nav and right Neuron rail
+
+#### Backend Contract Changes (H-ARCH-01, H-ARCH-02)
+
+**1. KPI Period Synchronization (H-ARCH-01):**
+- Add optional `periodDays` query parameter to `GET /dashboard/kpis` (default: 90 for backward compatibility)
+- `activeBrokers` and `openSubmissions` remain current counts (not windowed)
+- `renewalRate` and `avgTurnaroundDays` become window-aware using the provided `periodDays`
+- OpenAPI spec updated: `planning-mds/api/nebula-api.yaml` line ~553
+
+**2. Flow Node Friction Data (H-ARCH-02):**
+- Extend `OpportunityFlowNodeDto` with two optional fields:
+  - `avgDwellDays: double?` — average calendar days items currently spend in this status (from WorkflowTransition dwell computation)
+  - `emphasis: string?` — server-computed hint: `bottleneck` (highest count), `blocked` (highest dwell), `active` (rightmost non-zero), `normal` (default)
+- Emphasis computation moves from frontend (`OpportunitiesSummary.tsx` currently derives blocked/active) to backend (authoritative source)
+- OpenAPI spec updated: `planning-mds/api/nebula-api.yaml` OpportunityFlowNode schema
+- JSON Schema created: `planning-mds/schemas/opportunity-flow-node.schema.json`
+
+#### Frontend Scope
+
+##### Component Decomposition (M-ARCH-01)
+
+The current `OpportunitiesSummary.tsx` is monolithic (handles Pipeline/Heatmap/Treemap/Sunburst tabs). Decompose into:
+
+```
+experience/src/features/opportunities/components/
+├── StoryCanvas.tsx                 ← Shell: period + chapter state, canvas surface container
+├── ConnectedFlow.tsx               ← SVG connected left-to-right flow rendering
+├── TerminalOutcomesRail.tsx        ← Outcome branch nodes (refactor from existing OpportunityOutcomesRail.tsx)
+├── ChapterOverlayManager.tsx       ← Overlay layer switcher (renders active overlay based on chapter state)
+├── overlays/
+│   ├── FrictionOverlay.tsx         ← Dwell time / bottleneck annotations on flow nodes
+│   ├── OutcomesOverlay.tsx         ← Terminal outcome emphasis mode (branch path highlighting)
+│   ├── AgingOverlay.tsx            ← Heat intensity blocks on stage nodes (from existing OpportunityHeatmap.tsx)
+│   └── MixOverlay.tsx              ← Composition blocks + radial inset (from existing Treemap + Sunburst)
+└── [existing components preserved for reference during migration]
+```
+
+Each overlay is independently testable and can be lazy-loaded per M-ARCH-02 below.
+
+**Dashboard-level layout changes:**
+- `DashboardPage.tsx`: Replace 2-column `xl:grid-cols-[1fr_18.5rem]` grid for Activity/Tasks with stacked full-width sections (L-ARCH-03: deliberate layout change from side-by-side to stacked — reduces above-fold density on desktop but aligns with infographic narrative flow)
+- `KpiCardsRow.tsx`: Restyle from bordered cards to inline flat band (strip `glass-card`, use `canvas-section` spacing)
+- `NudgeCardsSection.tsx`: Restyle from bordered cards to flat nudge zone (strip card borders, remove gap between nudges and story controls)
+
+##### Chapter Data Loading Strategy (M-ARCH-02)
+
+Use hybrid eager/lazy loading aligned with ADR-002 per-widget pattern:
+
+| Data | When Loaded | Hook Pattern | Budget |
+|------|-------------|--------------|--------|
+| Nudges | Eager (mount) | `useDashboardNudges()` | Parallel with others |
+| KPIs | Eager (mount) | `useDashboardKpis(periodDays)` | Parallel with others |
+| Flow + Friction | Eager (mount) | `useOpportunityFlow(entityType, periodDays)` | Parallel with others |
+| Outcomes | Eager (mount) | `useOpportunityOutcomes(periodDays)` | Parallel with others |
+| Aging | **Lazy** (chapter switch) | `useOpportunityAging(entityType, periodDays, { enabled: chapter === 'aging' })` | <250ms on switch |
+| Hierarchy (Mix) | **Lazy** (chapter switch) | `useOpportunityHierarchy(periodDays, { enabled: chapter === 'mix' })` | <250ms on switch |
+| Tasks | Eager (mount) | `useMyTasks()` | Deferred render (below fold) |
+| Activity | Eager (mount) | `useTimelineEvents(...)` | Deferred render (below fold) |
+
+Initial load fires 6 parallel queries (nudges + KPIs + flow + outcomes + tasks + activity) — within ADR-002's 500ms budget. Chapter-specific data (aging, hierarchy) lazy-loads on user interaction using TanStack Query `enabled` flag (pattern from ADR-004 popovers).
+
+##### CSS Architecture for Flat Canvas (L-ARCH-01)
+
+**New CSS utilities:**
+- `canvas-section` — spacing-only section separation (no border, no elevation, no backdrop-blur)
+- `canvas-zone-tight` — reduced vertical spacing for content zones that flow together (nudge → controls)
+- `canvas-zone-break` — standard vertical spacing for content zone separation (story → activity → tasks)
+
+**Token additions:** See `planning-mds/screens/design-tokens.md` for new canvas spacing tokens.
+
+**Scope restrictions:**
+- Do NOT remove `glass-card`, `surface-card`, `content-inset` globally — they are used in non-dashboard contexts (Brokers page, forms, modals)
+- Only dashboard components should stop using panel-style classes and switch to `canvas-section`
+- Theme tokens (`--surface-card`, `--border-default`) remain available for non-dashboard use
+
+##### Nudge Bar Session Behavior
+
+Nudge dismissals remain **session-scoped** per ADR-004 (React state, not persisted). The screen spec `S-DASH-001` documents this behavior.
+
+### Backend Assembly Steps
+
+1. **Add `periodDays` parameter to `GET /dashboard/kpis`** (H-ARCH-01): Update endpoint, service, and repository to accept optional period parameter (default 90). `activeBrokers` and `openSubmissions` remain current. `renewalRate` and `avgTurnaroundDays` use the provided window.
+2. **Extend `OpportunityFlowNodeDto`** (H-ARCH-02): Add `avgDwellDays` (computed from WorkflowTransitions for entities currently in each status) and `emphasis` (computed from count concentration and dwell time ranking).
+3. Validate existing aggregates support period-synchronized canvas rendering.
+4. Add unit tests for emphasis computation logic (bottleneck/blocked/active/normal assignment).
+5. Add unit tests for KPI window-aware computation.
+6. Add integration tests for read authorization and partial-failure handling across all dashboard endpoints.
+
+### Frontend Assembly Steps
+
+1. **Create `canvas-section` CSS utilities** (L-ARCH-01): Add `canvas-section`, `canvas-zone-tight`, `canvas-zone-break` to `index.css`. Do not modify existing panel classes used elsewhere.
+2. **Implement flat infographic canvas shell** in `DashboardPage.tsx`: Replace stacked panel layout with flat canvas container. Strip `glass-card` / `surface-card` from dashboard components only.
+3. **Restyle NudgeCardsSection**: Remove card borders, apply `canvas-zone-tight` between nudge zone and story controls.
+4. **Restyle KpiCardsRow**: Remove card borders, render as inline flat band with `canvas-section` spacing.
+5. **Decompose OpportunitiesSummary** (M-ARCH-01): Create `StoryCanvas.tsx`, `ConnectedFlow.tsx`, `ChapterOverlayManager.tsx`, and individual overlay components per decomposition plan above.
+6. **Build ConnectedFlow**: SVG left-to-right connected flow with ribbon links. Use `displayOrder` for deterministic stage ordering, `colorGroup` for warm-to-cool progression.
+7. **Build chapter controls**: `[Flow] [Friction] [Outcomes] [Aging] [Mix]` selector. Default: Flow. State: React `useState`.
+8. **Build overlay components**: FrictionOverlay (uses `avgDwellDays`/`emphasis` from flow nodes), OutcomesOverlay (emphasizes terminal branches), AgingOverlay (refactored from existing Heatmap), MixOverlay (refactored from existing Treemap + Sunburst).
+9. **Implement lazy-load pattern** (M-ARCH-02): Aging and hierarchy queries use `enabled: chapter === 'aging'|'mix'` respectively.
+10. **Reposition Activity/Tasks** (L-ARCH-03): Remove 2-column grid. Render as stacked full-width flat canvas sections with `canvas-zone-break` spacing. Strip panel borders.
+11. **Update `useDashboardKpis` hook**: Accept and pass `periodDays` parameter.
+12. **Implement rail-aware adaptive width**: Use existing CSS custom properties (`--sidebar-width`, `--chat-panel-width`) for canvas width calculation.
+13. **Validate responsive behavior**: desktop (1280+), tablet landscape (1024), tablet portrait (768), phone (375).
+14. **Visual regression check**: Confirm zero panel borders, card wrappers, or divider lines in rendered output across all breakpoints and rail states.
+15. Add component/integration tests and run lint/build/test gates.
+
+### QA Assembly Steps
+
+1. Build test plan with story-to-test mapping across narrative and operational layers.
+2. E2E: flat canvas render with nudge zone, KPI band, connected flow, terminal outcomes — no panel borders visible.
+3. E2E: period switch synchronizes all canvas data (KPIs, flow, outcomes).
+4. E2E: chapter switching and overlay fallback behaviors (including lazy-load timing).
+5. E2E: left/right rail collapse combinations and width adaptation (4 states: both expanded, left collapsed, right collapsed, both collapsed).
+6. E2E: Activity/My Tasks stacked sections below canvas with action handoff.
+7. Validate keyboard/screen-reader flows and reduced-motion behavior.
+8. **Visual regression**: No-panel-border validation across MacBook, iPad, iPhone snapshots with all rail-state variants.
+
+### DevOps Assembly Steps
+
+1. Confirm no new runtime services or environment variable contracts are introduced.
+2. Run backend/frontend runtime smoke checks for dashboard startup and route stability.
+3. Capture deployability evidence and record any runtime deviations.
+
+### Dependency Order
+
+```
+Step 0 (Architect):  OpenAPI + schema updates ✓ (done in planning)
+Step 1 (Backend):    KPI periodDays → flow DTO extension → emphasis computation → tests
+Step 1 (Frontend):   CSS utilities → canvas shell → nudge/KPI restyle → component decomp → connected flow → chapters → overlays → lazy-load → activity/tasks reposition → rail adaptation → responsive → tests
+Step 2 (QA):         E2E + accessibility + breakpoint parity + visual regression (no-border check)
+Step 2 (DevOps):     runtime smoke checks and evidence capture
+```
+
+### Integration Checklist
+
+- [x] API contract touchpoints identified and OpenAPI spec updated
+- [x] JSON schemas created for flow response (`opportunity-flow*.schema.json`)
+- [x] Frontend contract touchpoints identified
+- [x] Frontend component decomposition strategy documented
+- [x] Chapter data loading strategy (eager/lazy) documented
+- [x] CSS architecture for flat canvas documented
+- [ ] AI contract compatibility validated (if in scope) — N/A
+- [x] Test cases mapped to acceptance criteria (planning test plan)
+- [x] Run/deploy instructions drafted in feature getting-started docs
+- [x] Screen specification created (`planning-mds/screens/S-DASH-001-infographic-canvas.md`)
+
+### Risks and Blockers
+
+| Item | Severity | Mitigation | Owner |
+|------|----------|------------|-------|
+| KPI period synchronization (H-ARCH-01) | High | Add periodDays param with default 90 for backward compat | Backend Dev |
+| Friction chapter data gap (H-ARCH-02) | High | Extend OpportunityFlowNodeDto with avgDwellDays + emphasis | Backend Dev |
+| OpportunitiesSummary monolith decomposition | Medium | Follow documented component split; preserve existing files during migration | Frontend Dev |
+| Story-canvas visual density impacts readability | Medium | Keep numeric labels persistent; enforce contrast/readability checks | Frontend + QE |
+| ABAC leakage risk from merged aggregate views | Medium | Re-validate all overlay and label payloads under role scope tests | Backend + Security |
+| Rail-collapse and responsive regression risk | Medium | Test all 4 rail-state × 4 breakpoint combinations | Frontend + QE |
+| Activity/Tasks side-by-side → stacked layout change | Low | Deliberate UX decision; less above-fold density but better narrative flow | Product + Frontend |
+| Chapter naming discoverability | Low | Validate naming in product review; allow content-label iteration | Product |
+
+### Signoff Role Matrix
+
+| Role | Required | Rationale |
+|------|----------|-----------|
+| Quality Engineer | Yes | Baseline acceptance criteria, cross-device parity, no-panel-border visual regression |
+| Code Reviewer | Yes | Baseline independent implementation review, component decomposition validation |
+| Security Reviewer | Yes | Aggregate scope and ABAC boundary verification across chapter overlays |
+| DevOps | No | No expected infrastructure/env-contract changes |
+| Architect | No | No architecture exceptions planned; patterns documented |
+
+**Checkpoint F0012-A:** Flat infographic canvas dashboard (no panel borders visible, connected flow with terminal outcomes, chapter overlays with lazy-load, collapsible rails, flat activity/tasks sections) is implemented and validated with ABAC-preserving drilldowns.
+
+---
+
+## F0011 — Dashboard Opportunities Flow-First Modernization — DEPRECATED
+
+**Updated:** 2026-03-13 — Deprecated, superseded by F0012
+
+> **DEPRECATED:** F0012 absorbs all F0011 scope. F0011 will not be implemented separately. See F0012 assembly steps above.
+
+**Original Updated:** 2026-03-12 — Planning assembly pass
 
 ### Dependencies
 

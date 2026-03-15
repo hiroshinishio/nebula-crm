@@ -9,8 +9,8 @@ public class DashboardService(IDashboardRepository dashboardRepo, BrokerScopeRes
 {
     private readonly ILogger<DashboardService> _logger = logger;
 
-    public Task<DashboardKpisDto> GetKpisAsync(CancellationToken ct = default) =>
-        dashboardRepo.GetKpisAsync(ct);
+    public Task<DashboardKpisDto> GetKpisAsync(int periodDays = 90, CancellationToken ct = default) =>
+        dashboardRepo.GetKpisAsync(periodDays, ct);
 
     public Task<DashboardOpportunitiesDto> GetOpportunitiesAsync(int periodDays = 180, CancellationToken ct = default) =>
         dashboardRepo.GetOpportunitiesAsync(periodDays, ct);

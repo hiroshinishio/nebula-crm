@@ -4,10 +4,10 @@ description: "Plans and executes comprehensive testing strategy across frontend,
 compatibility: ["manual-orchestration-contract"]
 metadata:
   allowed-tools: "Read Write Edit Bash(dotnet:*) Bash(npm:*) Bash(pytest:*) Bash(python:*) Bash(k6:*)"
-  version: "2.1.0"
+  version: "2.1.1"
   author: "Nebula Framework Team"
   tags: ["testing", "quality", "automation"]
-  last_updated: "2026-02-14"
+  last_updated: "2026-03-14"
 ---
 
 # Quality Engineer Agent
@@ -100,6 +100,7 @@ Your responsibility is to implement the **quality assurance layer** - tests that
 - Configure Testcontainers for database tests
 - Set up MSW (Mock Service Worker) for frontend API mocking
 - Configure Playwright for E2E tests
+- If host browser dependencies are missing (for example `libnspr4`, `libnss3`), run Playwright in a container image that matches repository `@playwright/test` version
 - Set up test databases and seed data
 - Configure test environments (dev, CI, staging)
 
@@ -209,6 +210,24 @@ Your responsibility is to implement the **quality assurance layer** - tests that
 - Self-hosted Pact Broker (contract storage)
 
 **All tools are 100% free and open source.**
+
+## Containerized Playwright Fallback (Mandatory When Host Browser Runtime Is Blocked)
+
+When host Playwright execution fails due browser runtime dependencies (for example missing `libnspr4`/`libnss3`) or privileged install constraints:
+
+1. Stop code edits and classify the failure as environment/runtime-blocked.
+2. Re-run Playwright in a containerized runtime with the same project workspace mounted.
+3. Pin the container image to the repository Playwright major/minor version.
+4. Record command + result in feature execution evidence (test plan + execution log).
+
+Reference command pattern:
+
+```bash
+docker run --rm -v "$PWD":/workspace -w /workspace mcr.microsoft.com/playwright:v<match-project-version>-noble \
+  bash -lc 'corepack enable && corepack prepare pnpm@<repo-version> --activate && \
+  CI=true pnpm --dir experience install --frozen-lockfile && \
+  VITE_AUTH_MODE=dev pnpm --dir experience exec playwright test <spec-or-suite>'
+```
 
 ## Testing by Layer
 

@@ -555,10 +555,22 @@ paths:
       summary: Get dashboard KPI metrics
       description: |
         Returns aggregated KPI metrics for the dashboard: active broker count,
-        open submission count, renewal rate (trailing 90 days), and average
-        turnaround days (trailing 90 days). All values are ABAC-scoped to the
-        authenticated user's permissions.
+        open submission count, renewal rate, and average turnaround days.
+        Values are computed over the specified trailing time window and
+        ABAC-scoped to the authenticated user's permissions.
       tags: [Dashboard]
+      parameters:
+        - name: periodDays
+          in: query
+          required: false
+          description: |
+            Trailing time window in days for rate and turnaround calculations
+            (capped server-side). Active broker count is always current.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 730
+            default: 90
       responses:
         "200":
           description: KPI metrics
@@ -693,11 +705,13 @@ paths:
   /dashboard/opportunities/flow:
     get:
       operationId: getDashboardOpportunityFlow
-      summary: Get opportunity transition flow (Sankey data)
+      summary: Get opportunity transition flow (connected canvas data)
       description: |
         Returns node/link transition counts derived from WorkflowTransitions for
         submissions or renewals over a trailing time window. Used by the
-        dashboard Sankey visualization to show real branching and terminal exits.
+        dashboard connected flow canvas to show stage progression, branching,
+        and terminal exits. Includes optional avgDwellDays and emphasis hints
+        for the Friction chapter overlay.
       tags: [Dashboard]
       parameters:
         - name: entityType
@@ -1715,7 +1729,7 @@ components:
     # ── Dashboard Schemas (NEW) ─────────────────────────────────
     DashboardKpis:
       type: object
-      description: Aggregated KPI metrics for the dashboard.
+      description: Aggregated KPI metrics for the dashboard, computed over the requested trailing time window.
       required:
         - activeBrokers
         - openSubmissions
@@ -1724,11 +1738,11 @@ components:
       properties:
         activeBrokers:
           type: integer
-          description: Count of brokers with Status=Active, ABAC-scoped.
+          description: Count of brokers with Status=Active, ABAC-scoped. Always current (not windowed).
           example: 142
         openSubmissions:
           type: integer
-          description: Count of submissions in non-terminal status, ABAC-scoped.
+          description: Count of submissions in non-terminal status, ABAC-scoped. Always current (not windowed).
           example: 38
         renewalRate:
           type: number
@@ -1738,7 +1752,8 @@ components:
           nullable: true
           description: |
             Percentage of renewals reaching Bound out of all renewals
-            that exited the opportunities funnel in trailing 90 days. Null if no data.
+            that exited the opportunities funnel in the requested trailing window
+            (default 90 days). Null if no data.
           example: 72.5
         avgTurnaroundDays:
           type: number
@@ -1746,7 +1761,8 @@ components:
           nullable: true
           description: |
             Mean calendar days from Submission.CreatedAt to first terminal
-            state transition, trailing 90 days. Null if no data.
+            state transition in the requested trailing window (default 90 days).
+            Null if no data.
           example: 4.2
 
     DashboardOpportunities:
@@ -1882,7 +1898,9 @@ components:
 
     OpportunityFlowNode:
       type: object
-      description: Sankey node representing a workflow status.
+      description: |
+        Flow node representing a workflow status in the connected canvas.
+        Used for both the base flow visualization and the Friction chapter overlay.
       required:
         - status
         - label
@@ -1904,10 +1922,12 @@ components:
           example: false
         displayOrder:
           type: integer
+          description: Deterministic sort order for left-to-right rendering.
           example: 5
         colorGroup:
           type: string
           enum: [intake, triage, waiting, review, decision]
+          description: Visual grouping for warm-to-cool color progression across flow stages.
         currentCount:
           type: integer
           minimum: 0
@@ -1920,6 +1940,28 @@ components:
           type: integer
           minimum: 0
           example: 23
+        avgDwellDays:
+          type: number
+          format: double
+          nullable: true
+          description: |
+            Average calendar days items currently spend in this status.
+            Computed from the most recent WorkflowTransition into this status
+            for each entity currently in this state. Null if no entities in status.
+            Used by the Friction chapter overlay to identify bottleneck stages.
+          example: 8.3
+        emphasis:
+          type: string
+          nullable: true
+          enum: [normal, active, blocked, bottleneck]
+          description: |
+            Server-computed emphasis hint for the Friction chapter overlay.
+            - bottleneck: highest currentCount concentration among non-terminal stages
+            - blocked: highest avgDwellDays among non-terminal stages
+            - active: rightmost non-zero non-terminal stage in display order
+            - normal: default (no special emphasis)
+            Null when emphasis is not computed (e.g., insufficient data).
+          example: bottleneck
 
     OpportunityFlowLink:
       type: object

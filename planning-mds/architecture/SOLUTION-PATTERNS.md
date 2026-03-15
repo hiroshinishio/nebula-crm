@@ -871,6 +871,122 @@ AUTHENTIK_SECRET_KEY=...
 
 ---
 
+## 11. Dashboard Infographic Canvas Patterns (F0012)
+
+### Pattern: Flat Canvas Layout (No Panels)
+**Decision:** The dashboard is a single continuous flat canvas. Content zones are differentiated by spacing, typography, and color weight — never by panel borders, card wrappers, or divider lines.
+**Rationale:** Infographic-style storytelling creates a more cohesive visual narrative than traditional panelized dashboards. The eye flows naturally through data without visual interruption.
+**Applied in:** Dashboard page (F0012), all content zones (nudge bar, KPI band, connected flow, chapter overlays, activity feed, my tasks)
+
+**CSS architecture:**
+- `canvas-section` — full-bleed borderless container for every top-level zone
+- `canvas-zone-tight` (12px) — between logically related zones (controls → KPIs → flow)
+- `canvas-zone-default` (24px) — between sibling content zones
+- `canvas-zone-break` (40px + background shift) — between major sections
+
+**Tokens:** See `planning-mds/screens/design-tokens.md` → "Infographic Canvas Utilities (F0012)"
+
+**Anti-patterns (DO NOT):**
+- No `border`, `box-shadow`, or `border-radius` on content zone wrappers
+- No `<Card>` or `glass-card` around dashboard sections
+- No `<hr>` or `<Separator>` between zones
+- No `--border` token usage within the canvas
+
+### Pattern: Chapter Overlay Composition
+**Decision:** Multiple data layers are composed onto the same base visualization (connected opportunity flow) via chapter controls. Each chapter activates a different overlay without replacing the underlying flow.
+**Rationale:** Traditional tab-switching discards context. Overlay composition lets users maintain spatial orientation while layering new data dimensions (friction, aging, mix) onto the flow they already understand.
+**Applied in:** Story canvas chapter controls (Flow, Friction, Outcomes, Aging, Mix)
+
+**Component decomposition:**
+```
+StoryCanvas.tsx
+├── ChapterControls.tsx          ← pill/tab selector for active chapter
+├── ConnectedFlow.tsx            ← base visualization (always rendered)
+│   └── TerminalOutcomesRail.tsx ← terminal outcome badges at flow end
+├── ChapterOverlayManager.tsx    ← mounts/unmounts the active overlay
+│   └── overlays/
+│       ├── FrictionOverlay.tsx  ← dwell time heatmap on flow nodes
+│       ├── OutcomesOverlay.tsx  ← terminal outcome breakdown
+│       ├── AgingOverlay.tsx     ← age bucket distribution
+│       └── MixOverlay.tsx       ← treemap/sunburst entity mix
+└── KpiBand.tsx                  ← static KPI strip above flow
+```
+
+**Overlay lifecycle:**
+1. Base `ConnectedFlow` renders on mount and stays mounted across chapter switches
+2. `ChapterOverlayManager` receives `activeChapter` prop
+3. On chapter change: fade-out current overlay (150ms CSS), unmount, mount new overlay, fade-in
+4. Each overlay receives the flow node positions and adds its own data layer
+
+**Data loading strategy:**
+| Data source        | Load strategy | Trigger              |
+|--------------------|---------------|----------------------|
+| Nudge items        | Eager         | Mount                |
+| KPIs               | Eager         | Mount                |
+| Flow nodes + links | Eager         | Mount                |
+| Terminal outcomes   | Eager         | Mount                |
+| Friction (dwell)   | Lazy          | Chapter = "Friction" |
+| Aging buckets      | Lazy          | Chapter = "Aging"    |
+| Mix hierarchy      | Lazy          | Chapter = "Mix"      |
+
+**TanStack Query pattern for lazy chapters:**
+```tsx
+const { data: agingData } = useQuery({
+  queryKey: ['dashboard', 'aging', { periodDays, entityType }],
+  queryFn: () => api.dashboard.getAgingBuckets({ periodDays, entityType }),
+  enabled: activeChapter === 'aging', // only fetch when chapter is active
+  staleTime: 5 * 60 * 1000,          // 5-minute stale window
+});
+```
+
+### Pattern: Per-Widget Dashboard Endpoints
+**Decision:** Each dashboard widget fetches from its own dedicated endpoint. No monolithic `/dashboard` endpoint.
+**Rationale:** Widget-level failure isolation (one widget error doesn't break the page), independent cache TTLs, parallel fetch on mount, simpler backend query optimization per widget.
+**Applied in:** Dashboard data layer
+**Reference:** ADR-002 (per-widget endpoints)
+
+**Endpoints:**
+```
+GET /dashboard/nudges         → nudge items
+GET /dashboard/kpis           → KPI summary (accepts periodDays)
+GET /dashboard/flow           → connected flow nodes + links
+GET /dashboard/activity       → recent activity feed
+GET /dashboard/tasks          → user's assigned tasks
+```
+
+**Frontend pattern:**
+- All eager endpoints fire in parallel on mount using independent `useQuery` hooks
+- Each hook has its own Error Boundary wrapper so widget failures are isolated
+- Skeleton loading per widget (not a full-page spinner)
+
+### Pattern: Flow Node Emphasis (Server-Computed)
+**Decision:** The backend computes an `emphasis` hint for each flow node based on aggregate data. The frontend maps emphasis values to CSS classes without re-computing business logic.
+**Rationale:** Keeps business rules (what constitutes a "bottleneck") server-side. Frontend is a pure renderer of the emphasis signal.
+**Applied in:** Friction chapter overlay, `OpportunityFlowNodeDto.emphasis` field
+
+**Emphasis values:**
+| Value        | Meaning                                | CSS class                    |
+|--------------|----------------------------------------|------------------------------|
+| `normal`     | Default state                          | `flow-emphasis-normal`       |
+| `active`     | Rightmost non-zero, non-terminal node  | `flow-emphasis-active`       |
+| `blocked`    | Highest `avgDwellDays` in the flow     | `flow-emphasis-blocked`      |
+| `bottleneck` | Highest `currentCount` concentration   | `flow-emphasis-bottleneck`   |
+| `null`       | Not applicable (e.g., terminal node)   | No emphasis class applied    |
+
+**Computation (backend):**
+```csharp
+// Pseudo-code for emphasis assignment
+foreach (var node in nodes.Where(n => !n.IsTerminal))
+{
+    if (node.CurrentCount == maxCount) node.Emphasis = "bottleneck";
+    else if (node.AvgDwellDays == maxDwell) node.Emphasis = "blocked";
+    else if (node == rightmostNonZero) node.Emphasis = "active";
+    else node.Emphasis = "normal";
+}
+```
+
+---
+
 ## Pattern Update Process
 
 When new patterns emerge or existing patterns need updating:

@@ -1,9 +1,15 @@
 import { useDashboardKpis } from '../hooks/useDashboardKpis';
 import { formatPercent } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { KpiCard } from './KpiCard';
 
-export function KpiCardsRow() {
-  const { data, isLoading, isError } = useDashboardKpis();
+interface KpiCardsRowProps {
+  periodDays: number;
+  className?: string;
+}
+
+export function KpiCardsRow({ periodDays, className }: KpiCardsRowProps) {
+  const { data, isLoading, isError } = useDashboardKpis(periodDays);
 
   if (isError) {
     // Show dashes for all KPIs on error — silent degradation per plan
@@ -32,7 +38,8 @@ export function KpiCardsRow() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className={cn('canvas-section canvas-zone-default', className)} aria-label="KPI band">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpis.map((kpi) => (
         <KpiCard
           key={kpi.label}
@@ -41,6 +48,7 @@ export function KpiCardsRow() {
           isLoading={isLoading}
         />
       ))}
-    </div>
+      </div>
+    </section>
   );
 }

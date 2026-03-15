@@ -36,11 +36,12 @@ public static class DashboardEndpoints
     }
 
     private static async Task<IResult> GetKpis(
+        int? periodDays,
         DashboardService svc, IAuthorizationService authz, ICurrentUserService user, CancellationToken ct)
     {
         if (!await HasAccessAsync(user, authz, "dashboard_kpi"))
             return ProblemDetailsHelper.Forbidden();
-        return Results.Ok(await svc.GetKpisAsync(ct));
+        return Results.Ok(await svc.GetKpisAsync(periodDays ?? 90, ct));
     }
 
     private static async Task<IResult> GetOpportunities(

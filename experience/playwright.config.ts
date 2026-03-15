@@ -13,7 +13,7 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
   },
   webServer: {
-    command: 'pnpm vite --host 127.0.0.1 --port 4173',
+    command: 'VITE_AUTH_MODE=dev pnpm vite --host 127.0.0.1 --port 4173',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

@@ -2,7 +2,7 @@
 
 Auto-generated index of all user stories across feature folders.
 
-**Total Stories:** 36
+**Total Stories:** 41
 
 ---
 
@@ -91,11 +91,23 @@ Auto-generated index of all user stories across feature folders.
 
 ---
 
+## F0012 — Dashboard Storytelling Infographic Canvas (Flat Canvas + Collapsible Rails)
+
+| Story ID | Title | Priority | Phase | Persona |
+|----------|-------|----------|-------|---------|
+| [F0012-S0001](./archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0001-unify-kpi-and-opportunities-into-single-story-canvas.md) | Unify nudge bar, KPI band, and connected opportunity flow into one flat infographic canvas | High | MVP | Distribution User or Underwriter |
+| [F0012-S0002](./archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0002-build-interactive-opportunities-story-chapters-and-overlays.md) | Add interactive story chapters and in-canvas analytical overlays | High | MVP | Relationship Manager or Program Manager |
+| [F0012-S0003](./archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0003-reflow-dashboard-layout-with-activity-and-tasks-below-canvas.md) | Flow Activity and My Tasks as flat canvas sections below story content | Medium | MVP | dashboard user |
+| [F0012-S0004](./archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0004-support-collapsible-nav-and-neuron-rails-with-adaptive-canvas-width.md) | Preserve collapsible left nav and right Neuron rail with adaptive canvas width | High | MVP | dashboard user |
+| [F0012-S0005](./archive/F0012-dashboard-storytelling-infographic-canvas/F0012-S0005-ensure-responsive-accessibility-and-performance-parity-for-story-canvas.md) | Ensure responsive, accessibility, and performance parity for storytelling dashboard | High | MVP | dashboard user on desktop, tablet, or phone |
+
+---
+
 ## Summary by Phase
 
 | Phase | Count |
 |-------|-------|
-| MVP | 26 |
+| MVP | 31 |
 | MVP Hardening | 1 |
 | Phase 1 | 5 |
 | Unspecified | 4 |
@@ -107,8 +119,8 @@ Auto-generated index of all user stories across feature folders.
 | Priority | Count |
 |----------|-------|
 | Critical | 6 |
-| High | 19 |
-| Medium | 7 |
+| High | 23 |
+| Medium | 8 |
 
 ---
 

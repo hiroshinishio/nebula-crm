@@ -1,73 +1,99 @@
 /**
- * Tests for OpportunitiesSummary (F0011)
- *
- * Covers:
- *   1. Renders connected opportunities flow and terminal outcomes rail
- *   2. Period selector buttons are present
- *   3. Shows loading skeleton while fetching
- *   4. Shows error fallback on fetch failure
- *   5. Stage cards and outcomes have accessible labels
- *   6. Secondary mini-view buttons switch details panel
- *
  * @vitest-environment jsdom
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-// Mock the hooks
-const mockUseDashboardOpportunities = vi.fn();
-vi.mock('../hooks/useDashboardOpportunities', () => ({
-  useDashboardOpportunities: () => mockUseDashboardOpportunities(),
-}));
-
-const mockUseOpportunityAging = vi.fn();
-vi.mock('../hooks/useOpportunityAging', () => ({
-  useOpportunityAging: () => mockUseOpportunityAging(),
-}));
-
-const mockUseOpportunityHierarchy = vi.fn();
-vi.mock('../hooks/useOpportunityHierarchy', () => ({
-  useOpportunityHierarchy: () => mockUseOpportunityHierarchy(),
+const mockUseOpportunityFlow = vi.fn();
+vi.mock('../hooks/useOpportunityFlow', () => ({
+  useOpportunityFlow: (...args: unknown[]) => mockUseOpportunityFlow(...args),
 }));
 
 const mockUseOpportunityOutcomes = vi.fn();
 vi.mock('../hooks/useOpportunityOutcomes', () => ({
-  useOpportunityOutcomes: () => mockUseOpportunityOutcomes(),
+  useOpportunityOutcomes: (...args: unknown[]) => mockUseOpportunityOutcomes(...args),
 }));
 
-// Mock child components that fetch their own data
-vi.mock('./OpportunityPopover', () => ({
-  OpportunityPopoverContent: () => <div data-testid="popover-content">Popover</div>,
+const mockUseOpportunityAging = vi.fn();
+vi.mock('../hooks/useOpportunityAging', () => ({
+  useOpportunityAging: (...args: unknown[]) => mockUseOpportunityAging(...args),
 }));
-vi.mock('./OpportunityOutcomePopover', () => ({
-  OpportunityOutcomePopoverContent: () => <div data-testid="outcome-popover-content">Outcome Popover</div>,
+
+const mockUseOpportunityHierarchy = vi.fn();
+vi.mock('../hooks/useOpportunityHierarchy', () => ({
+  useOpportunityHierarchy: (...args: unknown[]) => mockUseOpportunityHierarchy(...args),
+}));
+
+const mockUseDashboardKpis = vi.fn();
+vi.mock('@/features/kpis/hooks/useDashboardKpis', () => ({
+  useDashboardKpis: (...args: unknown[]) => mockUseDashboardKpis(...args),
 }));
 
 import { OpportunitiesSummary } from '../components/OpportunitiesSummary';
 
-function wrapper({ children }: { children: ReactNode }) {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-}
-
-const mockSummaryData = {
-  submissions: [
-    { status: 'Received', count: 5, colorGroup: 'intake' as const },
-    { status: 'Triaging', count: 3, colorGroup: 'triage' as const },
+const flowDto = {
+  entityType: 'submission' as const,
+  periodDays: 180,
+  windowStartUtc: '2026-01-01T00:00:00Z',
+  windowEndUtc: '2026-03-01T00:00:00Z',
+  nodes: [
+    {
+      status: 'Received',
+      label: 'Received',
+      isTerminal: false,
+      displayOrder: 1,
+      colorGroup: 'intake' as const,
+      currentCount: 10,
+      inflowCount: 0,
+      outflowCount: 7,
+      avgDwellDays: 2.1,
+      emphasis: 'normal' as const,
+    },
+    {
+      status: 'Triaging',
+      label: 'Triaging',
+      isTerminal: false,
+      displayOrder: 2,
+      colorGroup: 'triage' as const,
+      currentCount: 7,
+      inflowCount: 8,
+      outflowCount: 5,
+      avgDwellDays: 5.4,
+      emphasis: 'bottleneck' as const,
+    },
+    {
+      status: 'InReview',
+      label: 'In Review',
+      isTerminal: false,
+      displayOrder: 3,
+      colorGroup: 'review' as const,
+      currentCount: 4,
+      inflowCount: 5,
+      outflowCount: 4,
+      avgDwellDays: 8.0,
+      emphasis: 'blocked' as const,
+    },
+    {
+      status: 'Bound',
+      label: 'Bound',
+      isTerminal: true,
+      displayOrder: 4,
+      colorGroup: 'decision' as const,
+      currentCount: 15,
+      inflowCount: 5,
+      outflowCount: 0,
+      avgDwellDays: null,
+      emphasis: null,
+    },
   ],
-  renewals: [
-    { status: 'Created', count: 2, colorGroup: 'intake' as const },
+  links: [
+    { sourceStatus: 'Received', targetStatus: 'Triaging', count: 12 },
+    { sourceStatus: 'Triaging', targetStatus: 'InReview', count: 8 },
   ],
 };
 
-const mockOutcomesData = {
+const outcomesDto = {
   periodDays: 180,
   totalExits: 20,
   outcomes: [
@@ -75,25 +101,17 @@ const mockOutcomesData = {
       key: 'bound',
       label: 'Bound',
       branchStyle: 'solid' as const,
-      count: 10,
-      percentOfTotal: 50,
-      averageDaysToExit: 11.2,
+      count: 12,
+      percentOfTotal: 60,
+      averageDaysToExit: 7.2,
     },
     {
       key: 'declined',
       label: 'Declined',
       branchStyle: 'red_dashed' as const,
-      count: 5,
-      percentOfTotal: 25,
-      averageDaysToExit: 7.5,
-    },
-    {
-      key: 'expired',
-      label: 'Expired',
-      branchStyle: 'gray_dotted' as const,
-      count: 5,
-      percentOfTotal: 25,
-      averageDaysToExit: 16.4,
+      count: 8,
+      percentOfTotal: 40,
+      averageDaysToExit: 5.8,
     },
   ],
 };
@@ -101,14 +119,15 @@ const mockOutcomesData = {
 describe('OpportunitiesSummary', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseDashboardOpportunities.mockReturnValue({
-      data: mockSummaryData,
+
+    mockUseOpportunityFlow.mockReturnValue({
+      data: flowDto,
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
     });
     mockUseOpportunityOutcomes.mockReturnValue({
-      data: mockOutcomesData,
+      data: outcomesDto,
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
@@ -125,82 +144,71 @@ describe('OpportunitiesSummary', () => {
       isError: false,
       refetch: vi.fn(),
     });
-  });
-
-  it('renders opportunities flow and outcomes rail', () => {
-    render(<OpportunitiesSummary />, { wrapper });
-
-    expect(screen.getByText('Submissions')).toBeDefined();
-    expect(screen.getByText('Renewals')).toBeDefined();
-    expect(screen.getByText('Terminal Outcomes')).toBeDefined();
-    expect(screen.getByText('Bound')).toBeDefined();
-  });
-
-  it('renders period selector buttons', () => {
-    render(<OpportunitiesSummary />, { wrapper });
-
-    expect(screen.getByText('30d')).toBeDefined();
-    expect(screen.getByText('90d')).toBeDefined();
-    expect(screen.getByText('180d')).toBeDefined();
-    expect(screen.getByText('365d')).toBeDefined();
-  });
-
-  it('shows secondary insights section by default', () => {
-    render(<OpportunitiesSummary />, { wrapper });
-
-    expect(screen.getByText('Aging insights')).toBeDefined();
-  });
-
-  it('shows loading skeleton when data is loading', () => {
-    mockUseDashboardOpportunities.mockReturnValue({
-      data: undefined,
-      isLoading: true,
+    mockUseDashboardKpis.mockReturnValue({
+      data: {
+        activeBrokers: 10,
+        openSubmissions: 7,
+        renewalRate: 0.42,
+        avgTurnaroundDays: 8.3,
+      },
+      isLoading: false,
       isError: false,
-      refetch: vi.fn(),
     });
-
-    render(<OpportunitiesSummary />, { wrapper });
-
-    expect(screen.queryByText('Submissions')).toBeNull();
   });
 
-  it('shows error fallback on fetch failure', () => {
-    mockUseDashboardOpportunities.mockReturnValue({
+  it('renders chapter controls and connected flow canvas', () => {
+    render(<OpportunitiesSummary />);
+
+    expect(screen.getByRole('tab', { name: 'Flow' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Friction' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Outcomes' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Aging' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Mix' })).toBeTruthy();
+
+    expect(screen.getByRole('button', { name: 'Received stage, 10 opportunities' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Bound outcome, 12 exits/i })).toBeTruthy();
+  });
+
+  it('passes periodDays to KPI hook', () => {
+    render(<OpportunitiesSummary />);
+
+    expect(mockUseDashboardKpis).toHaveBeenCalledWith(180);
+    fireEvent.click(screen.getByRole('tab', { name: '30d' }));
+    expect(mockUseDashboardKpis).toHaveBeenLastCalledWith(30);
+  });
+
+  it('lazy-loads aging data only when aging chapter is selected', async () => {
+    render(<OpportunitiesSummary />);
+    expect(mockUseOpportunityAging).toHaveBeenCalledWith('submission', 180, { enabled: false });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Aging' }));
+
+    await waitFor(() => {
+      expect(mockUseOpportunityAging).toHaveBeenLastCalledWith('submission', 180, { enabled: true });
+    });
+  });
+
+  it('lazy-loads mix data only when mix chapter is selected', async () => {
+    render(<OpportunitiesSummary />);
+    expect(mockUseOpportunityHierarchy).toHaveBeenCalledWith(180, { enabled: false });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Mix' }));
+
+    await waitFor(() => {
+      expect(mockUseOpportunityHierarchy).toHaveBeenLastCalledWith(180, { enabled: true });
+    });
+  });
+
+  it('shows flow error fallback', () => {
+    mockUseOpportunityFlow.mockReturnValue({
       data: undefined,
       isLoading: false,
       isError: true,
       refetch: vi.fn(),
     });
 
-    render(<OpportunitiesSummary />, { wrapper });
+    render(<OpportunitiesSummary />);
 
-    expect(screen.getByText('Unable to load opportunities data')).toBeDefined();
-  });
-
-  it('pipeline board stage cards have accessible labels', () => {
-    render(<OpportunitiesSummary />, { wrapper });
-
-    const submissionsRegion = screen.getByRole('region', {
-      name: 'Submissions opportunities flow',
-    });
-    const receivedCards = within(submissionsRegion).getAllByLabelText(
-      'Received: 5 opportunities',
-    );
-    expect(receivedCards.length).toBeGreaterThan(0);
-  });
-
-  it('outcome rows have accessible labels', () => {
-    render(<OpportunitiesSummary />, { wrapper });
-
-    const boundOutcome = screen.getByLabelText('Bound: 10 exits, 50% of total');
-    expect(boundOutcome).toBeDefined();
-  });
-
-  it('switches secondary mini-view panel', () => {
-    render(<OpportunitiesSummary />, { wrapper });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Hierarchy' }));
-
-    expect(screen.getByText('Hierarchy insights')).toBeDefined();
+    expect(screen.getByText('Unable to load opportunity flow')).toBeTruthy();
   });
 });

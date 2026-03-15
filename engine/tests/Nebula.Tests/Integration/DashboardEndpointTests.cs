@@ -1,13 +1,37 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nebula.Application.DTOs;
 
 namespace Nebula.Tests.Integration;
 
-public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+public class DashboardEndpointTests : IClassFixture<CustomWebApplicationFactory>
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client;
+
+    public DashboardEndpointTests(CustomWebApplicationFactory factory)
+    {
+        var appFactory = factory.WithWebHostBuilder(builder =>
+        {
+            builder.ConfigureServices(services =>
+            {
+                services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = "FixedAdmin";
+                        options.DefaultChallengeScheme = "FixedAdmin";
+                    })
+                    .AddScheme<AuthenticationSchemeOptions, FixedAdminAuthHandler>("FixedAdmin", _ => { });
+            });
+        });
+
+        _client = appFactory.CreateClient();
+    }
 
     [Fact]
     public async Task GetKpis_Returns200WithCorrectShape()
@@ -19,6 +43,16 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
         kpis.Should().NotBeNull();
         kpis!.ActiveBrokers.Should().BeGreaterThanOrEqualTo(0);
         kpis.OpenSubmissions.Should().BeGreaterThanOrEqualTo(0);
+    }
+
+    [Fact]
+    public async Task GetKpis_WithPeriodDays_Returns200()
+    {
+        var response = await _client.GetAsync("/dashboard/kpis?periodDays=30");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var kpis = await response.Content.ReadFromJsonAsync<DashboardKpisDto>();
+        kpis.Should().NotBeNull();
     }
 
     [Fact]
@@ -54,6 +88,21 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
         flow!.EntityType.Should().Be("submission");
         flow.Nodes.Should().NotBeNull();
         flow.Links.Should().NotBeNull();
+
+        foreach (var node in flow.Nodes)
+        {
+            if (node.AvgDwellDays is not null)
+                node.AvgDwellDays.Should().BeGreaterThanOrEqualTo(0);
+
+            if (node.IsTerminal)
+            {
+                node.Emphasis.Should().BeNull();
+            }
+            else
+            {
+                node.Emphasis.Should().BeOneOf("normal", "active", "blocked", "bottleneck");
+            }
+        }
     }
 
     [Fact]
@@ -186,5 +235,33 @@ public class DashboardEndpointTests(CustomWebApplicationFactory factory) : IClas
     {
         var response = await _client.GetAsync("/timeline/events?entityType=Broker");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    private sealed class FixedAdminAuthHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder)
+        : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var claims = new List<Claim>
+            {
+                new("iss", "http://test.local/application/o/nebula/"),
+                new("sub", "fixed-admin-user"),
+                new(ClaimTypes.NameIdentifier, "fixed-admin-user"),
+                new("name", "Fixed Admin"),
+                new(ClaimTypes.Name, "Fixed Admin"),
+                new("role", "Admin"),
+                new(ClaimTypes.Role, "Admin"),
+                new("nebula_roles", "Admin"),
+                new("regions", "West"),
+            };
+
+            var identity = new ClaimsIdentity(claims, "FixedAdmin");
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, "FixedAdmin");
+            return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
     }
 }
