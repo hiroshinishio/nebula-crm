@@ -18,11 +18,8 @@ interface StageNodeStoryPanelProps {
   chapter: StoryChapter;
   outcomes: OpportunityOutcomeDto[];
   agingStatus?: OpportunityAgingStatusDto;
-  miniX: number;
-  calloutX: number;
-  y: number;
-  miniY?: number;
-  calloutY?: number;
+  panelX: number;
+  panelY: number;
   compact?: boolean;
   stacked?: boolean;
 }
@@ -279,7 +276,8 @@ function MiniVisual({ view, simplified }: { view: StageView; simplified: boolean
   }
 
   if (view.kind === 'gauge') {
-    const progress = clamp(view.value ?? 0, 0, 1);
+    const raw = view.value ?? 0;
+    const progress = clamp(Number.isFinite(raw) ? raw : 0, 0, 1);
     const circumference = Math.PI * 30;
     const drawLength = progress * circumference;
 
@@ -302,7 +300,8 @@ function MiniVisual({ view, simplified }: { view: StageView; simplified: boolean
   }
 
   if (view.kind === 'progress') {
-    const progress = clamp(view.value ?? 0, 0, 1);
+    const raw = view.value ?? 0;
+    const progress = clamp(Number.isFinite(raw) ? raw : 0, 0, 1);
     const circumference = 2 * Math.PI * 28;
     const drawLength = progress * circumference;
 
@@ -380,30 +379,59 @@ function MiniVisual({ view, simplified }: { view: StageView; simplified: boolean
   if (view.kind === 'dotmap') {
     const segments = view.segments ?? [];
     const total = Math.max(1, segments.reduce((sum, segment) => sum + segment.count, 0));
-    const dots = 18;
-    const filled: string[] = [];
+    const muted = 'color-mix(in srgb, var(--color-data-muted) 18%, transparent)';
 
-    segments.forEach((segment) => {
-      const count = Math.round((segment.count / total) * dots);
-      for (let index = 0; index < count; index += 1) {
-        filled.push(segment.color);
-      }
+    // Map segments to US Census-style regions arranged in a geographic grid.
+    // The grid is 5 cols × 3 rows; empty cells are left transparent.
+    // Layout:  [NW] [MW] [  ] [NE] [  ]
+    //          [W ] [SW] [SE] [MA] [  ]
+    //          [  ] [  ] [S ] [  ] [FL]
+    const regionLabels = ['NW','MW','','NE','','W','SW','SE','MA','','','','S','','FL'];
+    const nonEmptyLabels = regionLabels.filter(Boolean);
+    const regionFill = regionLabels.map((label) => {
+      if (!label) return 'transparent';
+      const regionIndex = nonEmptyLabels.indexOf(label);
+      const seg = segments[regionIndex % Math.max(1, segments.length)];
+      return seg ? seg.color : muted;
+    });
+    const regionOpacity = regionLabels.map((label) => {
+      if (!label) return 0;
+      const regionIndex = nonEmptyLabels.indexOf(label);
+      const seg = segments[regionIndex % Math.max(1, segments.length)];
+      return seg ? Math.max(0.4, Math.min(1, seg.count / total * 3)) : 0.2;
     });
 
-    while (filled.length < dots) {
-      filled.push('color-mix(in srgb, var(--color-data-muted) 28%, transparent)');
-    }
-
     return (
-      <div className="grid grid-cols-6 justify-items-center gap-1 pt-1">
-        {filled.slice(0, dots).map((color, index) => (
-          <span
-            key={`${view.id}-dot-${index}`}
-            className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-        ))}
-      </div>
+      <svg viewBox="0 0 100 66" className="h-[76px] w-full" role="img" aria-label={view.summary}>
+        {regionLabels.map((label, index) => {
+          if (!label) return null;
+          const col = index % 5;
+          const row = Math.floor(index / 5);
+          return (
+            <g key={`${view.id}-region-${label}`}>
+              <rect
+                x={col * 20 + 1}
+                y={row * 22 + 1}
+                width={18}
+                height={20}
+                rx={3}
+                fill={regionFill[index]}
+                fillOpacity={regionOpacity[index]}
+              />
+              <text
+                x={col * 20 + 10}
+                y={row * 22 + 13}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-text-primary text-[5px] font-medium"
+                fillOpacity={0.7}
+              >
+                {label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
     );
   }
 
@@ -411,29 +439,73 @@ function MiniVisual({ view, simplified }: { view: StageView; simplified: boolean
     const segments = view.segments ?? [];
     const total = Math.max(1, segments.reduce((sum, segment) => sum + segment.count, 0));
     const cells = 20;
-    const blocks: string[] = [];
+    const cols = 5;
+    const muted = 'color-mix(in srgb, var(--color-data-muted) 25%, transparent)';
 
-    segments.forEach((segment) => {
+    // LOB icon paths (inline SVG, 16×16 viewBox) — one per segment
+    const lobIcons: Record<string, string> = {
+      // Building — Property
+      property: 'M8 1L1 5v10h5V10h4v5h5V5L8 1z',
+      // Shield — Casualty / Liability
+      casualty: 'M8 1L2 4v4c0 4.4 2.6 7.4 6 8 3.4-.6 6-3.6 6-8V4L8 1z',
+      // Anchor — Marine / Ocean cargo
+      marine: 'M8 1a2 2 0 100 4 2 2 0 000-4zM7 5v2H4l4 8 4-8H9V5H7z',
+      // Briefcase — Professional lines
+      professional: 'M6 2v2H2a1 1 0 00-1 1v8a1 1 0 001 1h12a1 1 0 001-1V5a1 1 0 00-1-1h-4V2H6zm1 1h2v1H7V3z',
+      // Car — Auto
+      auto: 'M3 6l1.5-3h7L13 6h1a1 1 0 011 1v4h-2v1h-2v-1H5v1H3v-1H1V7a1 1 0 011-1h1zm1.5 2a1 1 0 100 2 1 1 0 000-2zm7 0a1 1 0 100 2 1 1 0 000-2z',
+      // Fallback circle
+      other: 'M8 2a6 6 0 100 12A6 6 0 008 2zm0 2a4 4 0 110 8 4 4 0 010-8z',
+    };
+
+    const iconKeys = Object.keys(lobIcons);
+
+    // Build cell data: each cell gets the color + icon of its owning segment
+    type WaffleCell = { color: string; iconPath: string };
+    const cellData: WaffleCell[] = [];
+
+    segments.forEach((segment, segIndex) => {
       const count = Math.round((segment.count / total) * cells);
-      for (let index = 0; index < count; index += 1) {
-        blocks.push(segment.color);
+      const icon = iconKeys[segIndex % iconKeys.length];
+      for (let i = 0; i < count; i += 1) {
+        cellData.push({ color: segment.color, iconPath: lobIcons[icon] });
       }
     });
 
-    while (blocks.length < cells) {
-      blocks.push('color-mix(in srgb, var(--color-data-muted) 25%, transparent)');
+    while (cellData.length < cells) {
+      cellData.push({ color: muted, iconPath: lobIcons.other });
     }
 
+    const cellW = 18;
+    const cellH = 16;
+    const gapX = 2;
+    const gapY = 2;
+    const svgW = cols * cellW + (cols - 1) * gapX;
+    const rows = Math.ceil(cells / cols);
+    const svgH = rows * cellH + (rows - 1) * gapY;
+
     return (
-      <div className="grid grid-cols-5 gap-1">
-        {blocks.slice(0, cells).map((color, index) => (
-          <span
-            key={`${view.id}-waffle-${index}`}
-            className="h-2.5 rounded-sm"
-            style={{ backgroundColor: color }}
-          />
-        ))}
-      </div>
+      <svg
+        viewBox={`0 0 ${svgW} ${svgH}`}
+        className="h-[76px] w-full"
+        role="img"
+        aria-label={view.summary}
+      >
+        {cellData.slice(0, cells).map((cell, index) => {
+          const col = index % cols;
+          const row = Math.floor(index / cols);
+          const x = col * (cellW + gapX);
+          const y = row * (cellH + gapY);
+          return (
+            <g key={`${view.id}-waffle-${index}`}>
+              <rect x={x} y={y} width={cellW} height={cellH} rx={3} fill={cell.color} fillOpacity={0.18} />
+              <svg x={x + 1} y={y} width={cellW} height={cellH} viewBox="0 0 16 16">
+                <path d={cell.iconPath} fill={cell.color} fillOpacity={0.85} />
+              </svg>
+            </g>
+          );
+        })}
+      </svg>
     );
   }
 
@@ -472,11 +544,8 @@ export function StageNodeStoryPanel({
   chapter,
   outcomes,
   agingStatus,
-  miniX,
-  calloutX,
-  y,
-  miniY,
-  calloutY,
+  panelX,
+  panelY,
   compact = false,
   stacked = false,
 }: StageNodeStoryPanelProps) {
@@ -514,11 +583,13 @@ export function StageNodeStoryPanel({
   );
   const boundCount = boundOutcome?.count ?? 0;
   const conversionRate = totalExits > 0 ? boundCount / totalExits : 0;
-  const lobViewReady = !lobQuery.isFetched || lobQuery.isFetching || lobSegments.length > 0;
-  const brokerViewReady = !brokerQuery.isFetched || brokerQuery.isFetching || brokerSegments.length > 0;
-  const stateViewReady = !stateQuery.isFetched || stateQuery.isFetching || stateSegments.length > 0;
-  const assignedViewReady = !assignedUserQuery.isFetched || assignedUserQuery.isFetching || assignedSegments.length > 0;
-  const programViewReady = !programQuery.isFetched || programQuery.isFetching || programSegments.length > 0;
+  // Keep views available even when breakdown returns empty — the visual renders an
+  // empty-state rather than flipping to the fallback entity badge.
+  const lobViewReady = !lobQuery.isError;
+  const brokerViewReady = !brokerQuery.isError;
+  const stateViewReady = !stateQuery.isError;
+  const assignedViewReady = !assignedUserQuery.isError;
+  const programViewReady = !programQuery.isError;
 
   const candidateViews = useMemo<StageView[]>(() => {
     const views: StageView[] = [];
@@ -653,7 +724,7 @@ export function StageNodeStoryPanel({
       const triageSla = agingStatus?.sla ?? null;
       const triageHealth = triageSla
         ? clamp(
-          (triageSla.onTimeCount + triageSla.approachingCount * 0.5) / Math.max(1, triageSla.totalCount),
+          ((triageSla.onTimeCount ?? 0) + (triageSla.approachingCount ?? 0) * 0.5) / Math.max(1, triageSla.totalCount ?? 0),
           0,
           1,
         )
@@ -1008,6 +1079,13 @@ export function StageNodeStoryPanel({
     });
   }, []);
 
+  // Eagerly request breakdowns for ALL candidate views so data is ready before toggling.
+  useEffect(() => {
+    for (const view of candidateViews) {
+      requestBreakdownForView(view.id);
+    }
+  }, [candidateViews, requestBreakdownForView]);
+
   useEffect(() => {
     if (chapter === 'flow' && flowSelectedViewId && availableViews.some((view) => view.id === flowSelectedViewId)) {
       if (selectedViewId !== flowSelectedViewId) {
@@ -1022,11 +1100,10 @@ export function StageNodeStoryPanel({
   }, [availableViews, chapter, flowSelectedViewId, selectedViewId]);
 
   useEffect(() => {
-    requestBreakdownForView(selectedViewId);
     if (chapter === 'flow' && selectedViewId) {
       setFlowSelectedViewId(selectedViewId);
     }
-  }, [chapter, requestBreakdownForView, selectedViewId]);
+  }, [chapter, selectedViewId]);
 
   const activeIndex = selectedViewId
     ? Math.max(0, availableViews.findIndex((view) => view.id === selectedViewId))
@@ -1053,7 +1130,7 @@ export function StageNodeStoryPanel({
       stacked ? 196 : 210,
     ),
   );
-  const calloutWidth = stacked ? Math.max(200, miniPanelWidth + 14) : compact ? 220 : 244;
+  const panelWidth = Math.round(clamp(compact ? 220 : 244, miniPanelWidth, 260));
   const viewSummary = `${node.label} ${activeView.label}, ${activeView.count} items. ${activeView.summary}`;
 
   function cycleView() {
@@ -1067,77 +1144,66 @@ export function StageNodeStoryPanel({
   }
 
   return (
-    <>
-      <div
-        className={cn('absolute -translate-x-1/2 -translate-y-1/2', node.currentCount === 0 && 'opacity-70')}
-        style={{ left: miniX, top: miniY ?? y }}
+    <div
+      className={cn(
+        'absolute -translate-x-1/2 -translate-y-1/2',
+        node.currentCount === 0 && 'opacity-70',
+        chapter === 'outcomes' && 'opacity-50',
+      )}
+      style={{ left: panelX, top: panelY }}
+    >
+      <article
+        aria-label={viewSummary}
+        className="rounded-xl border bg-surface-main/40 px-3 py-2.5 transition-opacity duration-150"
+        style={{ width: panelWidth, borderColor: 'var(--callout-border)' }}
       >
-        <article
+        {/* Mini visualization */}
+        <div
+          key={`${activeView.id}-${chapter}`}
+          className="mini-visual-fade"
+          role="img"
           aria-label={viewSummary}
-          className={cn(
-            'rounded-xl bg-surface-main/55 px-3 py-2 transition-opacity duration-150',
-            chapter === 'outcomes' && 'opacity-50',
-          )}
-          style={{ width: miniPanelWidth }}
         >
-          <div
-            key={`${activeView.id}-${chapter}`}
-            className="mini-visual-fade"
-            role="img"
-            aria-label={viewSummary}
-          >
-            <div className="origin-center transition-transform duration-150" style={{ transform: `scale(${visualScale})` }}>
-              <MiniVisual view={activeView} simplified={simplified} />
+          <div className="origin-center transition-transform duration-150" style={{ transform: `scale(${visualScale})` }}>
+            <MiniVisual view={activeView} simplified={simplified} />
+          </div>
+        </div>
+
+        <p className="mt-2 truncate text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+          {activeView.label}
+        </p>
+
+        <p className="mt-1 text-[11px] text-text-secondary">{activeView.summary}</p>
+
+        {showToggle && (
+          <div className="mt-2 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={cycleView}
+              className="rounded-md bg-surface-main/55 px-2 py-1 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-main/75 hover:text-text-primary"
+              aria-label={`Cycle ${node.label} mini visualization`}
+            >
+              Next view
+            </button>
+            <div className="flex items-center gap-1" aria-hidden="true">
+              {availableViews.map((view, index) => (
+                <span
+                  key={`${node.status}-${view.id}`}
+                  className={cn(
+                    'h-1.5 w-1.5 rounded-full',
+                    index === activeIndex
+                      ? 'bg-nebula-violet'
+                      : 'bg-text-muted/45',
+                  )}
+                />
+              ))}
             </div>
           </div>
+        )}
 
-          <p className="mt-2 truncate text-[11px] font-semibold uppercase tracking-wide text-text-muted">
-            {activeView.label}
-          </p>
-
-          <p className="mt-1 text-[11px] text-text-secondary">{activeView.summary}</p>
-
-          {showToggle && (
-            <div className="mt-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={cycleView}
-                className="rounded-md bg-surface-main/55 px-2 py-1 text-[10px] font-medium text-text-secondary transition-colors hover:bg-surface-main/75 hover:text-text-primary"
-                aria-label={`Cycle ${node.label} mini visualization`}
-              >
-                Next view
-              </button>
-              <div className="flex items-center gap-1" aria-hidden="true">
-                {availableViews.map((view, index) => (
-                  <span
-                    key={`${node.status}-${view.id}`}
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      index === activeIndex
-                        ? 'bg-nebula-violet'
-                        : 'bg-text-muted/45',
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </article>
-      </div>
-
-      <div
-        className={cn('absolute -translate-x-1/2 -translate-y-1/2', node.currentCount === 0 && 'opacity-70')}
-        style={{ left: calloutX, top: calloutY ?? y }}
-      >
-        <article
-          className="rounded-xl bg-surface-main/55 px-3 py-2"
-          style={{ width: calloutWidth }}
-          aria-label={`${node.label} narrative callout`}
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">
-            Narrative callout
-          </p>
-          <ul className="mt-1 space-y-1 text-[11px] leading-4 text-text-secondary">
+        {/* Narrative callout — stacked below mini visual */}
+        <div className="mt-3 border-t border-text-muted/15 pt-2">
+          <ul className="space-y-1 text-[11px] leading-4 text-text-secondary">
             {displayBullets.slice(0, 3).map((bullet) => (
               <li key={`${node.status}-${bullet.emphasis}-${bullet.detail}`} className="flex gap-1">
                 <span aria-hidden="true">•</span>
@@ -1149,8 +1215,8 @@ export function StageNodeStoryPanel({
               </li>
             ))}
           </ul>
-        </article>
-      </div>
-    </>
+        </div>
+      </article>
+    </div>
   );
 }

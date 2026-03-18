@@ -82,6 +82,8 @@ Source of truth: `experience/src/index.css`.
   - `--ring` (focus ring)
 - Data aliases:
   - `--data-primary`, `--data-secondary`, `--data-tertiary`, `--data-quaternary`, `--data-muted`, `--data-danger`
+- Story panel callout border:
+  - `--callout-border` — solid border for ghost-bordered story panels. Dark mode: blue (`--accent-secondary`) at 70% opacity. Light mode: salmon (`--accent-primary`) at 70% opacity. Intentionally swapped from accent defaults to create visual contrast with the accent color already used on the spine/anchors.
 
 ### Tailwind token bridge (`@theme`)
 
@@ -96,6 +98,20 @@ Source of truth: `experience/src/index.css`.
   - `--color-glow-violet`, `--color-glow-fuchsia`, `--color-ring`
 
 This keeps component usage stable while allowing theme-level palette refreshes.
+
+## Inset Content Container (sidebar-08 pattern)
+
+The main content area uses an inset container inspired by shadcn sidebar-08:
+
+| Property | Value | Notes |
+|---|---|---|
+| Background | `var(--shell-inset-bg)` | Slightly different from frame background |
+| Border | `1px solid var(--sidebar-border)` | Visible container edge |
+| Border radius | `0.75rem` (12px) | Rounded corners |
+| Shadow | `var(--shell-inset-shadow)` | Subtle inset depth |
+| Gap | `0.75rem` padding on `.lg-sidebar-offset` | Space between sidebars and content border |
+
+Both `.content-inset` and `.content-shell-flat` receive the same inset treatment. Left nav and right Neuron rail remain flush to viewport edges.
 
 ## Utility Expectations
 

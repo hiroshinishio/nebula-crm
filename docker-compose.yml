@@ -108,8 +108,8 @@ services:
 
   api:
     build:
-      context: ./engine
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: engine/Dockerfile
     container_name: nebula-api
     restart: unless-stopped
     environment:

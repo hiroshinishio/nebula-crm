@@ -26,6 +26,7 @@ F0012 stripped borders, depth, and glow from ALL dashboard components in pursuit
 - **And** My Tasks panel renders as a raised card with `glass-card`, depth, and hover glow
 - **And** the story canvas zone (story controls, KPI band, timeline flow, chapter overlays) renders flat without card borders
 - **And** the app chrome (left nav rail, right Neuron rail, top bar) visually frames the dashboard content
+- **And** the main content area renders inside a bordered, rounded-corner inset container (sidebar-08 pattern) with a visible border, rounded corners (0.75rem), inset shadow, and a small gap (0.75rem) between the sidebars and the content border on all sides
 
 **Alternative Flows / Edge Cases:**
 - No nudge items to display → Nudge zone collapses gracefully; glass-card container is not rendered (same as current behavior)
@@ -43,7 +44,10 @@ F0012 stripped borders, depth, and glow from ALL dashboard components in pursuit
 - [ ] My Tasks panel has soft hover/focus glow
 - [ ] KPI band renders flat (no card borders) within the story canvas zone
 - [ ] Story controls (period + chapter selectors) render flat within the story canvas zone
-- [ ] Visual hierarchy is clear: frame > floating panels > flat story canvas
+- [ ] `.canvas-zone-break` section wrappers (around Activity, My Tasks) have transparent backgrounds — no tinted background panels behind glass-card components (the glass-card elevation provides sufficient visual separation)
+- [ ] Main content area uses inset container with border (`1px solid var(--sidebar-border)`), rounded corners (`0.75rem`), inset shadow, and `--shell-inset-bg` background
+- [ ] Gap of `0.75rem` between left nav / right rail and the content border (`.lg-sidebar-offset` padding)
+- [ ] Visual hierarchy is clear: frame > inset content container > floating panels > flat story canvas
 - [ ] Both dark and light themes maintain the three-layer visual distinction
 - [ ] Existing `glass-card`, `glow-*-hover` tokens from `design-tokens.md` are used (no new tokens needed)
 
@@ -84,9 +88,10 @@ No new data requirements. This story is a visual/CSS-only change to restore exis
 
 - Screens involved: Dashboard page
 - The three-layer visual hierarchy is the core UX change:
-  - **Layer 1 (Frame):** Left nav rail, right Neuron rail, top bar — unchanged app chrome
-  - **Layer 2 (Operational panels):** Nudge cards, Activity, My Tasks — `glass-card` + depth + glow
-  - **Layer 3 (Story canvas):** Story controls, KPI band, timeline flow, chapter overlays — flat, no borders
+  - **Layer 1 (Frame):** Left nav rail, right Neuron rail, top bar — flush to viewport edges, unchanged app chrome
+  - **Layer 1.5 (Inset container):** The main content area sits in a bordered, rounded-corner container with `--shell-inset-bg` background and `var(--sidebar-border)` border — inspired by shadcn sidebar-08 "inset" pattern. A `0.75rem` gap separates the container from both sidebars on all sides.
+  - **Layer 2 (Operational panels):** Nudge cards, Activity, My Tasks — `glass-card` + depth + glow, rendered inside the inset container
+  - **Layer 3 (Story canvas):** Story controls, KPI band, timeline flow, chapter overlays — flat, no card borders, rendered inside the inset container
 
 ## Questions & Assumptions
 

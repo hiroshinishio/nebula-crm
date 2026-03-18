@@ -27,10 +27,10 @@ The current opportunity flow (from F0012/F0010) renders workflow stages as flat 
 - **And** stage nodes are ordered top-to-bottom by `displayOrder`
 - **And** stage nodes use `colorGroup` for warm-to-cool color progression (intake → triage → waiting → review → decision)
 - **And** each stage node displays the stage label and current count
-- **And** each stage node has two companion areas on opposite sides of the spine: a mini-visualization area on one side and a narrative callout area on the other (both rendered in S0003)
+- **And** each stage node has a companion story panel on the same side of the spine containing both a mini-visualization and a narrative callout stacked vertically inside a single ghost-bordered card (both rendered in S0003)
 - **And** the mini-visualization area scales proportionally with the stage's item count (larger count = larger visual)
-- **And** the narrative callout area displays 2-3 data-driven bullet points that tell that stage's story in words (content defined in S0003)
-- **And** terminal outcome nodes branch off the bottom of the timeline with connecting lines
+- **And** the narrative callout (below the mini-visual, separated by a subtle divider) displays 2-3 data-driven bullet points that tell that stage's story in words (content defined in S0003)
+- **And** terminal outcome branches fan out from the spine's bottom point (the root of the trunk), not from the last stage node
 - **And** terminal outcome branches use line styles: solid (positive — Bound), dashed (negative — Declined, Lost), dotted (passive — Expired, No Quote)
 
 **Alternative Flows / Edge Cases:**
@@ -44,9 +44,10 @@ The current opportunity flow (from F0012/F0010) renders workflow stages as flat 
 - [ ] Stage nodes alternate left-right of the spine
 - [ ] Flow ribbons along spine reflect transition count (ribbon thickness)
 - [ ] Stage nodes show label + count
-- [ ] Mini-visualization area on one side of spine, narrative callout area on the opposite side
+- [ ] Story panel on same side as stage node contains both mini-visualization and narrative callout in a single ghost-bordered card
 - [ ] Mini-visualization area scales with item count (proportional sizing)
-- [ ] Callout area accommodates 2-3 bullet lines of text (content from S0003)
+- [ ] Narrative callout stacked below mini-visual with subtle divider, accommodates 2-3 bullet lines of text (content from S0003)
+- [ ] Ghost border uses `--callout-border` token (blue in dark mode, salmon in light mode)
 - [ ] Color progression follows `colorGroup` (warm-to-cool top-to-bottom)
 - [ ] Terminal outcome nodes branch off the bottom of the timeline
 - [ ] Branch line styles: solid (positive), dashed (negative), dotted (passive)
@@ -94,13 +95,20 @@ All dashboard roles see the same timeline visualization. Data is ABAC-scoped at 
 
 - The vertical timeline replaces the current flat rectangular stage cells
 - SVG rendering allows crisp lines, arcs, and ribbons at any zoom level
-- Terminal outcome branches should fan out below the last active stage node, not render as a separate section
-- Alternating left-right placement (like `pipeline5.png` and `handdrawn-timeline.jpeg`) creates visual rhythm and gives each stop room for both the mini-visualization and the narrative callout
+- Terminal outcome branches fan out from the spine's bottom point (the root of the trunk) — they represent exits from the entire pipeline, not just the last stage
+- The spine line extends all the way down to the outcome branch origin point, so the terminal outcomes visually grow from the timeline like roots of a tree
+- Alternating left-right placement (like `pipeline5.png` and `handdrawn-timeline.jpeg`) creates visual rhythm and gives each stop room for its story panel
 - **Layout per stop (alternating):**
-  - Odd stops: mini-visual on left, callout bullets on right
-  - Even stops: callout bullets on left, mini-visual on right
-  - This mirrors `pipeline5.png` where each stop has a chart on one side and descriptive text on the other
+  - Odd stops: story panel on left of spine
+  - Even stops: story panel on right of spine
+  - Each story panel is a single ghost-bordered card containing the mini-visual on top and narrative callout bullets below, separated by a subtle divider
+  - Ghost border color swaps per theme: blue (`--accent-secondary`) at 70% in dark mode, salmon (`--accent-primary`) at 70% in light mode — defined as the `--callout-border` CSS custom property
 - The combination of a visual and a textual callout at each stop is what makes this a storytelling infographic — like a magazine data spread where each section has both a chart and a caption
+- **Line thickness hierarchy:**
+  - Spine trunk: 3.5px — the primary visual axis
+  - Connector stubs (spine → node): 2.5px
+  - Flow-volume segments: 3px base + up to 7px proportional to outflow
+  - Outcome branches: 3.5–4px
 
 ## Questions & Assumptions
 
@@ -113,7 +121,7 @@ All dashboard roles see the same timeline visualization. Data is ABAC-scoped at 
 
 - [ ] Acceptance criteria met
 - [ ] Vertical timeline renders as SVG within the story canvas zone
-- [ ] Stage nodes alternate left-right with mini-visual and callout on opposite sides
+- [ ] Stage nodes alternate left-right with stacked story panels (mini-visual + narrative callout) on the same side
 - [ ] Proportional flow ribbons connect nodes along spine
 - [ ] Terminal outcomes branch at bottom with correct line styles
 - [ ] Keyboard navigation works across stage nodes (top-to-bottom)

@@ -13,7 +13,7 @@ export function ActivityFeed() {
     >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-text-primary">Activity</h2>
-        <span className="text-xs uppercase tracking-wider text-text-muted">Timeline</span>
+        {/* <span className="text-xs uppercase tracking-wider text-text-muted">Timeline</span> */}
       </div>
 
       {isLoading && (
