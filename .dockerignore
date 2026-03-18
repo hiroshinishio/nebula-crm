@@ -10,8 +10,15 @@
 **/*.pyo
 **/.pytest_cache/
 
-planning-mds/
-engine/
+# Allow engine/ and planning-mds/security/policies/ for API build
+!engine/
+!planning-mds/security/policies/
+planning-mds/features/
+planning-mds/screens/
+planning-mds/schemas/
+planning-mds/architecture/
+planning-mds/operations/
+planning-mds/api/
 experience/
 neuron/
 

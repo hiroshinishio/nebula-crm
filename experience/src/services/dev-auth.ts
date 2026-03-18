@@ -28,6 +28,7 @@ export function getDevToken(): Promise<string> {
       sub: DEV_SUB,
       name: 'Sarah Chen',
       nebula_roles: ['DistributionManager'],
+      regions: ['West', 'Central', 'East', 'South'],
       exp: Math.floor(Date.now() / 1000) + 86400 * 365,
     });
     _devToken = `${header}.${payload}.dev`;

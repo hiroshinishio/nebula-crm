@@ -1,92 +1,95 @@
 @import "tailwindcss";
 
-/* Theme Custom Properties — dark default */
+/* Theme Custom Properties — dark default (pipeline5.png deep-midnight editorial) */
 :root {
-  --shell-frame-bg: #1a2332;
+  --shell-frame-bg: #0e1825;
   --surface-bg: var(--shell-frame-bg);
-  --surface-card: rgba(36, 48, 68, 0.88);
-  --surface-card-hover: rgba(42, 54, 80, 0.96);
-  --surface-border: #2e3a4e;
-  --surface-highlight: rgba(255, 255, 255, 0.08);
+  --surface-card: rgba(22, 34, 52, 0.90);
+  --surface-card-hover: rgba(28, 42, 64, 0.96);
+  --surface-border: #1e2e42;
+  --surface-highlight: rgba(255, 255, 255, 0.06);
   --text-primary: #e8e8e8;
   --text-secondary: #a0a8b4;
-  --text-muted: #8d96a3;
-  --accent-primary: #e06070;
+  --text-muted: #6e7a8a;
+  --accent-primary: #d8707e;
   --accent-secondary: #5080a5;
+  --callout-border: color-mix(in srgb, #5080a5 70%, transparent);
   --accent-tertiary: #d4a054;
-  --ring: #e06070;
-  --data-primary: #e06070;
+  --ring: #d8707e;
+  --data-primary: #d8707e;
   --data-secondary: #5080a5;
   --data-tertiary: #d4a054;
   --data-quaternary: #6aaa7a;
-  --data-muted: #4a5568;
+  --data-muted: #3a4858;
   --data-danger: #d05050;
   --frame-bg: var(--shell-frame-bg);
-  --frame-border: rgba(80, 128, 165, 0.34);
+  --frame-border: rgba(80, 128, 165, 0.24);
   --sidebar-bg: var(--frame-bg);
   --sidebar-border: var(--frame-border);
-  --topbar-bg: #182131;
-  --topbar-border: rgba(80, 128, 165, 0.45);
-  --sidebar-hover: rgba(224, 96, 112, 0.16);
-  --sidebar-active-bg: rgba(224, 96, 112, 0.26);
+  --topbar-bg: #0c1520;
+  --topbar-border: rgba(80, 128, 165, 0.30);
+  --sidebar-hover: rgba(216, 112, 126, 0.14);
+  --sidebar-active-bg: rgba(216, 112, 126, 0.24);
   --sidebar-active-text: #f6d2ce;
-  --bg-glow-1: rgba(224, 96, 112, 0.18);
-  --bg-glow-2: rgba(80, 128, 165, 0.16);
-  --shell-inset-bg: #202c41;
+  --bg-glow-1: rgba(216, 112, 126, 0.12);
+  --bg-glow-2: rgba(80, 128, 165, 0.10);
+  --shell-inset-bg: #131f30;
   --shell-inset-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.50);
-  --effect-text-shadow-logo: 0 0 8px rgba(224, 96, 112, 0.40);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.55);
+  --effect-text-shadow-logo: 0 0 8px rgba(216, 112, 126, 0.44);
   --effect-shadow-alert-error: 0 0 20px rgba(201, 92, 92, 0.08);
   --effect-shadow-alert-warning: 0 0 20px rgba(217, 119, 6, 0.14);
   --effect-shadow-alert-info: 0 0 20px rgba(80, 128, 165, 0.18);
-  --effect-shadow-cta-brand: 0 0 12px rgba(224, 96, 112, 0.32);
+  --effect-shadow-cta-brand: 0 0 12px rgba(216, 112, 126, 0.36);
   --effect-shadow-task-overdue: 0 0 15px rgba(201, 92, 92, 0.06);
-  --effect-shadow-task-hover: 0 0 15px rgba(224, 96, 112, 0.20);
+  --effect-shadow-task-hover: 0 0 15px rgba(216, 112, 126, 0.22);
 }
 
+/* Light theme (pipeline4.png warm-cream editorial) */
 [data-theme="light"] {
-  --shell-frame-bg: #f0eded;
+  --shell-frame-bg: #f5f0e8;
   --surface-bg: var(--shell-frame-bg);
-  --surface-card: rgba(255, 255, 255, 0.94);
-  --surface-card-hover: rgba(245, 242, 240, 0.98);
-  --surface-border: #d8d2ce;
+  --surface-card: rgba(255, 253, 250, 0.94);
+  --surface-card-hover: rgba(248, 244, 238, 0.98);
+  --surface-border: #ddd6cc;
   --surface-highlight: rgba(255, 255, 255, 0.82);
-  --text-primary: #3a3a3a;
-  --text-secondary: #7a7a7a;
-  --text-muted: #8f8883;
-  --accent-primary: #d4726a;
-  --accent-secondary: #6a9ab8;
+  --text-primary: #3a3530;
+  --text-secondary: #7a7068;
+  --text-muted: #9a8e84;
+  --accent-primary: #c86a5e;
+  --accent-secondary: #4d8eaa;
+  --callout-border: color-mix(in srgb, #d8707e 70%, transparent);
   --accent-tertiary: #c08840;
-  --ring: #d4726a;
-  --data-primary: #d4726a;
-  --data-secondary: #6a9ab8;
+  --ring: #c86a5e;
+  --data-primary: #c86a5e;
+  --data-secondary: #4d8eaa;
   --data-tertiary: #c08840;
   --data-quaternary: #5a9068;
-  --data-muted: #a0aab4;
+  --data-muted: #b0a89e;
   --data-danger: #c04848;
   --frame-bg: var(--shell-frame-bg);
-  --frame-border: rgba(106, 154, 184, 0.22);
+  --frame-border: rgba(106, 154, 184, 0.18);
   --sidebar-bg: var(--frame-bg);
   --sidebar-border: var(--frame-border);
-  --topbar-bg: #e8e2de;
-  --topbar-border: rgba(106, 154, 184, 0.34);
-  --sidebar-hover: rgba(212, 114, 106, 0.10);
-  --sidebar-active-bg: rgba(212, 114, 106, 0.18);
+  --topbar-bg: #ede6dc;
+  --topbar-border: rgba(106, 154, 184, 0.28);
+  --sidebar-hover: rgba(200, 106, 94, 0.10);
+  --sidebar-active-bg: rgba(200, 106, 94, 0.16);
   --sidebar-active-text: #8f4f49;
-  --bg-glow-1: rgba(212, 114, 106, 0.09);
-  --bg-glow-2: rgba(106, 154, 184, 0.08);
-  --shell-inset-bg: #f5f2f0;
+  --bg-glow-1: rgba(200, 106, 94, 0.07);
+  --bg-glow-2: rgba(77, 142, 170, 0.06);
+  --shell-inset-bg: #f8f4ee;
   --shell-inset-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    inset 0 -2px 0 rgba(148, 163, 184, 0.32);
-  --effect-text-shadow-logo: 0 0 8px rgba(212, 114, 106, 0.22);
+    inset 0 -2px 0 rgba(148, 140, 128, 0.24);
+  --effect-text-shadow-logo: 0 0 8px rgba(200, 106, 94, 0.22);
   --effect-shadow-alert-error: 0 0 20px rgba(201, 92, 92, 0.08);
   --effect-shadow-alert-warning: 0 0 20px rgba(217, 119, 6, 0.10);
-  --effect-shadow-alert-info: 0 0 20px rgba(106, 154, 184, 0.14);
-  --effect-shadow-cta-brand: 0 0 12px rgba(212, 114, 106, 0.20);
+  --effect-shadow-alert-info: 0 0 20px rgba(77, 142, 170, 0.14);
+  --effect-shadow-cta-brand: 0 0 12px rgba(200, 106, 94, 0.20);
   --effect-shadow-task-overdue: 0 0 15px rgba(201, 92, 92, 0.06);
-  --effect-shadow-task-hover: 0 0 15px rgba(212, 114, 106, 0.12);
+  --effect-shadow-task-hover: 0 0 15px rgba(200, 106, 94, 0.12);
 }
 
 /* Nebula CRM Design Tokens */
@@ -323,11 +326,11 @@ body {
 }
 
 .dark .canvas-zone-break {
-  background: color-mix(in srgb, var(--shell-frame-bg) 88%, #0f1724);
+  background: transparent;
 }
 
 [data-theme="light"] .canvas-zone-break {
-  background: #f5f2f0;
+  background: transparent;
 }
 
 .canvas-chapter-overlay {
@@ -528,7 +531,7 @@ body {
     margin-left: var(--sidebar-width, 16rem);
     margin-right: var(--chat-panel-width, 22rem);
     transition: margin-left 200ms ease, margin-right 200ms ease;
-    padding: 1rem 0;
+    padding: 0.75rem;
     height: 100dvh;
     min-height: 0;
   }
@@ -545,7 +548,10 @@ body {
   }
 
   .lg-sidebar-offset .content-shell-flat {
-    background: transparent;
+    background: var(--shell-inset-bg);
+    border: 1px solid var(--sidebar-border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shell-inset-shadow);
     display: flex;
     flex-direction: column;
     height: 100%;

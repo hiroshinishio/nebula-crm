@@ -114,6 +114,20 @@ public static class DevSeedData
                 SubmissionNextStates,
                 OpportunityStatusCatalog.SubmissionTerminalStatusCodes,
                 chooseSubmissionTerminal: true);
+
+            // ~40% of submissions stay in an active (non-terminal) stage so the
+            // pipeline timeline has realistic in-progress data for dashboard visuals.
+            if (path.Count > 2 && rng.NextDouble() < 0.40)
+            {
+                // Truncate at a random active stage (including index 0 = Received).
+                var cutoff = rng.Next(0, path.Count - 1);
+                while (cutoff < path.Count &&
+                       OpportunityStatusCatalog.SubmissionTerminalStatusCodes.Contains(path[cutoff]))
+                    cutoff--;
+                if (cutoff >= 0)
+                    path = path.GetRange(0, cutoff + 1);
+            }
+
             var createdAt = now.AddDays(-rng.Next(Math.Max(path.Count * 10, 21), 365)).AddHours(-rng.Next(0, 24));
 
             var updatedAt = createdAt;
@@ -185,6 +199,18 @@ public static class DevSeedData
                 RenewalNextStates,
                 OpportunityStatusCatalog.RenewalTerminalStatusCodes,
                 chooseSubmissionTerminal: false);
+
+            // ~40% of renewals stay in an active pipeline stage (same as submissions).
+            if (path.Count > 2 && rng.NextDouble() < 0.40)
+            {
+                var cutoff = rng.Next(0, path.Count - 1);
+                while (cutoff < path.Count &&
+                       OpportunityStatusCatalog.RenewalTerminalStatusCodes.Contains(path[cutoff]))
+                    cutoff--;
+                if (cutoff >= 0)
+                    path = path.GetRange(0, cutoff + 1);
+            }
+
             var createdAt = now.AddDays(-rng.Next(Math.Max(path.Count * 10, 30), 365)).AddHours(-rng.Next(0, 24));
 
             var updatedAt = createdAt;
@@ -262,6 +288,7 @@ public static class DevSeedData
     // so that logging in as the matching authentik user surfaces seeded submissions, tasks, and renewals.
     private static List<UserProfile> BuildUserProfiles(DateTime now) =>
     [
+        new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "dev-user-001", Email = "sarah.chen@nebula.local", DisplayName = "Sarah Chen", Department = "Distribution", RegionsJson = "[\"West\",\"Central\",\"East\",\"South\"]", RolesJson = "[\"DistributionManager\"]", CreatedAt = now, UpdatedAt = now },
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "akadmin", Email = "akadmin@nebula.local", DisplayName = "Admin User", Department = "Operations", RegionsJson = "[\"West\",\"Central\",\"East\",\"South\"]", RolesJson = "[\"Admin\"]", CreatedAt = now, UpdatedAt = now },
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "john.miller", Email = "john.miller@nebula.local", DisplayName = "John Miller", Department = "Underwriting", RegionsJson = "[\"East\"]", RolesJson = "[\"Underwriter\"]", CreatedAt = now, UpdatedAt = now },
         new UserProfile { IdpIssuer = DevIdpIssuer, IdpSubject = "lisa.wong", Email = "lisa.wong@nebula.local", DisplayName = "Lisa Wong", Department = "Distribution", RegionsJson = "[\"West\"]", RolesJson = "[\"DistributionUser\"]", CreatedAt = now, UpdatedAt = now },

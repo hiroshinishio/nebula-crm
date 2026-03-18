@@ -9,7 +9,7 @@
 ## User Story
 
 **As a** dashboard user
-**I want** each timeline stop to have a mini-visualization on one side of the spine and a narrative callout with 2-3 data-driven bullet points on the other side — so that I can read the entire submission journey by scrolling the timeline, with each stop telling its story both visually (chart) and textually (callout)
+**I want** each timeline stop to have a story panel containing a mini-visualization and a narrative callout with 2-3 data-driven bullet points stacked together in a single ghost-bordered card — so that I can read the entire submission journey by scrolling the timeline, with each stop telling its story both visually (chart) and textually (callout)
 **So that** I understand the full operational narrative at a glance like a magazine data spread, and can explore alternate chart views per-stop when I want a different angle
 
 ## Context & Background
@@ -18,7 +18,7 @@ The pipeline inspiration images (`pipeline2.png`, `pipeline3.png`, `pipeline5.pn
 
 The chart types are NOT forced to be uniform. A donut at one stop, a bar chart at another, a gauge at another — whatever best fits the data story. This is what makes the timeline an infographic, not a dashboard widget grid.
 
-Critically, each stop also has a **narrative callout** on the opposite side of the spine from the mini-visual (see `pipeline5.png` — each stop has a chart on one side and descriptive text on the other). These callouts are 2-3 data-driven bullet points that tell the stage's story in words — complementing the visual with specific facts, trends, and highlights.
+Critically, each stop also has a **narrative callout** stacked directly below the mini-visual within the same ghost-bordered card, separated by a subtle divider line. This keeps the visual and its textual explanation tightly grouped — preventing the confusion of opposite-side placement where callouts visually blend with adjacent stages. These callouts are 2-3 data-driven bullet points that tell the stage's story in words — complementing the visual with specific facts, trends, and highlights. The ghost border uses the `--callout-border` CSS token (blue in dark mode, salmon in light mode at 70% opacity).
 
 ## Acceptance Criteria
 
@@ -30,7 +30,7 @@ Critically, each stop also has a **narrative callout** on the opposite side of t
 - **And** the visualization size scales with the stage's item count
 - **And** each visualization shows a count (the stage's `currentCount`) prominently
 - **And** each visualization includes a brief label describing what it shows (e.g., "Top Brokers", "SLA Health")
-- **And** the opposite side of the spine from the mini-visual shows a narrative callout with 2-3 data-driven bullet points
+- **And** directly below the mini-visual (within the same ghost-bordered card, separated by a divider) a narrative callout shows 2-3 data-driven bullet points
 - **And** the callout bullets are dynamically generated from the same data that powers the mini-visual
 - **And** each callout highlights the most compelling insight for that stage (top contributor, trend, outlier, or threshold breach)
 
@@ -46,7 +46,7 @@ Critically, each stop also has a **narrative callout** on the opposite side of t
 | Quoted | Donut chart | "Conversion potential?" | Historical quote-to-bind rate |
 | Bind Requested | Count badge | "Almost there" | Simple prominent count (low volume stage) |
 
-**Narrative Callout Mapping (opposite side of spine from mini-visual):**
+**Narrative Callout Mapping (stacked below mini-visual in same ghost-bordered card):**
 
 Each callout has 2-3 short, data-driven bullet points. The content adapts dynamically based on what's noteworthy in the data — these are templates, not static copy.
 
@@ -120,7 +120,7 @@ Each stage has a primary mini-visualization (shown by default) and zero or more 
 - [ ] Graceful degradation for low-count stages (count badge fallback)
 - [ ] Fallback to entity type donut when stage-specific data is unavailable
 - [ ] Each visualization is self-contained (readable without interaction)
-- [ ] Narrative callout renders on the opposite side of the spine from the mini-visual
+- [ ] Narrative callout renders below the mini-visual within the same ghost-bordered card, separated by a divider
 - [ ] Each callout has 2-3 data-driven bullet points
 - [ ] Callout bullets update when mini-visual alternate is toggled
 - [ ] Callout bullets update when chapter override is active (S0004)
@@ -189,7 +189,7 @@ All dashboard roles see the same mini-visualizations. Data is ABAC-scoped at the
 ## UI/UX Notes
 
 - Mini-visualizations are INLINE on the timeline — always visible, not hover-triggered. This is key: the timeline tells its story just by scrolling, no interaction required.
-- Each visualization sits in the alternating left-right area established by S0002.
+- Each visualization sits in a ghost-bordered story panel on the same side as its stage node (alternating left-right per S0002). The narrative callout is stacked below the mini-visual within the same card, not on the opposite side.
 - Compact size: roughly 100-140px wide, height proportional to count. Readable at a glance.
 - Accent colors for segments: use the theme-independent accent palette from design tokens.
 - The combination of different chart types at each stop is what makes this an infographic, not a dashboard. Like a magazine data spread where each section has its own visualization style.
@@ -212,7 +212,7 @@ All dashboard roles see the same mini-visualizations. Data is ABAC-scoped at the
 - [ ] Acceptance criteria met
 - [ ] Each timeline stop has a primary contextual mini-visualization (chart type varies per stage)
 - [ ] Stages with alternates have a toggle indicator and cycle through views
-- [ ] Narrative callouts render on the opposite side with 2-3 data-driven bullets per stop
+- [ ] Narrative callouts render below mini-visual in same ghost-bordered card with 2-3 data-driven bullets per stop
 - [ ] Visualizations and callouts are inline (always visible, not hover-triggered)
 - [ ] Graceful degradation for low-count and missing-data scenarios
 - [ ] Accessible (aria-labels on all visualizations)

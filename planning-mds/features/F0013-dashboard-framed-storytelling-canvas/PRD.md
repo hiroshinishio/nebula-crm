@@ -59,7 +59,7 @@ F0012 interpreted "infographic" as "flatten everything." It stripped borders, de
 ## Problem Statement
 
 - **Current State:** F0012 flattened everything — nudge cards, activity, and tasks lost their glass-card depth and glow. The opportunity flow is a row of flat rectangular cells showing counts. The dashboard no longer feels like a framed canvas with depth.
-- **Desired State:** The dashboard feels like a framed canvas: app chrome creates the frame, operational panels float with depth and glow, and the story canvas zone tells the opportunity narrative through a timeline bar with radial chart popovers at each stage.
+- **Desired State:** The dashboard feels like a framed canvas: app chrome (left nav, right Neuron rail, top bar) sits flush to viewport edges, the main content area is enclosed in a bordered inset container with rounded corners (sidebar-08 pattern), operational panels float with depth and glow inside that container, and the story canvas zone tells the opportunity narrative through a timeline bar with radial chart popovers at each stage.
 - **Impact:** Restores the polished, purposeful feel of the original design while adding richer data visualization (composition via radials, not just counts).
 
 ## Scope & Boundaries
@@ -92,15 +92,15 @@ F0012 interpreted "infographic" as "flatten everything." It stripped borders, de
 - [ ] Activity panel renders as a raised/float panel with glass-card and glow.
 - [ ] My Tasks panel renders as a raised/float panel with glass-card and glow.
 - [ ] Opportunity flow renders as a vertical timeline (spine top-to-bottom, stops alternating left-right).
-- [ ] Each timeline stop has a contextual mini-visualization on one side and a narrative callout (2-3 data-driven bullets) on the other.
+- [ ] Each timeline stop has a ghost-bordered story panel (on the same side as the stage node) containing a contextual mini-visualization on top and a narrative callout (2-3 data-driven bullets) stacked below, separated by a divider. Ghost border uses `--callout-border` token (blue in dark, salmon in light).
 - [ ] Mini-visualization size scales proportionally with stage item count.
 - [ ] Callout bullets are dynamically computed from stage data (not static copy).
 - [ ] Chapter controls (Flow/Friction/Outcomes) override contextual defaults — all stops switch to the same dimension for comparison.
-- [ ] Terminal outcome branches render at the bottom of the timeline.
+- [ ] Terminal outcome branches fan out from the spine's bottom point (root of the trunk), not from the last stage node.
 - [ ] KPI band renders as inline flat content in the story canvas zone (no card borders).
 - [ ] Period selector (30d/90d/180d/365d) synchronizes all data sources.
 - [ ] Collapsible left nav and right Neuron rail work with adaptive canvas width.
-- [ ] Dashboard feels like a framed canvas — app chrome frames it, panels float, story zone narrates.
+- [ ] Dashboard feels like a framed canvas — app chrome is flush to viewport edges, main content sits in a bordered inset container (sidebar-08 pattern, 0.75rem gap, rounded corners), panels float inside, story zone narrates.
 
 ### Session 3 PM Verification (2026-03-17)
 

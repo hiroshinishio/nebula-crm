@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Popover } from '@/components/ui/Popover';
-import { opportunityHex, opportunityText } from '../lib/opportunity-colors';
+import { opportunityText } from '../lib/opportunity-colors';
 import { OpportunityPopoverContent } from './OpportunityPopover';
 import { TerminalOutcomesRail } from './TerminalOutcomesRail';
 import { ChapterOverlayManager } from './ChapterOverlayManager';
@@ -45,8 +45,8 @@ interface ConnectedFlowProps {
 }
 
 const CANVAS_MAX_WIDTH = 1160;
-const STAGE_START_Y = 108;
-const STAGE_GAP = 146;
+const STAGE_START_Y = 200;
+const STAGE_GAP = 310;
 const NODE_OFFSET_X = 98;
 const NODE_WIDTH = 132;
 const SIDE_OFFSET_X = 304;
@@ -57,18 +57,15 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function buildStageLinkPath(source: StageAnchor, target: StageAnchor, spineX: number, nodeWidth: number): string {
-  const startX = source.x < spineX ? source.x + nodeWidth / 2 - 8 : source.x - nodeWidth / 2 + 8;
-  const endX = target.x < spineX ? target.x + nodeWidth / 2 - 8 : target.x - nodeWidth / 2 + 8;
-
-  return `M ${startX} ${source.y} C ${spineX} ${source.y}, ${spineX} ${target.y}, ${endX} ${target.y}`;
+/** Build a vertical spine-segment between consecutive stages (no crossing). */
+function buildSpineSegmentPath(sourceY: number, targetY: number, spineX: number): string {
+  return `M ${spineX} ${sourceY} L ${spineX} ${targetY}`;
 }
 
-function buildOutcomePath(source: StageAnchor, target: OutcomeAnchor, spineX: number, nodeWidth: number): string {
-  const startX = source.x < spineX ? source.x + nodeWidth / 2 - 8 : source.x - nodeWidth / 2 + 8;
-  const midY = source.y + (target.y - source.y) * 0.52;
+function buildOutcomePath(spineBottomY: number, target: OutcomeAnchor, spineX: number): string {
+  const midY = spineBottomY + (target.y - spineBottomY) * 0.45;
 
-  return `M ${startX} ${source.y} C ${spineX} ${midY}, ${target.x} ${midY}, ${target.x} ${target.y}`;
+  return `M ${spineX} ${spineBottomY} C ${spineX} ${midY}, ${target.x} ${midY}, ${target.x} ${target.y}`;
 }
 
 function branchStroke(
@@ -156,7 +153,7 @@ export function ConnectedFlow({
   const nodeOffsetX = phoneLayout ? 0 : compactLayout ? Math.max(62, canvasWidth * 0.13) : NODE_OFFSET_X;
   const nodeWidth = compactLayout ? 118 : NODE_WIDTH;
   const sideOffsetX = phoneLayout ? 0 : compactLayout ? Math.max(168, canvasWidth * 0.24) : SIDE_OFFSET_X;
-  const stageGap = phoneLayout ? 214 : compactLayout ? 164 : STAGE_GAP;
+  const stageGap = phoneLayout ? 280 : compactLayout ? 290 : STAGE_GAP;
   const stageStartY = phoneLayout ? 132 : STAGE_START_Y;
   const outcomeGapX = phoneLayout
     ? Math.max(72, Math.min(124, canvasWidth / (Math.max(outcomes.length, 1) + 0.2)))
@@ -177,21 +174,19 @@ export function ConnectedFlow({
 
   const stageLayouts = stageAnchors.map((anchor, index) => {
     const node = stageNodes[index];
-    const miniOnLeft = index % 2 === 0;
+    const panelOnLeft = index % 2 === 0;
 
     return {
       anchor,
       node,
-      miniX: phoneLayout ? spineX : spineX + (miniOnLeft ? -sideOffsetX : sideOffsetX),
-      calloutX: phoneLayout ? spineX : spineX + (miniOnLeft ? sideOffsetX : -sideOffsetX),
-      miniY: phoneLayout ? anchor.y - 68 : anchor.y,
-      calloutY: phoneLayout ? anchor.y + 76 : anchor.y,
-      stackedStop: phoneLayout,
+      panelX: phoneLayout ? spineX : spineX + (panelOnLeft ? -sideOffsetX : sideOffsetX),
+      panelY: anchor.y,
+      stacked: phoneLayout,
     };
   });
 
   const lastStage = stageAnchors[stageAnchors.length - 1];
-  const timelineBottomY = lastStage.y + 86;
+  const timelineBottomY = lastStage.y + 200;
   const outcomeY = timelineBottomY + outcomeOffsetY;
 
   const outcomeStartX = spineX - ((outcomes.length - 1) * outcomeGapX) / 2;
@@ -210,26 +205,14 @@ export function ConnectedFlow({
     : timelineBottomY + 140;
   const allOutcomesZero = outcomeAnchors.length > 0 && outcomeAnchors.every((outcome) => outcome.count === 0);
 
-  const stageByStatus = new Map(stageAnchors.map((anchor) => [anchor.status, anchor]));
-  const stageNodeByStatus = new Map(stageNodes.map((node) => [node.status, node]));
+  /** Spine segments between consecutive stages, thickness ∝ outflow of source node. */
+  const spineSegments = stageAnchors.slice(0, -1).map((source, index) => {
+    const target = stageAnchors[index + 1];
+    const sourceNode = stageNodes[index];
+    return { source, target, outflow: sourceNode.outflowCount };
+  });
 
-  const stageLinks = flow.links
-    .map((link) => ({
-      link,
-      source: stageByStatus.get(link.sourceStatus),
-      target: stageByStatus.get(link.targetStatus),
-      sourceNode: stageNodeByStatus.get(link.sourceStatus),
-    }))
-    .filter(
-      (entry): entry is {
-        link: OpportunityFlowDto['links'][number];
-        source: StageAnchor;
-        target: StageAnchor;
-        sourceNode: OpportunityFlowNodeDto;
-      } => Boolean(entry.source && entry.target && entry.sourceNode),
-    );
-
-  const maxLinkCount = Math.max(1, ...stageLinks.map((entry) => entry.link.count));
+  const maxSegmentFlow = Math.max(1, ...spineSegments.map((seg) => seg.outflow));
 
   function moveStageFocus(targetIndex: number) {
     if (stageNodes.length === 0) {
@@ -263,51 +246,65 @@ export function ConnectedFlow({
   }
 
   return (
-    <div ref={containerRef} className="canvas-chapter-overlay relative max-h-[780px] overflow-y-auto overflow-x-hidden">
+    <div ref={containerRef} className="canvas-chapter-overlay relative overflow-x-hidden">
       <div className="relative mx-auto w-full" style={{ width: canvasWidth, height: canvasHeight }}>
         <svg
           aria-hidden="true"
           className="absolute inset-0 h-full w-full"
           viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
         >
+          {/* Spine — vertical trunk from top to outcome branch point */}
           <line
             x1={spineX}
             y1={stageStartY - 72}
             x2={spineX}
-            y2={timelineBottomY}
-            stroke="color-mix(in srgb, var(--text-muted) 55%, transparent)"
-            strokeWidth={3}
+            y2={outcomeAnchors.length > 0 ? outcomeY : timelineBottomY}
+            stroke="color-mix(in srgb, var(--text-muted) 30%, transparent)"
+            strokeWidth={3.5}
             strokeLinecap="round"
           />
 
           {stageAnchors.map((anchor) => (
             <g key={`spine-anchor-${anchor.status}`}>
+              {/* Horizontal connector stub — spine to node */}
               <line
                 x1={spineX}
                 y1={anchor.y}
                 x2={anchor.x}
                 y2={anchor.y}
-                stroke="color-mix(in srgb, var(--text-muted) 45%, transparent)"
-                strokeWidth={2}
+                stroke="color-mix(in srgb, var(--text-muted) 25%, transparent)"
+                strokeWidth={2.5}
                 strokeLinecap="round"
               />
+              {/* Glow ring behind anchor circle (pipeline5 editorial style) */}
               <circle
                 cx={spineX}
                 cy={anchor.y}
-                r={3.5}
-                fill="color-mix(in srgb, var(--accent-secondary) 60%, transparent)"
+                r={8}
+                fill="none"
+                stroke="color-mix(in srgb, var(--accent-primary) 18%, transparent)"
+                strokeWidth={2}
+              />
+              {/* Anchor circle dot */}
+              <circle
+                cx={spineX}
+                cy={anchor.y}
+                r={4}
+                fill="var(--accent-primary)"
+                fillOpacity={0.75}
               />
             </g>
           ))}
 
-          {stageLinks.map(({ link, source, target, sourceNode }) => (
+          {/* Flow-volume spine segments — thickness proportional to outflow */}
+          {spineSegments.map(({ source, target, outflow }) => (
             <path
-              key={`${link.sourceStatus}-${link.targetStatus}`}
-              d={buildStageLinkPath(source, target, spineX, nodeWidth)}
+              key={`spine-seg-${source.status}-${target.status}`}
+              d={buildSpineSegmentPath(source.y, target.y, spineX)}
               fill="none"
-              stroke={opportunityHex(sourceNode.colorGroup)}
-              strokeOpacity={chapter === 'outcomes' ? 0.22 : 0.58}
-              strokeWidth={2 + (link.count / maxLinkCount) * 8}
+              stroke="color-mix(in srgb, var(--accent-secondary) 28%, transparent)"
+              strokeOpacity={chapter === 'outcomes' ? 0.14 : 0.4}
+              strokeWidth={3 + (outflow / maxSegmentFlow) * 7}
               strokeLinecap="round"
             />
           ))}
@@ -317,12 +314,12 @@ export function ConnectedFlow({
             return (
               <path
                 key={`branch-${outcomeAnchor.key}`}
-                d={buildOutcomePath(lastStage, outcomeAnchor, spineX, nodeWidth)}
+                d={buildOutcomePath(timelineBottomY, outcomeAnchor, spineX)}
                 fill="none"
                 stroke={stroke.stroke}
                 strokeDasharray={stroke.strokeDasharray}
                 strokeOpacity={chapter === 'outcomes' ? (allOutcomesZero ? 0.56 : 1) : 0.74}
-                strokeWidth={chapter === 'outcomes' ? 3 : 2.5}
+                strokeWidth={chapter === 'outcomes' ? 4 : 3.5}
                 strokeLinecap="round"
                 style={chapter === 'outcomes' && !allOutcomesZero
                   ? { filter: `drop-shadow(0 0 8px ${stroke.stroke})` }
@@ -332,7 +329,7 @@ export function ConnectedFlow({
           })}
         </svg>
 
-        {stageLayouts.map(({ anchor, node, miniX, calloutX, miniY, calloutY, stackedStop }, index) => {
+        {stageLayouts.map(({ anchor, node, panelX, panelY, stacked: stackedStop }, index) => {
           const faded = node.currentCount === 0;
           const emphasisClass = chapter === 'friction'
             ? `flow-emphasis-${node.emphasis ?? 'normal'}`
@@ -370,11 +367,8 @@ export function ConnectedFlow({
                   chapter={chapter}
                   outcomes={outcomes}
                   agingStatus={aging?.statuses.find((status) => status.status === node.status)}
-                  miniX={miniX}
-                  calloutX={calloutX}
-                  y={anchor.y}
-                  miniY={miniY}
-                  calloutY={calloutY}
+                  panelX={panelX}
+                  panelY={panelY}
                   compact={compactLayout}
                   stacked={stackedStop}
                 />
