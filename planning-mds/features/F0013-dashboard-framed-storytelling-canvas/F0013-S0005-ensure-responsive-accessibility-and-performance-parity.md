@@ -9,132 +9,147 @@
 ## User Story
 
 **As a** dashboard user on any device or using assistive technology
-**I want** the framed storytelling canvas to adapt gracefully across desktop, tablet, and phone, remain fully keyboard and screen-reader accessible, and meet performance budgets
-**So that** the dashboard experience is consistent and inclusive regardless of device or ability
+**I want** the framed storytelling canvas to adapt gracefully across desktop, tablet, and phone, remain keyboard and screen-reader accessible, and avoid unnecessary request / render pressure
+**So that** the dashboard experience remains usable and legible regardless of screen size, input mode, or motion preference
 
 ## Context & Background
 
-The framed storytelling canvas introduces new visualization components (timeline bar, radial popovers, three-layer visual hierarchy) that need responsive adaptation, accessibility compliance, and performance validation. The timeline bar must adapt to narrower viewports, radial popovers must work with touch, and glass-card panels must maintain their depth across themes and screen sizes.
+By S0005, the implemented F0013 experience is no longer the old flat F0012 canvas or a horizontal timeline. The shipping shape is:
+
+- framed dashboard shell with bordered inset container
+- elevated operational panels (`Nudges`, `Activity`, `My Tasks`)
+- flat story canvas with a vertical SVG spine
+- same-side ghost-bordered story panels per stop
+- stage / outcome drilldown details rendered through the shared `Popover` dialog path
+- synchronized base story queries with lazy per-stage breakdown loading
+
+This story validates that behavior across breakpoints and assistive interactions without reintroducing stale assumptions from earlier planning drafts.
 
 ## Acceptance Criteria
 
 **Happy Path:**
-- **Given** the framed storytelling canvas is fully implemented (S0001–S0004)
-- **When** the user accesses the dashboard from any device or with assistive technology
-- **Then** the canvas adapts to viewport width, maintains keyboard/screen-reader accessibility, and meets performance budgets as specified below
+- **Given** F0013-S0001 through F0013-S0004 are implemented
+- **When** the user opens the dashboard on desktop, tablet, or phone
+- **Then** the framed canvas remains readable, keyboard-accessible, and performant enough to support the story flow without eager-loading every alternate visualization
 
 **Alternative Flows / Edge Cases:**
-- Very slow network (>3s API response) → Skeleton placeholders render for timeline, radial areas, and glass-card panels; no layout shift when data arrives
-- User resizes browser from desktop to phone width → Layout transitions smoothly without jarring reflows
-- All stages have count = 0 → Timeline renders as empty nodes with "No activity in period" message; no radial popovers shown
-- `prefers-reduced-motion: reduce` → Glow pulse animations disabled; static soft shadow retained for depth hierarchy
-- Screen reader + keyboard-only user → Full navigation flow works: Tab → chapter controls → stage nodes → popover → dismiss → next node
+- Very slow network or delayed API response -> skeleton / empty states render without layout collapse
+- User resizes from desktop to phone width -> timeline remains vertical but shifts from alternating side panels to stacked phone layout
+- All stages have count `0` -> stage nodes remain visible for continuity and the canvas shows `No activity in period`
+- No terminal outcomes in period -> outcome area shows `No exits in period` / `No outcomes in period`
+- `prefers-reduced-motion: reduce` -> shell / panel / mini-visual transitions are disabled
+- Keyboard-only user -> chapter tabs, stage nodes, dialogs, and dismiss flow remain operable
 
 ### Responsive Layout
 
 **Desktop (1280px+):**
-- [ ] Timeline bar renders horizontally with all stage nodes visible without scrolling
-- [ ] Radial popovers render above/below stage nodes with full detail
-- [ ] Nudge cards, Activity, and Tasks panels render as glass-card panels with depth
-- [ ] Collapsible left nav and right Neuron rail work with adaptive canvas width
+- [ ] Framed inset shell remains between the left nav and right rail with a visible outer gap
+- [ ] Vertical timeline renders with alternating left/right story panels
+- [ ] Stage drilldowns render as anchored popovers
+- [ ] Activity and My Tasks remain elevated panels below the story canvas
 
-**Tablet Landscape (1024px):**
-- [ ] Timeline bar renders horizontally, nodes may be more compact
-- [ ] Radial popovers remain functional on tap
-- [ ] Rails default to collapsed; canvas takes full width
+**Tablet Landscape / Portrait (640px-1023px):**
+- [ ] Vertical timeline remains the primary layout
+- [ ] Stage spacing and panel widths compact without overlapping the outcome branch area
+- [ ] Stage / outcome drilldowns render as centered overlay dialogs
+- [ ] Chapter pills remain directly accessible; period controls remain visible
 
-**Tablet Portrait (768px):**
-- [ ] Timeline bar may switch to a compact/condensed mode (fewer label characters, tighter spacing)
-- [ ] Radial popovers render as modal overlays instead of inline popovers (to avoid clipping)
-- [ ] Glass-card panels stack vertically with maintained depth
-
-**Phone (375px):**
-- [ ] Timeline bar switches to a vertical/stacked layout (stages top-to-bottom)
-- [ ] Radial popovers render as bottom-sheet overlays on tap
-- [ ] Glass-card panels stack vertically, full-width
-- [ ] Chapter controls render as a horizontally scrollable pill group
-- [ ] Period selector renders as a compact dropdown
+**Phone (<640px):**
+- [ ] Period selector collapses to a compact `<select>`
+- [ ] Chapter controls remain available as a horizontally scrollable pill group
+- [ ] Stage nodes stay centered on the spine and story panels stack with the node instead of alternating sides
+- [ ] Stage / outcome drilldowns render as bottom-sheet style dialogs
+- [ ] Operational panels stack vertically at full width
 
 ### Accessibility
 
-- [ ] Timeline stage nodes are keyboard-navigable (Tab to enter timeline, Arrow keys between nodes, Enter/Space to open popover)
-- [ ] Radial chart popovers have `role="dialog"` with `aria-label` describing stage and composition
-- [ ] Popover dismisses on Escape key
-- [ ] Chapter controls have `role="tablist"` with `aria-selected` on active chapter
-- [ ] Glass-card panels maintain WCAG AA text contrast in both dark and light themes
-- [ ] Glow effects respect `prefers-reduced-motion` (disable glow animations, keep static visual indicators)
-- [ ] Focus ring is visible on all interactive elements in both themes
-- [ ] Screen reader announces: stage label, count, and composition summary when popover opens
+- [ ] Chapter controls expose `role="tablist"` and `aria-selected` on the active chapter
+- [ ] Stage nodes are keyboard-navigable with Arrow keys, `Home`, and `End`
+- [ ] Stage and outcome dialogs expose `role="dialog"` with descriptive `aria-label` text
+- [ ] Dialogs dismiss on `Escape`
+- [ ] Focus returns to the invoking trigger after dialog close
+- [ ] Focus-visible treatment remains clear in dark and light themes
+- [ ] KPI labels and values meet intended contrast requirements in both themes
+- [ ] `prefers-reduced-motion: reduce` disables relevant transitions / animations
 
-### Performance
+### Performance / Data-Loading Expectations
 
-- [ ] Dashboard page interactive (LCP) < 2.5s on desktop
-- [ ] Timeline bar SVG render < 200ms after data arrival
-- [ ] Radial popover appears < 100ms after hover/tap
-- [ ] Chapter switch visual update < 150ms
-- [ ] No lazy chapter data loads — all chapter data eagerly loaded at mount
-- [ ] Initial page fires no more than 6 parallel API requests (nudges + KPIs + flow + outcomes + tasks + activity)
-- [ ] Total JavaScript bundle for dashboard route < 150kB gzipped
-- [ ] No layout shift from data loading (skeleton placeholders for initial load)
+- [ ] Story canvas base queries stay synchronized by `periodDays`
+- [ ] Per-stage breakdown queries are lazy-loaded on first activation instead of all fetching at mount
+- [ ] Story canvas does not eagerly preload every alternate visualization dimension
+- [ ] Timeline SVG and story panels render without overflow or clipping at supported widths
+- [ ] Dialog open / close interaction remains responsive on stage and outcome triggers
+- [ ] Loading, empty, and retry states are recoverable without breaking the surrounding dashboard shell
 
 ### Collapsible Rails
 
-- [ ] 4 rail states work correctly: both expanded, left collapsed, right collapsed, both collapsed
-- [ ] Canvas width adapts smoothly (CSS custom properties `--sidebar-width`, `--chat-panel-width`)
-- [ ] Timeline bar nodes scale proportionally with available width (no overflow/scroll)
-- [ ] Glass-card panels maintain their depth in all rail states
+- [ ] Canvas width adapts to left-nav and right-rail collapse state changes
+- [ ] Inset shell border / radius / shadow remain intact across rail states
+- [ ] Story timeline recomputes available width without horizontal overflow
+- [ ] Operational panels preserve their elevated treatment in all rail states
 
 ## Data Requirements
 
-No new data requirements. This story validates existing data flows across devices and interaction modes.
+No new API contracts are introduced by S0005. Validation covers the implemented F0013 data flows:
+
+- synchronized base queries for KPIs, dashboard opportunities, flow, outcomes, and aging
+- lazy breakdown queries for stage alternates
+- supporting dashboard queries for nudges, activity, and tasks
 
 ## Role-Based Visibility
 
-All roles see the same responsive/accessible behavior.
+All internal dashboard roles see the same responsive / accessibility behavior. Data remains subject to the existing ABAC-scoped dashboard endpoints.
 
 ## Non-Functional Expectations
 
-See Acceptance Criteria above — this story IS the non-functional validation story.
+- Readability first: preserve the three-layer hierarchy at every breakpoint
+- Responsiveness first: adapt the layout without changing the core story model
+- Efficiency first: load the base story state eagerly, but keep breakdown-backed alternates on demand
 
 ## Dependencies
 
 **Depends On:**
-- F0013-S0001 — Three-layer visual hierarchy must be established
-- F0013-S0002 — Timeline bar must be built
-- F0013-S0003 — Radial popovers must be built
-- F0013-S0004 — Chapter controls must be connected
+- F0013-S0001 — framed hierarchy / inset shell
+- F0013-S0002 — vertical timeline / terminal branches
+- F0013-S0003 — inline story panels and alternates
+- F0013-S0004 — Flow / Friction / Outcomes chapter model
 
 **Related Stories:**
-- All prior F0013 stories — this is the cross-cutting validation
+- All prior F0013 stories — this is the cross-cutting validation pass
 
 ## Out of Scope
 
-- Native mobile app (this is responsive web only)
-- Offline support
-- PWA installation
+- Native mobile app behavior
+- Offline/PWA concerns
+- New dashboard data contracts beyond the existing F0013 implementation
 
 ## UI/UX Notes
 
-- Phone timeline: vertical layout mirrors the horizontal timeline rotated 90 degrees. Stage nodes stack top-to-bottom. Flow ribbons render as vertical connectors.
-- Radial popovers on phone: render as a bottom-sheet with the radial chart centered and detail fields below it.
-- `prefers-reduced-motion`: disable glow pulse/transition animations. Keep static glow (always-on soft shadow) as a fallback so the depth hierarchy is still visible.
+- The vertical timeline remains vertical at every breakpoint; only spacing and panel placement change.
+- Desktop / tablet use alternating same-side story panels; phone uses stacked panels centered on the spine.
+- Inline story panels are always visible; drilldown details use dialogs/popovers layered on top.
+- `Popover.tsx` currently handles the responsive drilldown container shift:
+  - desktop anchored popover
+  - tablet centered overlay
+  - phone bottom sheet
 
 ## Questions & Assumptions
 
 **Open Questions:**
-- [ ] Should the phone layout hide chapter controls behind a "More" menu, or keep all 3 visible in a scrollable pill group? (Assumption: scrollable pill group — 3 pills fit comfortably)
+- [ ] Should StoryCanvas expose an explicit reduced-motion visual test once the environment/tooling blockers are cleared?
 
 **Assumptions:**
-- SVG timeline bar scales naturally with viewport width via `viewBox` — no JavaScript resize logic needed
-- Radial popovers can reuse the existing popover/modal component infrastructure (shadcn Popover / Dialog)
+- `ConnectedFlow` continues to use `ResizeObserver` to recompute width buckets for desktop / compact / phone layouts
+- StoryCanvas remains submission-led for the main flow while using synchronized aggregate data to enrich stage narratives
+- Breakdown views stay cached after first load through React Query
 
 ## Definition of Done
 
-- [ ] Acceptance criteria met across all 4 breakpoints
-- [ ] Accessibility checklist passed
-- [ ] Performance budgets met
+- [ ] Acceptance criteria verified across desktop, tablet, and phone
+- [ ] Accessibility checks verified for chapter tabs, stage navigation, dialogs, and reduced motion
+- [ ] Lazy breakdown behavior confirmed
 - [ ] Rail collapse states verified
-- [ ] Both dark and light themes verified
-- [ ] Tests pass (component + E2E across breakpoints)
+- [ ] Both dark and light themes reviewed
+- [ ] Validation evidence recorded
 - [ ] Story filename matches Story ID prefix
 - [ ] Story index regenerated

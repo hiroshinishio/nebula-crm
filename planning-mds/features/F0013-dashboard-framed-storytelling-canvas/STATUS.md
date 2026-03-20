@@ -1,7 +1,7 @@
 # F0013 — Dashboard Framed Storytelling Canvas — Status
 
 **Overall Status:** Done (Decision A override; active folder retained)
-**Last Updated:** 2026-03-17
+**Last Updated:** 2026-03-19
 **Corrects:** F0012 (archived), F0011 (abandoned), F0010 (abandoned)
 
 ## Story Checklist
@@ -78,16 +78,64 @@
 - [ ] Responsive layouts verified (desktop, tablet landscape, tablet portrait, phone)
 - [x] F0013 opportunities component/integration tests passing (`OpportunitiesSummary.test.tsx`)
 - [ ] Full frontend suite parity vs Session 0 baseline (blocked: pre-existing auth test failures)
-- [x] Frontend dependency integrity restored after `pnpm` `EACCES` rename failures
+- [ ] Frontend dependency/toolchain stable for repeatable gate reruns (blocked on 2026-03-19: `eslint`, `stylelint`, `tsc`, `vitest`, and `playwright` unavailable from `experience`)
 
 ## Cross-Cutting
 
-- [ ] Screen specification created (`planning-mds/screens/S-DASH-002-framed-storytelling-canvas.md`)
+- [x] Screen specification created (`planning-mds/screens/S-DASH-002-framed-storytelling-canvas.md`)
 - [ ] Feature test plan executed
-- [ ] Deployability check evidence recorded
+- [x] Deployability check evidence recorded (`planning-mds/operations/evidence/f0013/devops-2026-03-19.md`)
 - [ ] No TODOs remain in implementation code
 
-## Product Manager Closeout (Session 3)
+## Doc/Spec Remediation (Session 5)
+
+- [x] Created `planning-mds/screens/S-DASH-002-framed-storytelling-canvas.md`
+- [x] Updated `GETTING-STARTED.md` to reflect the current route, vertical timeline, responsive drilldown behavior, synchronized story queries, and lazy breakdown loading
+- [x] Updated `F0013-S0005` to remove stale horizontal-timeline / eager-load assumptions and align responsive expectations with the implemented UI
+- [ ] PM/QE/Code Review re-review still required after doc/spec remediation
+
+## Gate Rerun (Session 6, 2026-03-19)
+
+- [x] Recorded refreshed QE evidence (`planning-mds/operations/evidence/f0013/qe-2026-03-19.md`)
+- [x] Recorded refreshed Code Review evidence (`planning-mds/operations/evidence/f0013/code-review-2026-03-19.md`)
+- [x] Recorded refreshed Security evidence (`planning-mds/operations/evidence/f0013/security-2026-03-19.md`)
+- [x] Recorded first DevOps evidence (`planning-mds/operations/evidence/f0013/devops-2026-03-19.md`)
+
+**Gate Rerun Summary (2026-03-19):**
+- QE remains blocked / non-pass:
+  - Backend targeted regression is blocked by `MSB3021` access-denied errors under `engine/src/Nebula.Api/bin/Debug/net10.0/`.
+  - Frontend host validation is blocked by missing `experience` tool binaries (`eslint`, `stylelint`, `tsc`, `vitest`, `playwright`).
+  - Approved host/container install retries progressed but did not complete cleanly within the session window.
+- Code Review remains `REJECTED`:
+  - Light-theme KPI contrast is still not proven fixed.
+  - Timeline/story decomposition remains below the assembly-plan target.
+  - Residual direct `nebula-violet` utility usage and hardcoded proxy target remain.
+- Security remains `CONDITIONAL PASS`:
+  - No active authz/data-exposure flaw was surfaced in reviewed F0013 paths.
+  - Scanner coverage is still incomplete (`gitleaks`, `semgrep`, `DAST_TARGET_URL`, dependency scan network reachability).
+  - Targeted authz regression rerun is blocked by the same backend `MSB3021` output lock.
+- DevOps remains `FAIL`:
+  - Compose runtime health is green, and migration/seed artifacts are present.
+  - Clean frontend/backend build proof is still missing in this workspace (`tsc` unavailable; backend build blocked by `MSB3021`).
+- PM final closeout is still pending re-review after the refreshed gate evidence.
+
+## Product Manager Closeout
+
+### Session 4 (2026-03-19)
+
+- [x] Re-reviewed F0013 against the current repo state and post-gate commits (`09d23be`, `7482207`)
+- [x] Confirmed tracker state remains Decision A override only (`Done`, active folder retained)
+- [x] Recorded PM review evidence (`planning-mds/operations/evidence/f0013/pm-2026-03-19.md`)
+
+**PM Verification Summary (2026-03-19):**
+- F0013 is **not ready** for final closeout / archive:
+  - At review time, latest QE / Code Review / Security evidence still predated implementation changes on 2026-03-18 and 2026-03-19.
+  - Required story-level `PASS` coverage remains incomplete (`Quality Engineer`, `Code Reviewer`, `Security Reviewer`, `DevOps`).
+  - At review time, package drift remained unresolved (`planning-mds/screens/S-DASH-002-framed-storytelling-canvas.md` was missing; `GETTING-STARTED.md` was still out of sync with the implemented timeline/data-loading behavior).
+  - At review time, fresh verification was partially blocked by environment/tooling instability (`pnpm` install rename `EACCES`; `dotnet test` `MSB3021` access denied into `Nebula.Api/bin`).
+- PM closeout verdict: `FAIL — keep Decision A override status; do not archive`
+
+### Session 3 (2026-03-17)
 
 - [x] PRD acceptance criteria reviewed against Session 2 evidence (`qe-2026-03-17`, `security-2026-03-17`, `code-review-2026-03-17`)
 - [x] Tracker docs synchronized (`REGISTRY`, `ROADMAP`, `BLUEPRINT`, `STORY-INDEX`)
@@ -121,24 +169,30 @@
 
 | Story | Role | Reviewer | Verdict | Evidence | Date | Notes |
 |-------|------|----------|---------|----------|------|-------|
-| F0013-S0000 | Quality Engineer | Codex (QE) | FAIL | `planning-mds/operations/evidence/f0013/qe-2026-03-17.md` | 2026-03-17 | Light-theme KPI contrast check remains below threshold in visual gate. |
-| F0013-S0000 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-17.md` | 2026-03-17 | ABAC and query-layer scope controls verified; scanner toolchain coverage remains incomplete. |
-| F0013-S0000 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-17.md` | 2026-03-17 | Light-theme KPI contrast fails and residual direct palette classes remain in F0013 UI paths. |
-| F0013-S0001 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-17.md` | 2026-03-17 | Full hierarchy E2E remains blocked by container proxy/API reachability failures. |
-| F0013-S0001 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-17.md` | 2026-03-17 | Story data paths now use scoped repository queries; scanner tooling follow-up still required. |
-| F0013-S0001 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-17.md` | 2026-03-17 | Shared cross-story blockers (contrast/token compliance) still prevent approval. |
-| F0013-S0002 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-17.md` | 2026-03-17 | Timeline E2E verification is still blocked by visual test environment constraints. |
-| F0013-S0002 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-17.md` | 2026-03-17 | Timeline aggregates inherit validated role-scope filtering and authorization checks. |
-| F0013-S0002 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-17.md` | 2026-03-17 | Timeline/story implementation remains monolithic vs planned component decomposition. |
-| F0013-S0003 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-17.md` | 2026-03-17 | Mini-visual behavior has passing unit coverage; full E2E remains blocked. |
-| F0013-S0003 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-17.md` | 2026-03-17 | Breakdown leakage controls verified by integration tests; scanner coverage remains partial. |
-| F0013-S0003 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-17.md` | 2026-03-17 | Mini-visual/callout logic is still embedded in monolithic panels instead of planned extracted modules. |
-| F0013-S0004 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-17.md` | 2026-03-17 | Chapter override behavior is unit-tested; story-level E2E is still blocked. |
-| F0013-S0004 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-17.md` | 2026-03-17 | Chapter-mode endpoints consume the same secured scoped aggregate paths. |
-| F0013-S0004 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-17.md` | 2026-03-17 | Chapter controls run on unresolved decomposition and palette/token compliance gaps. |
-| F0013-S0005 | Quality Engineer | Codex (QE) | FAIL | `planning-mds/operations/evidence/f0013/qe-2026-03-17.md` | 2026-03-17 | Responsive/a11y/perf parity remains incomplete while visual E2E is blocked and contrast fails. |
-| F0013-S0005 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-17.md` | 2026-03-17 | Security parity met for F0013 controls; CI scanner/tooling completion is still pending. |
-| F0013-S0005 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-17.md` | 2026-03-17 | Contrast requirement and visual gate determinism/portability issues remain unresolved. |
+| F0013-S0000 | Quality Engineer | Codex (QE) | FAIL | `planning-mds/operations/evidence/f0013/qe-2026-03-19.md` | 2026-03-19 | Known light-theme KPI contrast failure remains unresolved; fresh visual rerun blocked by frontend toolchain instability. |
+| F0013-S0000 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-19.md` | 2026-03-19 | No active authz/data-exposure flaw found; scanner coverage and targeted authz rerun remain incomplete. |
+| F0013-S0000 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md` | 2026-03-19 | Contrast requirement and residual direct palette usage still block approval. |
+| F0013-S0000 | DevOps | Codex (DevOps) | FAIL | `planning-mds/operations/evidence/f0013/devops-2026-03-19.md` | 2026-03-19 | Clean deployability proof is incomplete while frontend build tooling is unavailable and backend build hits `MSB3021`. |
+| F0013-S0001 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-19.md` | 2026-03-19 | Full hierarchy E2E could not rerun with the frontend toolchain unavailable. |
+| F0013-S0001 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-19.md` | 2026-03-19 | Story data paths remain scoped; residual risk is scanner/runtime incompleteness. |
+| F0013-S0001 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md` | 2026-03-19 | Shared contrast/palette blockers still prevent approval. |
+| F0013-S0001 | DevOps | Codex (DevOps) | FAIL | `planning-mds/operations/evidence/f0013/devops-2026-03-19.md` | 2026-03-19 | Feature runtime health is green, but release-proof build/deploy evidence is still incomplete. |
+| F0013-S0002 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-19.md` | 2026-03-19 | Timeline E2E rerun remains blocked by frontend toolchain instability. |
+| F0013-S0002 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-19.md` | 2026-03-19 | Timeline aggregates still inherit scoped query controls. |
+| F0013-S0002 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md` | 2026-03-19 | Timeline/story implementation remains below the planned decomposition target. |
+| F0013-S0002 | DevOps | Codex (DevOps) | FAIL | `planning-mds/operations/evidence/f0013/devops-2026-03-19.md` | 2026-03-19 | Runtime proof exists only partially; clean frontend/backend build evidence is missing. |
+| F0013-S0003 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-19.md` | 2026-03-19 | Mini-visual behavior could not be revalidated end-to-end in this environment. |
+| F0013-S0003 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-19.md` | 2026-03-19 | Breakdown endpoints still enforce scoped data filtering; scanner coverage remains partial. |
+| F0013-S0003 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md` | 2026-03-19 | Mini-visual/callout extraction remains incomplete versus the assembly plan. |
+| F0013-S0003 | DevOps | Codex (DevOps) | FAIL | `planning-mds/operations/evidence/f0013/devops-2026-03-19.md` | 2026-03-19 | Migration/seed artifacts are present, but deployability evidence is still not cleanly green. |
+| F0013-S0004 | Quality Engineer | Codex (QE) | BLOCKED | `planning-mds/operations/evidence/f0013/qe-2026-03-19.md` | 2026-03-19 | Chapter override behavior could not be revalidated end-to-end in this environment. |
+| F0013-S0004 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-19.md` | 2026-03-19 | Chapter-mode endpoints still use the same secured scoped repository paths. |
+| F0013-S0004 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md` | 2026-03-19 | Chapter flow still sits on unresolved decomposition/palette issues. |
+| F0013-S0004 | DevOps | Codex (DevOps) | FAIL | `planning-mds/operations/evidence/f0013/devops-2026-03-19.md` | 2026-03-19 | No clean build/deploy proof could be attached for the current repo state. |
+| F0013-S0005 | Quality Engineer | Codex (QE) | FAIL | `planning-mds/operations/evidence/f0013/qe-2026-03-19.md` | 2026-03-19 | Responsive/a11y/perf parity still lacks fresh proof, and the known KPI contrast miss remains unresolved. |
+| F0013-S0005 | Security Reviewer | Codex (Security) | CONDITIONAL PASS | `planning-mds/operations/evidence/f0013/security-2026-03-19.md` | 2026-03-19 | Security parity remains intact for implemented controls; full scanner gate is still pending. |
+| F0013-S0005 | Code Reviewer | Codex (Code Review) | FAIL | `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md` | 2026-03-19 | Contrast requirement and visual gate portability issues remain unresolved. |
+| F0013-S0005 | DevOps | Codex (DevOps) | FAIL | `planning-mds/operations/evidence/f0013/devops-2026-03-19.md` | 2026-03-19 | Deployability closeout still lacks clean build proof for frontend and backend. |
 
 ## Deferred Non-Blocking Follow-ups (Optional)
 

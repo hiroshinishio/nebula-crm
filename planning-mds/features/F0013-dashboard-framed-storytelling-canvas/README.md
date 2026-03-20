@@ -31,6 +31,6 @@ Restores the framed canvas identity that F0012 stripped by over-interpreting "in
 **Total Stories:** 6
 **Completed:** 6 / 6
 
-## Closeout Note (2026-03-17)
+## Closeout Note (2026-03-19)
 
-F0013 was marked Done by decision gate Option A (keep active folder) with unresolved Session 2 gate findings documented in `STATUS.md`.
+F0013 remains `Done` only as the 2026-03-17 Decision A override (active folder retained). The doc/spec drift called out in the 2026-03-19 PM review has been remediated, and refreshed QE / Code Review / Security / DevOps evidence now exists for the current repo state. That rerun did not clear the feature for archive-ready closeout: QE is still non-pass, Code Review remains `REJECTED`, Security remains `CONDITIONAL PASS`, and DevOps is `FAIL`. PM final closeout re-review is still pending against those refreshed gate results. See `STATUS.md` plus `planning-mds/operations/evidence/f0013/{pm,qe,code-review,security,devops}-2026-03-19.md`.

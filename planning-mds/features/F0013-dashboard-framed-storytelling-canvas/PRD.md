@@ -114,6 +114,32 @@ Verification result:
 - Blocking gaps remain in QE and Code Review gates (contrast, visual test determinism/portability, decomposition completion).
 - Security gate is conditional pass with scanner/tooling follow-ups pending.
 
+### Session 4 PM Verification (2026-03-19)
+
+Verified against current repo state plus:
+- `planning-mds/operations/evidence/f0013/pm-2026-03-19.md`
+- commits `09d23be` and `7482207`
+
+Verification result:
+- Acceptance criteria are still not validated for final closeout.
+- At review time, required signoff evidence had not been refreshed after the 2026-03-18 and 2026-03-19 implementation changes.
+- At review time, the feature package remained incomplete for closeout (`S-DASH-002` missing; `GETTING-STARTED.md` stale against implementation).
+
+### Session 5 Gate Rerun (2026-03-19)
+
+Verified against refreshed gate evidence:
+- `planning-mds/operations/evidence/f0013/qe-2026-03-19.md`
+- `planning-mds/operations/evidence/f0013/code-review-2026-03-19.md`
+- `planning-mds/operations/evidence/f0013/security-2026-03-19.md`
+- `planning-mds/operations/evidence/f0013/devops-2026-03-19.md`
+
+Verification result:
+- Acceptance criteria are still not validated for final closeout.
+- QE remains blocked / non-pass because backend regression execution hits `MSB3021` and the frontend toolchain is unstable in the current workspace.
+- Code Review remains rejected on unresolved contrast, decomposition, palette-token, and proxy portability findings.
+- Security remains conditional pass because scanner coverage and targeted authz rerun are incomplete.
+- DevOps signoff is now evidenced, but it is a fail because clean frontend/backend build proof is still missing in this workspace.
+
 ### Decision Gate Outcome (2026-03-17)
 
 - Option A selected by user: mark F0013 Done and keep active folder.
@@ -125,7 +151,7 @@ Verification result:
 |--------|---------|-------------|
 | Dashboard — Framed Storytelling Canvas | Three-layer canvas: frame + operational panels + story timeline | Dismiss nudge, switch period, switch chapter, hover/click stage radial, open drilldown, scroll to activity/tasks |
 
-**Formal screen specification:** To be created as `planning-mds/screens/S-DASH-002-framed-storytelling-canvas.md`
+**Formal screen specification:** `planning-mds/screens/S-DASH-002-framed-storytelling-canvas.md`
 
 **Visual references:**
 - Original handdrawn wireframe: `planning-mds/screens/handdrawn.jpeg`
