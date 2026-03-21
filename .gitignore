@@ -28,6 +28,7 @@ obj/
 *.suo
 *.csproj.user
 engine/src/Nebula.Api/out.xml
+engine/tests/Nebula.Tests/TestResults
 
 # Node / React
 node_modules/

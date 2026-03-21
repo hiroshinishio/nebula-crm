@@ -87,6 +87,10 @@ entries:
       client_id: nebula
       client_type: public
       authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      # F0014: authentication_flow is required for Resource Owner Password Credentials (ROPC)
+      # grant. Without it, POST /application/o/token/ with grant_type=password returns
+      # invalid_grant even when user credentials are valid.
+      authentication_flow: !Find [authentik_flows.flow, [slug, default-authentication-flow]]
       invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
       redirect_uris:
         - url: "http://localhost:5173/auth/callback"
@@ -164,3 +168,54 @@ entries:
         broker_tenant_id: "broker001-tenant-001"
       groups:
         - !Find [authentik_core.group, [name, BrokerUser]]
+
+  # ──────────────────────────────────────────────────────────────────────
+  # F0014: App password tokens for ROPC (Resource Owner Password Credentials).
+  # authentik 2026.2 requires intent=app_password tokens for password grant —
+  # the user's login password alone is NOT sufficient for POST /application/o/token/.
+  # Each token.key below is the value passed as the "password" form param.
+  # ──────────────────────────────────────────────────────────────────────
+
+  - model: authentik_core.token
+    identifiers:
+      identifier: lisa-wong-app-password
+    attrs:
+      identifier: lisa-wong-app-password
+      key: "nebula-dev-token"
+      user: !Find [authentik_core.user, [username, lisa.wong]]
+      intent: app_password
+      expiring: false
+      description: "Dev ROPC token for lisa.wong (DistributionUser)"
+
+  - model: authentik_core.token
+    identifiers:
+      identifier: john-miller-app-password
+    attrs:
+      identifier: john-miller-app-password
+      key: "nebula-dev-token"
+      user: !Find [authentik_core.user, [username, john.miller]]
+      intent: app_password
+      expiring: false
+      description: "Dev ROPC token for john.miller (Underwriter)"
+
+  - model: authentik_core.token
+    identifiers:
+      identifier: broker001-app-password
+    attrs:
+      identifier: broker001-app-password
+      key: "nebula-dev-token"
+      user: !Find [authentik_core.user, [username, broker001]]
+      intent: app_password
+      expiring: false
+      description: "Dev ROPC token for broker001 (BrokerUser)"
+
+  - model: authentik_core.token
+    identifiers:
+      identifier: akadmin-app-password
+    attrs:
+      identifier: akadmin-app-password
+      key: "nebula-dev-token"
+      user: !Find [authentik_core.user, [username, akadmin]]
+      intent: app_password
+      expiring: false
+      description: "Dev ROPC token for akadmin (Admin)"

@@ -78,17 +78,19 @@ builder.Services.AddCors(options =>
 });
 
 // Rate Limiting
+var authRateLimit = builder.Configuration.GetValue("RateLimiting:AuthenticatedPermitLimit", 100);
+var anonRateLimit = builder.Configuration.GetValue("RateLimiting:AnonymousPermitLimit", 20);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddFixedWindowLimiter("authenticated", opt =>
     {
-        opt.PermitLimit = 100;
+        opt.PermitLimit = authRateLimit;
         opt.Window = TimeSpan.FromMinutes(1);
     });
     options.AddFixedWindowLimiter("anonymous", opt =>
     {
-        opt.PermitLimit = 20;
+        opt.PermitLimit = anonRateLimit;
         opt.Window = TimeSpan.FromMinutes(1);
     });
 });

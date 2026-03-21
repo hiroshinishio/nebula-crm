@@ -167,34 +167,34 @@ No requirements invented. Gaps are marked "Not yet specified" with a reference t
 
 | Role | Action | Decision | Business Scope / Constraints | Story / AC Reference |
 |------|--------|----------|------------------------------|----------------------|
-| DistributionUser | create | **ALLOW** | Self-assigned tasks only. `AssignedTo` must match authenticated subject. | F0003-S0001 ACs |
+| DistributionUser | create | **ALLOW** | Self-assigned tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0001 ACs |
 | DistributionUser | read | **ALLOW** | Own tasks only (task assigned to the authenticated user). Dashboard list excludes Done. | F0001-S0003 AC Checklist, Role Visibility |
-| DistributionUser | update | **ALLOW** | Own tasks only. `AssignedTo` must match authenticated subject. | F0003-S0002 ACs |
+| DistributionUser | update | **ALLOW** | Own tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0002 ACs |
 | DistributionUser | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
-| DistributionManager | create | **ALLOW** | Self-assigned tasks only. `AssignedTo` must match authenticated subject. | F0003-S0001 ACs |
+| DistributionManager | create | **ALLOW** | Self-assigned tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0001 ACs |
 | DistributionManager | read | **ALLOW** | Own tasks only for the dashboard widget. Viewing other users' tasks is Future (not MVP). | F0001-S0003 Role Visibility |
-| DistributionManager | update | **ALLOW** | Own tasks only. `AssignedTo` must match authenticated subject. | F0003-S0002 ACs |
+| DistributionManager | update | **ALLOW** | Own tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0002 ACs |
 | DistributionManager | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
-| Underwriter | create | **ALLOW** | Self-assigned tasks only. `AssignedTo` must match authenticated subject. | F0003-S0001 ACs |
+| Underwriter | create | **ALLOW** | Self-assigned tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0001 ACs |
 | Underwriter | read | **ALLOW** | Own tasks only. Dashboard list excludes Done. | F0001-S0003 Role Visibility |
-| Underwriter | update | **ALLOW** | Own tasks only. `AssignedTo` must match authenticated subject. | F0003-S0002 ACs |
+| Underwriter | update | **ALLOW** | Own tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0002 ACs |
 | Underwriter | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
-| RelationshipManager | create | **ALLOW** | Self-assigned tasks only. `AssignedTo` must match authenticated subject. | F0003-S0001 ACs |
+| RelationshipManager | create | **ALLOW** | Self-assigned tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0001 ACs |
 | RelationshipManager | read | **ALLOW** | Own tasks only. Dashboard list excludes Done. | F0001-S0003 Role Visibility |
-| RelationshipManager | update | **ALLOW** | Own tasks only. `AssignedTo` must match authenticated subject. | F0003-S0002 ACs |
+| RelationshipManager | update | **ALLOW** | Own tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0002 ACs |
 | RelationshipManager | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
-| ProgramManager | create | **ALLOW** | Self-assigned tasks only. `AssignedTo` must match authenticated subject. | F0003-S0001 ACs |
+| ProgramManager | create | **ALLOW** | Self-assigned tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0001 ACs |
 | ProgramManager | read | **ALLOW** | Own tasks only. Dashboard list excludes Done. | F0001-S0003 Role Visibility |
-| ProgramManager | update | **ALLOW** | Own tasks only. `AssignedTo` must match authenticated subject. | F0003-S0002 ACs |
+| ProgramManager | update | **ALLOW** | Own tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0002 ACs |
 | ProgramManager | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
-| Admin | create | **ALLOW** | Self-assigned tasks only in MVP. `AssignedTo` must match authenticated subject. | F0003-S0001 ACs |
+| Admin | create | **ALLOW** | Self-assigned tasks only in MVP. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0001 ACs |
 | Admin | read | **ALLOW** | Own tasks only for the dashboard widget. Viewing other users' tasks is explicitly Future (not MVP). | F0001-S0003 Role Visibility |
-| Admin | update | **ALLOW** | Own tasks only. `AssignedTo` must match authenticated subject. | F0003-S0002 ACs |
+| Admin | update | **ALLOW** | Own tasks only. `AssignedToUserId` must match authenticated user's UserId. | F0003-S0002 ACs |
 | Admin | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
 | ExternalUser | all | **DENY** | Task data is InternalOnly. | F0001-S0003 Data Visibility |
 
 **Constraints applying to all ALLOW decisions on Task:**
-- A user may only create/update/delete tasks where `AssignedTo` equals their authenticated subject. No cross-user assignment in MVP. (F0003-S0001, F0003-S0002, F0003-S0003)
+- A user may only create/update/delete tasks where `AssignedToUserId` equals their authenticated user's UserId. No cross-user assignment in MVP. (F0003-S0001, F0003-S0002, F0003-S0003)
 - A user may only read tasks where they are the assigned user. No cross-user task visibility in MVP. (F0001-S0003 AC Checklist, Non-Functional)
 - Dashboard list excludes Done tasks; `GET /tasks/{taskId}` may return any status for own tasks. (F0001-S0003 Validation Rules)
 - If a linked entity on a task has been soft-deleted, the task is still displayed but the entity name must show as "[Deleted]". (F0001-S0003 edge cases)

@@ -1,4 +1,4 @@
-import type { OutcomeAnchor } from '../ConnectedFlow';
+import type { OutcomeAnchor } from '../storyTimelineTypes';
 
 interface OutcomesOverlayProps {
   outcomeAnchors: OutcomeAnchor[];

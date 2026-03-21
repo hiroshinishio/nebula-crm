@@ -18,19 +18,19 @@ This document is the working prioritization view for feature sequencing.
 
 | Feature | Phase | Why Now |
 |---------|-------|---------|
-| [F0003 — Task Center + Reminders (API-only MVP)](./F0003-task-center/README.md) | MVP | Backend task lifecycle completion strengthens dashboard/task integrity. |
+| [F0004 — Task Center UI + Manager Assignment](./F0004-task-center-ui-and-assignment/README.md) | Phase 1 | UI rollout follows now that F0003 task API scope is implemented and stabilized. |
+| [F0014 — DevOps Smoke Test Automation](./F0014-devops-smoke-test-automation/README.md) | Infrastructure | Reduces DevOps verification friction — blueprint fixes and automation scripts. |
 
 ## Next
 
 | Feature | Phase | Why Next |
 |---------|-------|----------|
-| [F0004 — Task Center UI + Manager Assignment](./F0004-task-center-ui-and-assignment/README.md) | Phase 1 | UI rollout can follow once F0003 task API scope is implemented and stabilized. |
+| F0006 — Submission Intake Workflow | MVP (planned) | Core workflow foundation needed before renewal and broker insights. |
 
 ## Later
 
 | Feature | Phase | Why Later |
 |---------|-------|-----------|
-| F0006 — Submission Intake Workflow | MVP (planned) | Depends on broader workflow hardening and prioritization against authentication and task completion work. |
 | F0007 — Renewal Pipeline | MVP (planned) | Follows submission workflow foundation and shared transition patterns. |
 | F0008 — Broker Insights | MVP (planned) | Higher-value once core workflow and auth foundations are stable. |
 
@@ -45,7 +45,8 @@ This document is the working prioritization view for feature sequencing.
 
 | Feature | Phase | Completion State |
 |---------|-------|------------------|
-| [F0013 — Dashboard Framed Storytelling Canvas](./F0013-dashboard-framed-storytelling-canvas/README.md) | MVP | Done (active folder retained via Decision A override; unresolved gate findings documented) |
+| [F0003 — Task Center + Reminders (API-only MVP)](./archive/F0003-task-center/README.md) | MVP | Done and archived |
+| [F0013 — Dashboard Framed Storytelling Canvas](./archive/F0013-dashboard-framed-storytelling-canvas/README.md) | MVP | Done and archived |
 | [F0001 — Dashboard](./archive/F0001-dashboard/README.md) | MVP | Done and archived |
 | [F0002 — Broker & MGA Relationship Management](./archive/F0002-broker-relationship-management/README.md) | MVP | Done and archived (post-MVP hardening follow-ups tracked) |
 | [F0005 — IdP Migration: Keycloak → authentik](./archive/F0005-idp-migration/README.md) | Foundation | Done and archived |

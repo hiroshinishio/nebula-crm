@@ -1,6 +1,6 @@
 # Feature Registry
 
-**Next Available Feature Number:** F0014
+**Next Available Feature Number:** F0015
 
 **Planning Views:**
 - Roadmap sequencing (`Now / Next / Later`): `planning-mds/features/ROADMAP.md`
@@ -11,9 +11,8 @@
 
 | Feature ID | Name | Status | Phase | Folder |
 |------------|------|--------|-------|--------|
-| F0003 | Task Center + Reminders (API-only MVP) | Draft | MVP | `F0003-task-center/` |
 | F0004 | Task Center UI + Manager Assignment | Draft | Phase 1 | `F0004-task-center-ui-and-assignment/` |
-| F0013 | Dashboard Framed Storytelling Canvas | Done (Active folder retained; Decision A override) | MVP | `F0013-dashboard-framed-storytelling-canvas/` |
+| F0014 | DevOps Smoke Test Automation | In Progress | Infrastructure | `F0014-devops-smoke-test-automation/` |
 
 ## Abandoned Features
 
@@ -39,6 +38,8 @@
 | F0005 | IdP Migration: Keycloak → authentik | 2026-03-07 | `archive/F0005-idp-migration/` |
 | F0009 | Authentication + Role-Based Login | 2026-03-07 | `archive/F0009-authentication-and-role-based-login/` |
 | F0012 | Dashboard Storytelling Infographic Canvas (Flat Canvas + Collapsible Rails) | 2026-03-14 | `archive/F0012-dashboard-storytelling-infographic-canvas/` |
+| F0003 | Task Center + Reminders (API-only MVP) | 2026-03-20 | `archive/F0003-task-center/` |
+| F0013 | Dashboard Framed Storytelling Canvas | 2026-03-19 | `archive/F0013-dashboard-framed-storytelling-canvas/` |
 
 ## Numbering Rules
 

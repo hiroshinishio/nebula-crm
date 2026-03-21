@@ -1,8 +1,8 @@
 import { Popover } from '@/components/ui/Popover';
-import { OpportunityOutcomePopoverContent } from './OpportunityOutcomePopover';
-import type { OutcomeAnchor } from './ConnectedFlow';
-import type { StoryChapter } from './storyTypes';
 import { cn } from '@/lib/utils';
+import { OpportunityOutcomePopoverContent } from './OpportunityOutcomePopover';
+import type { StoryChapter } from './storyTypes';
+import type { OutcomeAnchor } from './storyTimelineTypes';
 
 interface TerminalOutcomesRailProps {
   anchors: OutcomeAnchor[];
@@ -41,8 +41,8 @@ export function TerminalOutcomesRail({
               <button
                 type="button"
                 className={cn(
-                  'w-[156px] rounded-xl bg-surface-main/65 px-3 py-2 text-left shadow-sm transition-colors hover:bg-surface-main/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nebula-violet/50',
-                  chapter === 'outcomes' && !allOutcomesZero && 'ring-1 ring-nebula-violet/45 shadow-brand-active',
+                  'story-focus-ring w-[156px] rounded-xl bg-surface-main/65 px-3 py-2 text-left shadow-sm transition-colors hover:bg-surface-main/80',
+                  chapter === 'outcomes' && !allOutcomesZero && 'story-active-ring',
                   chapter === 'outcomes' && allOutcomesZero && 'opacity-65',
                 )}
                 aria-label={`${anchor.label} outcome, ${anchor.count} exits, ${anchor.percentOfTotal.toFixed(1)} percent of total`}

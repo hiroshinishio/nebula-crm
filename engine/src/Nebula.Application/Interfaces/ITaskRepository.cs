@@ -11,4 +11,5 @@ public interface ITaskRepository
     /// Returns only tasks where LinkedEntityType='Broker' AND LinkedEntityId=brokerId AND IsDeleted=false.
     /// </summary>
     Task<(IReadOnlyList<TaskItem> Tasks, int TotalCount)> GetBrokerScopedTasksAsync(Guid brokerId, int limit, CancellationToken ct = default);
+    Task AddAsync(TaskItem task, CancellationToken ct = default);
 }

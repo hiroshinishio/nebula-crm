@@ -208,7 +208,7 @@ p, Admin,               dashboard_nudge, read, true
 # §2.8 Task — Manage Own Tasks
 # Ownership enforced at policy layer (resource-attribute check).
 # Enforcement point MUST hydrate r.obj.assignee before calling the enforcer (request on create; DB on read/update/delete).
-# Mapping: r.obj.assignee == Task.AssignedTo (domain field).
+# Mapping: r.obj.assignee == Task.AssignedToUserId (domain field, uuid per F0005).
 # Read-only in dashboard context. No create/update/delete from widget (F0001-S0003 out of scope).
 # Status filter (Open/InProgress only; Done excluded) enforced at query layer for /my/tasks.
 # Admin: own tasks only in MVP; cross-user task view is explicitly Future (F0001-S0003 Role Visibility).

@@ -1,5 +1,5 @@
-import type { OutcomeAnchor, StageAnchor } from './ConnectedFlow';
 import type { StoryChapter } from './storyTypes';
+import type { OutcomeAnchor, StageAnchor } from './storyTimelineTypes';
 import { FrictionOverlay } from './overlays/FrictionOverlay';
 import { OutcomesOverlay } from './overlays/OutcomesOverlay';
 import { ErrorFallback } from '@/components/ui/ErrorFallback';

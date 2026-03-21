@@ -55,7 +55,11 @@
       "Bash(find /mnt/c/Users/gajap/sandbox/nebula-crm -type f \\\\\\( -name \"FORK*\" -o -name \"ADOPT*\" -o -name \"*adopt*\" -o -name \"*customize*\" \\\\\\) 2>/dev/null | head -20)",
       "Bash(npx --prefix experience tsc -b --noEmit 2>&1)",
       "Bash(file /mnt/c/Users/gajap/sandbox/nebula-crm/planning-mds/screens/temp/*.jpeg | head -10)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(docker info:*)",
+      "Bash(~/.dotnet/tools/reportgenerator -reports:/tmp/nebula-coverage/*/coverage.cobertura.xml -targetdir:/tmp/nebula-coverage/report -reporttypes:TextSummary)",
+      "Bash(./scripts/smoke-test.sh 2>&1)",
+      "Bash(./scripts/smoke-test.sh --user john.miller)"
     ]
   }
 }

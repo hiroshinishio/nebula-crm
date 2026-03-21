@@ -1,7 +1,7 @@
 # F0010 — Dashboard Opportunities Refactor (Pipeline Board + Insight Views)
 
 **Status:** Abandoned — Superseded by F0013
-**Superseded By:** [F0013 — Dashboard Framed Storytelling Canvas](../../F0013-dashboard-framed-storytelling-canvas/README.md)
+**Superseded By:** [F0013 — Dashboard Framed Storytelling Canvas](../F0013-dashboard-framed-storytelling-canvas/README.md)
 **Abandoned Date:** 2026-03-14
 **Previously:** Done
 **Phase:** MVP

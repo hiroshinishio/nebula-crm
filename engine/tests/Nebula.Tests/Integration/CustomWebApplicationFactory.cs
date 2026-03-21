@@ -22,6 +22,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         // Set the connection string BEFORE services are configured so health checks don't fail
         builder.UseSetting("ConnectionStrings:DefaultConnection", _postgres.GetConnectionString());
+        builder.UseSetting("RateLimiting:AuthenticatedPermitLimit", "1000000");
+        builder.UseSetting("RateLimiting:AnonymousPermitLimit", "1000000");
         builder.UseEnvironment("Development");
 
         builder.ConfigureServices(services =>

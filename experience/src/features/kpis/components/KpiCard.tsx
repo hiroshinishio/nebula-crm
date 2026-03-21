@@ -9,7 +9,7 @@ interface KpiCardProps {
 export function KpiCard({ label, value, isLoading }: KpiCardProps) {
   return (
     <article className="min-w-0">
-      <p className="text-xs font-medium uppercase tracking-wider text-text-secondary">{label}</p>
+      <p className="kpi-label text-xs font-medium uppercase tracking-wider">{label}</p>
       {isLoading ? (
         <Skeleton className="mt-2 h-10 w-24" />
       ) : (

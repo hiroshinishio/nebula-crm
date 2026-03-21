@@ -5,7 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 export default defineConfig(() => {
-  const apiProxyTarget = 'http://localhost:5113'
+  const apiProxyTarget = process.env.NEBULA_API_PROXY_TARGET?.trim()
+    || process.env.VITE_API_PROXY_TARGET?.trim()
+    || 'http://localhost:5113'
   const apiProxyPaths = [
     // Keep OIDC callback (`/auth/callback`) on the frontend router.
     // Only logout should hit the API.

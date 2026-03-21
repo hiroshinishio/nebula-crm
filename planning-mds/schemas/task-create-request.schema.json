@@ -2,11 +2,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nebula.local/schemas/task-create-request.schema.json",
   "title": "TaskCreateRequest",
-  "description": "Validation rules for creating a task.",
+  "description": "Validation rules for creating a task. F0005-aligned: assignedToUserId is uuid.",
   "type": "object",
   "required": [
     "title",
-    "assignedTo"
+    "assignedToUserId"
   ],
   "properties": {
     "title": {
@@ -26,17 +26,23 @@
       "type": "string",
       "format": "date"
     },
-    "assignedTo": {
+    "assignedToUserId": {
       "type": "string",
-      "description": "Must match authenticated subject in MVP (self-assigned tasks only)."
+      "format": "uuid",
+      "description": "Internal UserId (uuid) from UserProfile. Must match authenticated user's UserId in MVP (self-assigned only)."
     },
     "linkedEntityType": {
-      "type": "string"
+      "type": "string",
+      "enum": ["Broker", "Account", "Submission", "Renewal"]
     },
     "linkedEntityId": {
       "type": "string",
       "format": "uuid"
     }
+  },
+  "dependencies": {
+    "linkedEntityType": ["linkedEntityId"],
+    "linkedEntityId": ["linkedEntityType"]
   },
   "additionalProperties": false
 }

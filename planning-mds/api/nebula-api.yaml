@@ -958,7 +958,7 @@ paths:
       operationId: getMyTasks
       summary: Get tasks assigned to the authenticated user
       description: |
-        Returns tasks assigned to the current user (matched by Keycloak subject),
+        Returns tasks assigned to the current user (matched by authenticated user's UserId),
         filtered to Open and InProgress status, sorted by DueDate ascending
         (soonest first, nulls last). Used by the My Tasks dashboard widget.
       tags: [Tasks]
@@ -1754,21 +1754,24 @@ components:
           format: double
           minimum: 0
           nullable: true
-        assignedTo:
+        assignedToUserId:
           type: string
-          description: Keycloak subject of assigned user.
+          format: uuid
+          description: Internal UserId (uuid) of assigned user per F0005.
         createdAt:
           type: string
           format: date-time
-        createdBy:
+        createdByUserId:
           type: string
-          description: Keycloak subject of creator.
+          format: uuid
+          description: Internal UserId (uuid) of creator per F0005.
         updatedAt:
           type: string
           format: date-time
-        updatedBy:
+        updatedByUserId:
           type: string
-          description: Keycloak subject of last updater.
+          format: uuid
+          description: Internal UserId (uuid) of last updater per F0005.
 
     Renewal:
       type: object
@@ -1824,21 +1827,24 @@ components:
         renewalDate:
           type: string
           format: date
-        assignedTo:
+        assignedToUserId:
           type: string
-          description: Keycloak subject of assigned user.
+          format: uuid
+          description: Internal UserId (uuid) of assigned user per F0005.
         createdAt:
           type: string
           format: date-time
-        createdBy:
+        createdByUserId:
           type: string
-          description: Keycloak subject of creator.
+          format: uuid
+          description: Internal UserId (uuid) of creator per F0005.
         updatedAt:
           type: string
           format: date-time
-        updatedBy:
+        updatedByUserId:
           type: string
-          description: Keycloak subject of last updater.
+          format: uuid
+          description: Internal UserId (uuid) of last updater per F0005.
 
     SubmissionCreateRequest:
       type: object
@@ -1849,7 +1855,7 @@ components:
         - currentStatus
         - effectiveDate
         - premiumEstimate
-        - assignedTo
+        - assignedToUserId
       properties:
         accountId:
           type: string
@@ -1885,8 +1891,9 @@ components:
           type: number
           format: double
           minimum: 0
-        assignedTo:
+        assignedToUserId:
           type: string
+          format: uuid
 
     SubmissionUpdateRequest:
       type: object
@@ -1920,8 +1927,9 @@ components:
           type: number
           format: double
           minimum: 0
-        assignedTo:
+        assignedToUserId:
           type: string
+          format: uuid
 
     RenewalCreateRequest:
       type: object
@@ -1931,7 +1939,7 @@ components:
         - brokerId
         - currentStatus
         - renewalDate
-        - assignedTo
+        - assignedToUserId
       properties:
         accountId:
           type: string
@@ -1963,8 +1971,9 @@ components:
         renewalDate:
           type: string
           format: date
-        assignedTo:
+        assignedToUserId:
           type: string
+          format: uuid
 
     RenewalUpdateRequest:
       type: object
@@ -1994,8 +2003,9 @@ components:
         renewalDate:
           type: string
           format: date
-        assignedTo:
+        assignedToUserId:
           type: string
+          format: uuid
 
     # ── Workflow Schemas ────────────────────────────────────────
     WorkflowTransitionRequest:
@@ -2594,7 +2604,7 @@ components:
         - title
         - status
         - priority
-        - assignedTo
+        - assignedToUserId
         - createdAt
       properties:
         id:
@@ -2615,9 +2625,10 @@ components:
           type: string
           format: date
           nullable: true
-        assignedTo:
+        assignedToUserId:
           type: string
-          description: Keycloak subject of assigned user.
+          format: uuid
+          description: Internal UserId (uuid) of assigned user per F0005.
         linkedEntityType:
           type: string
           nullable: true
@@ -2677,7 +2688,7 @@ components:
       description: Payload to create a task. In MVP, tasks are self-assigned only.
       required:
         - title
-        - assignedTo
+        - assignedToUserId
       properties:
         title:
           type: string
@@ -2692,9 +2703,10 @@ components:
         dueDate:
           type: string
           format: date
-        assignedTo:
+        assignedToUserId:
           type: string
-          description: Keycloak subject of user to assign. Must match authenticated subject in MVP.
+          format: uuid
+          description: UserId (uuid) of user to assign. Must match authenticated user's UserId in MVP.
         linkedEntityType:
           type: string
         linkedEntityId:
@@ -2723,9 +2735,10 @@ components:
           type: string
           format: date
           nullable: true
-        assignedTo:
+        assignedToUserId:
           type: string
-          description: If provided, must match authenticated subject in MVP.
+          format: uuid
+          description: If provided, must match authenticated user's UserId in MVP.
 
     # ── Timeline Schemas (NEW) ──────────────────────────────────
     TimelineEvent:

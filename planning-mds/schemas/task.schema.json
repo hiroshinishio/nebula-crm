@@ -2,14 +2,14 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nebula.local/schemas/task.schema.json",
   "title": "Task",
-  "description": "Task entity.",
+  "description": "Task entity response schema. F0005-aligned: assignedToUserId is uuid.",
   "type": "object",
   "required": [
     "id",
     "title",
     "status",
     "priority",
-    "assignedTo",
+    "assignedToUserId",
     "createdAt"
   ],
   "properties": {
@@ -35,8 +35,9 @@
       "type": ["string", "null"],
       "format": "date"
     },
-    "assignedTo": {
-      "type": "string"
+    "assignedToUserId": {
+      "type": "string",
+      "format": "uuid"
     },
     "linkedEntityType": {
       "type": ["string", "null"]

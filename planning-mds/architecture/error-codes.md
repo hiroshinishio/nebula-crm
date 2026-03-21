@@ -37,6 +37,7 @@
 | `not_found` | 404 | Requested resource does not exist or the caller lacks visibility into it (e.g., non-Admin viewing a deactivated broker). | All entity endpoints |
 | `validation_error` | 400 | Request payload failed schema validation. Response includes `errors` map. | `planning-mds/architecture/SOLUTION-PATTERNS.md` §3 |
 | `policy_denied` | 403 | Authenticated caller lacks authorization for the resource/action. | Authorization matrix + policy.csv |
+| `invalid_status_transition` | 409 | Task status transition is not allowed by the state machine (e.g. Open → Done). | F0003-S0002 |
 | `broker_scope_unresolvable` | 403 | Broker scope could not be resolved from `broker_tenant_id` (missing/unknown/ambiguous). | F0009 contract |
 
 ## Notes

@@ -339,6 +339,30 @@ body {
   transition: opacity 150ms ease-in-out;
 }
 
+.kpi-label {
+  color: color-mix(in srgb, var(--text-primary) 42%, var(--text-secondary) 58%);
+}
+
+.story-pill-active {
+  background: color-mix(in srgb, var(--color-ring) 16%, transparent);
+  color: var(--color-ring);
+}
+
+.story-focus-ring:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-ring) 48%, transparent);
+  outline-offset: 2px;
+}
+
+.story-pagination-dot-active {
+  background: var(--color-ring);
+}
+
+.story-active-ring {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-ring) 45%, transparent),
+    0 0 16px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
+
 @media (max-width: 639px) {
   .canvas-chapter-overlay {
     max-height: none;

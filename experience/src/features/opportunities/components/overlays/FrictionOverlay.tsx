@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import type { StageAnchor } from '../ConnectedFlow';
+import type { StageAnchor } from '../storyTimelineTypes';
 
 interface FrictionOverlayProps {
   stageAnchors: StageAnchor[];

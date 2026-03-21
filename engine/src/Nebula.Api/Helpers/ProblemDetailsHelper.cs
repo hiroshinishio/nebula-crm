@@ -28,6 +28,12 @@ public static class ProblemDetailsHelper
         statusCode: 409,
         extensions: Ext("invalid_transition"));
 
+    public static IResult InvalidStatusTransition(string from, string to) => Results.Problem(
+        title: "Invalid status transition",
+        detail: $"Transition from '{from}' to '{to}' is not allowed.",
+        statusCode: 409,
+        extensions: Ext("invalid_status_transition"));
+
     public static IResult ConcurrencyConflict() => Results.Problem(
         title: "Concurrency conflict",
         detail: "The resource was modified by another user. Please refresh and retry.",

@@ -7,8 +7,8 @@ import { useDashboardOpportunities } from '../hooks/useDashboardOpportunities';
 import { useOpportunityFlow } from '../hooks/useOpportunityFlow';
 import { useOpportunityOutcomes } from '../hooks/useOpportunityOutcomes';
 import { useOpportunityAging } from '../hooks/useOpportunityAging';
-import { ConnectedFlow } from './ConnectedFlow';
 import type { StoryChapter } from './storyTypes';
+import { VerticalTimeline } from './VerticalTimeline';
 
 const PERIOD_WINDOWS = [30, 90, 180, 365] as const;
 
@@ -102,7 +102,7 @@ export function StoryCanvas() {
                   onClick={() => setPeriodDays(windowDays)}
                   className={cn(
                     'rounded-full bg-surface-main/55 px-3 py-1 text-xs font-semibold text-text-secondary transition-colors',
-                    active && 'bg-nebula-violet/20 text-nebula-violet',
+                    active && 'story-pill-active',
                   )}
                 >
                   {windowDays}d
@@ -130,7 +130,7 @@ export function StoryCanvas() {
                   onKeyDown={(event) => onChapterKeyDown(event, chapterIndex)}
                   className={cn(
                     'min-w-fit whitespace-nowrap rounded-full bg-surface-main/55 px-3 py-1 text-xs font-semibold text-text-secondary transition-colors',
-                    active && 'bg-nebula-violet/20 text-nebula-violet',
+                    active && 'story-pill-active',
                   )}
                 >
                   {chapterOption.label}
@@ -154,7 +154,7 @@ export function StoryCanvas() {
         )}
 
         {flowQuery.data && (
-          <ConnectedFlow
+          <VerticalTimeline
             flow={flowQuery.data}
             opportunities={opportunitiesQuery.data}
             outcomes={outcomesQuery.data?.outcomes ?? []}

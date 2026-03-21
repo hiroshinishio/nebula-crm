@@ -12,4 +12,5 @@ public record TaskDto(
     Guid? LinkedEntityId,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    DateTime? CompletedAt);
+    DateTime? CompletedAt,
+    uint RowVersion);

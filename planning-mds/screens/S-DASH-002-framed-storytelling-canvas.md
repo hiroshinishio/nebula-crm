@@ -192,4 +192,4 @@ The implemented visual stack is:
 |-----------|------|---------|
 | Original dashboard framing inspiration | `planning-mds/screens/handdrawn.jpeg` | Framed-canvas direction |
 | Editorial palette / shell tokens | `planning-mds/screens/design-tokens.md` | Color, shell, glass-card, and glow tokens |
-| F0013 planning PRD | `planning-mds/features/F0013-dashboard-framed-storytelling-canvas/PRD.md` | Product intent and acceptance framing |
+| F0013 planning PRD | `planning-mds/features/archive/F0013-dashboard-framed-storytelling-canvas/PRD.md` | Product intent and acceptance framing |

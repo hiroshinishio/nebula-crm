@@ -1,5 +1,9 @@
+using System.Text.Json;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Nebula.Api.Helpers;
 using Nebula.Application.Common;
+using Nebula.Application.DTOs;
 using Nebula.Application.Interfaces;
 using Nebula.Application.Services;
 
@@ -7,15 +11,28 @@ namespace Nebula.Api.Endpoints;
 
 public static class TaskEndpoints
 {
+    private const int MaxLimit = 100;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     public static IEndpointRouteBuilder MapTaskEndpoints(this IEndpointRouteBuilder app)
     {
+        // /my/tasks has a different path prefix, so register separately
         app.MapGet("/my/tasks", GetMyTasks)
-            .WithTags("Tasks").RequireAuthorization();
+            .WithTags("Tasks").RequireAuthorization().RequireRateLimiting("authenticated");
 
-        app.MapGet("/tasks/{taskId:guid}", GetTaskById)
-            .WithTags("Tasks").RequireAuthorization();
+        var group = app.MapGroup("/tasks")
+            .WithTags("Tasks")
+            .RequireAuthorization()
+            .RequireRateLimiting("authenticated");
 
-        // F0003 write endpoints NOT registered — return 404 by default
+        group.MapGet("/{taskId:guid}", GetTaskById);
+        group.MapPost("/", CreateTask);
+        group.MapPut("/{taskId:guid}", UpdateTask);
+        group.MapDelete("/{taskId:guid}", DeleteTask);
 
         return app;
     }
@@ -24,6 +41,8 @@ public static class TaskEndpoints
         int? limit, TaskService svc, ICurrentUserService user,
         IAuthorizationService authz, CancellationToken ct)
     {
+        var effectiveLimit = Math.Min(limit ?? 10, MaxLimit);
+
         // BrokerUser: scope-isolated tasks by linked broker entity (F0009 §12).
         if (user.Roles.Contains("BrokerUser"))
         {
@@ -37,7 +56,7 @@ public static class TaskEndpoints
             }
             if (!brokerUserAuthorized) return ProblemDetailsHelper.Forbidden();
 
-            return Results.Ok(await svc.GetBrokerScopedTasksAsync(limit ?? 10, user, ct));
+            return Results.Ok(await svc.GetBrokerScopedTasksAsync(effectiveLimit, user, ct));
         }
 
         // Ownership condition: the list is already scoped to the caller; assignee == subjectId by definition.
@@ -54,29 +73,137 @@ public static class TaskEndpoints
         }
         if (!authorized) return ProblemDetailsHelper.Forbidden();
 
-        return Results.Ok(await svc.GetMyTasksAsync(user.UserId, user.DisplayName, limit ?? 10, user, ct));
+        return Results.Ok(await svc.GetMyTasksAsync(user.UserId, user.DisplayName, effectiveLimit, user, ct));
     }
 
     private static async Task<IResult> GetTaskById(
-        Guid taskId, TaskService svc, ICurrentUserService user,
-        IAuthorizationService authz, CancellationToken ct)
+        Guid taskId, TaskService svc, ICurrentUserService user, CancellationToken ct)
     {
-        var task = await svc.GetByIdAsync(taskId, ct);
-        if (task is null) return ProblemDetailsHelper.NotFound("Task", taskId);
+        // Single fetch + Casbin auth inside service. Returns 404 for both not-found and not-authorized (IDOR fix).
+        var (task, error) = await svc.GetByIdAuthorizedAsync(taskId, user, ct);
+        if (error is not null)
+            return ProblemDetailsHelper.NotFound("Task", taskId);
 
+        return Results.Ok(task);
+    }
+
+    // F0003-S0001: Create Task
+    private static async Task<IResult> CreateTask(
+        TaskCreateRequestDto dto,
+        IValidator<TaskCreateRequestDto> validator,
+        TaskService svc,
+        ICurrentUserService user,
+        IAuthorizationService authz,
+        CancellationToken ct)
+    {
+        // Casbin: task, create with assignee == subjectId
         var attrs = new Dictionary<string, object>
         {
-            ["assignee"] = task.AssignedToUserId,
+            ["assignee"] = dto.AssignedToUserId,
             ["subjectId"] = user.UserId,
         };
         var authorized = false;
         foreach (var role in user.Roles)
         {
-            if (await authz.AuthorizeAsync(role, "task", "read", attrs))
+            if (await authz.AuthorizeAsync(role, "task", "create", attrs))
             { authorized = true; break; }
         }
         if (!authorized) return ProblemDetailsHelper.Forbidden();
 
-        return Results.Ok(task);
+        var validation = await validator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+            return ProblemDetailsHelper.ValidationError(
+                validation.Errors.GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+
+        var (result, error) = await svc.CreateAsync(dto, user, ct);
+        return error switch
+        {
+            "forbidden" => ProblemDetailsHelper.Forbidden(),
+            "validation_error" => ProblemDetailsHelper.ValidationError(
+                new Dictionary<string, string[]>
+                {
+                    ["linkedEntityType"] = ["LinkedEntityType and LinkedEntityId must both be provided or both omitted."],
+                }),
+            _ => Results.Created($"/tasks/{result!.Id}", result),
+        };
+    }
+
+    // F0003-S0002: Update Task
+    private static async Task<IResult> UpdateTask(
+        Guid taskId,
+        HttpContext httpContext,
+        TaskService svc,
+        ICurrentUserService user,
+        IValidator<TaskUpdateRequestDto> validator,
+        CancellationToken ct)
+    {
+        // Parse If-Match header for optimistic concurrency (C-1 fix)
+        var ifMatch = httpContext.Request.Headers.IfMatch.FirstOrDefault();
+        if (string.IsNullOrEmpty(ifMatch) || !uint.TryParse(ifMatch.Trim('"'), out var rowVersion))
+            return Results.Problem(title: "If-Match header required", statusCode: 428);
+
+        // Parse raw JSON to detect field presence (for DueDate/Description null vs absent)
+        httpContext.Request.EnableBuffering();
+        using var doc = await JsonDocument.ParseAsync(httpContext.Request.Body, cancellationToken: ct);
+        var root = doc.RootElement;
+
+        if (root.ValueKind != JsonValueKind.Object)
+            return ProblemDetailsHelper.ValidationError(
+                new Dictionary<string, string[]> { [""] = ["Request body must be a JSON object."] });
+
+        var presentFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var prop in root.EnumerateObject())
+            presentFields.Add(prop.Name);
+
+        // Empty payload check (minProperties: 1)
+        if (presentFields.Count == 0)
+            return ProblemDetailsHelper.ValidationError(
+                new Dictionary<string, string[]> { [""] = ["At least one field must be provided."] });
+
+        var dto = root.Deserialize<TaskUpdateRequestDto>(JsonOptions);
+        if (dto is null)
+            return ProblemDetailsHelper.ValidationError(
+                new Dictionary<string, string[]> { [""] = ["Invalid request body."] });
+
+        var validation = await validator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+            return ProblemDetailsHelper.ValidationError(
+                validation.Errors.GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+
+        try
+        {
+            // Single fetch + Casbin auth + mutation inside service (TOCTOU fix).
+            var (result, error, fromStatus, toStatus) = await svc.UpdateAsync(taskId, dto, presentFields, rowVersion, user, ct);
+            if (error == "invalid_status_transition")
+                return ProblemDetailsHelper.InvalidStatusTransition(fromStatus!, toStatus!);
+            return error switch
+            {
+                "not_found" => ProblemDetailsHelper.NotFound("Task", taskId),
+                "forbidden" => ProblemDetailsHelper.Forbidden(),
+                _ => Results.Ok(result),
+            };
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return ProblemDetailsHelper.ConcurrencyConflict();
+        }
+    }
+
+    // F0003-S0003: Delete Task
+    private static async Task<IResult> DeleteTask(
+        Guid taskId,
+        TaskService svc,
+        ICurrentUserService user,
+        CancellationToken ct)
+    {
+        // Single fetch + Casbin auth + mutation inside service (TOCTOU fix).
+        var error = await svc.DeleteAsync(taskId, user, ct);
+        return error switch
+        {
+            "not_found" => ProblemDetailsHelper.NotFound("Task", taskId),
+            _ => Results.NoContent(),
+        };
     }
 }

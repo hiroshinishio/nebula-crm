@@ -5,9 +5,32 @@ type Theme = 'dark' | 'light'
 const THEMES: Theme[] = ['dark', 'light']
 
 const PAGES = [
-  { path: '/', title: 'Dashboard' },
-  { path: '/brokers', title: 'Brokers' },
-  { path: '/brokers/new', title: 'New Broker' },
+  {
+    slug: 'dashboard',
+    open: async (page: Page, theme: Theme) => {
+      await openAppPage(page, '/', theme)
+    },
+    ready: (page: Page) => page.getByText('Your opportunities at a glance'),
+  },
+  {
+    slug: 'brokers',
+    open: async (page: Page, theme: Theme) => {
+      await openAppPage(page, '/', theme)
+      await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Brokers' }).click()
+      await page.waitForLoadState('networkidle')
+    },
+    ready: (page: Page) => page.getByRole('heading', { name: 'Broker Directory' }),
+  },
+  {
+    slug: 'brokers-new',
+    open: async (page: Page, theme: Theme) => {
+      await openAppPage(page, '/', theme)
+      await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Brokers' }).click()
+      await page.getByRole('link', { name: 'New Broker' }).click()
+      await page.waitForLoadState('networkidle')
+    },
+    ready: (page: Page) => page.getByLabel('Legal Name'),
+  },
 ] as const
 
 test.beforeEach(async ({ page }) => {
@@ -18,16 +41,19 @@ test.beforeEach(async ({ page }) => {
 for (const theme of THEMES) {
   test.describe(`${theme} theme`, () => {
     for (const pageCase of PAGES) {
-      test(`${pageCase.path} renders and captures screenshot`, async ({ page }, testInfo) => {
-        await openAppPage(page, pageCase.path, theme)
-        await expect(page.getByRole('heading', { name: pageCase.title })).toBeVisible()
-        await attachPageScreenshot(page, testInfo, pageCase.path, theme)
+      test(`${pageCase.slug} renders and captures screenshot`, async ({ page }, testInfo) => {
+        await pageCase.open(page, theme)
+        await expect(pageCase.ready(page)).toBeVisible()
+        await attachPageScreenshot(page, testInfo, pageCase.slug, theme)
       })
     }
 
     test('dashboard KPI card text remains readable', async ({ page }) => {
       await openAppPage(page, '/', theme)
-      await expect(page.getByText('Active Brokers')).toBeVisible()
+      await expect(page.getByText('Your opportunities at a glance')).toBeVisible()
+
+      const kpiBand = page.getByRole('region', { name: 'KPI band' })
+      await expect(kpiBand.getByText('Active Brokers')).toBeVisible()
 
       const metrics = await page.evaluate(() => {
         const label = Array.from(document.querySelectorAll('p')).find(
@@ -83,8 +109,7 @@ async function openAppPage(page: Page, path: string, theme: Theme) {
   })
 }
 
-async function attachPageScreenshot(page: Page, testInfo: TestInfo, routePath: string, theme: Theme) {
-  const slug = routePath === '/' ? 'dashboard' : routePath.replaceAll('/', '-').replace(/^-/, '')
+async function attachPageScreenshot(page: Page, testInfo: TestInfo, slug: string, theme: Theme) {
   const screenshotPath = testInfo.outputPath(`${slug}-${theme}.png`)
 
   await page.screenshot({
@@ -116,7 +141,7 @@ async function mockNebulaApis(page: Page) {
     },
   )
 
-  await page.route('**/dashboard/kpis', async (route) => {
+  await page.route('**/dashboard/kpis**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -129,7 +154,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/dashboard/nudges', async (route) => {
+  await page.route('**/dashboard/nudges**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -160,7 +185,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/dashboard/opportunities/flow?*', async (route) => {
+  await page.route('**/dashboard/opportunities/flow**', async (route) => {
     const url = new URL(route.request().url())
     const entityType = url.searchParams.get('entityType')
 
@@ -268,7 +293,126 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/dashboard/opportunities', async (route) => {
+  await page.route('**/dashboard/opportunities/outcomes**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        periodDays: 180,
+        totalExits: 35,
+        outcomes: [
+          { key: 'bound', label: 'Bound', branchStyle: 'solid', count: 14, percentOfTotal: 40, averageDaysToExit: 12.4 },
+          { key: 'declined', label: 'Declined', branchStyle: 'red_dashed', count: 8, percentOfTotal: 22.9, averageDaysToExit: 8.2 },
+          { key: 'withdrawn', label: 'Withdrawn', branchStyle: 'gray_dotted', count: 7, percentOfTotal: 20, averageDaysToExit: 10.1 },
+          { key: 'notQuoted', label: 'Not Quoted', branchStyle: 'gray_dotted', count: 6, percentOfTotal: 17.1, averageDaysToExit: 6.7 },
+        ],
+      }),
+    })
+  })
+
+  await page.route('**/dashboard/opportunities/aging**', async (route) => {
+    const url = new URL(route.request().url())
+    const entityType = url.searchParams.get('entityType') ?? 'submission'
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        entityType,
+        periodDays: 180,
+        statuses: [
+          {
+            status: 'Triaging',
+            label: 'Triaging',
+            colorGroup: 'triage',
+            displayOrder: 2,
+            total: 7,
+            buckets: [
+              { key: 'lt1', label: '<1d', count: 2 },
+              { key: '1to3', label: '1-3d', count: 3 },
+              { key: '3to7', label: '3-7d', count: 1 },
+              { key: 'gt7', label: '7d+', count: 1 },
+            ],
+            sla: {
+              warningDays: 2,
+              targetDays: 4,
+              totalCount: 7,
+              onTimeCount: 4,
+              approachingCount: 2,
+              overdueCount: 1,
+            },
+          },
+          {
+            status: 'WaitingOnBroker',
+            label: 'Waiting on Broker',
+            colorGroup: 'waiting',
+            displayOrder: 3,
+            total: 6,
+            buckets: [
+              { key: 'lt1', label: '<1d', count: 1 },
+              { key: '1to3', label: '1-3d', count: 2 },
+              { key: '3to7', label: '3-7d', count: 2 },
+              { key: 'gt7', label: '7d+', count: 1 },
+            ],
+          },
+        ],
+      }),
+    })
+  })
+
+  await page.route(/\/dashboard\/opportunities\/(submission|renewal)\/[^/]+\/breakdown(?:\?.*)?$/, async (route) => {
+    const url = new URL(route.request().url())
+    const pathParts = url.pathname.split('/')
+    const entityType = pathParts.at(-3) ?? 'submission'
+    const status = decodeURIComponent(pathParts.at(-2) ?? 'Unknown')
+    const groupBy = url.searchParams.get('groupBy') ?? 'lineOfBusiness'
+    const periodDays = Number(url.searchParams.get('periodDays') ?? 180)
+
+    const groupsByDimension = {
+      lineOfBusiness: [
+        { key: 'property', label: 'Property', count: 4 },
+        { key: 'casualty', label: 'Casualty', count: 3 },
+        { key: 'marine', label: 'Marine', count: 2 },
+      ],
+      broker: [
+        { key: 'broker-1', label: 'Blue Horizon', count: 3 },
+        { key: 'broker-2', label: 'Northline Risk', count: 2 },
+        { key: 'broker-3', label: 'Harbor Specialty', count: 1 },
+      ],
+      brokerState: [
+        { key: 'CA', label: 'CA', count: 3 },
+        { key: 'TX', label: 'TX', count: 2 },
+        { key: 'FL', label: 'FL', count: 1 },
+      ],
+      assignedUser: [
+        { key: 'uw-1', label: 'A. Chen', count: 3 },
+        { key: 'uw-2', label: 'R. Singh', count: 2 },
+        { key: 'uw-3', label: 'M. Diaz', count: 1 },
+      ],
+      program: [
+        { key: 'prog-1', label: 'Package', count: 3 },
+        { key: 'prog-2', label: 'Construction', count: 2 },
+        { key: 'prog-3', label: 'Transit', count: 1 },
+      ],
+    } as const
+
+    const groups = groupsByDimension[groupBy as keyof typeof groupsByDimension] ?? groupsByDimension.lineOfBusiness
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        entityType,
+        status,
+        groupBy,
+        periodDays,
+        groups,
+        total: groups.reduce((sum, group) => sum + group.count, 0),
+      }),
+    })
+  })
+
+  await page.route(/\/dashboard\/opportunities(?:\?.*)?$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -291,7 +435,7 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/my/tasks?*', async (route) => {
+  await page.route('**/my/tasks**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -323,15 +467,21 @@ async function mockNebulaApis(page: Page) {
     })
   })
 
-  await page.route('**/timeline/events?*', async (route) => {
+  await page.route('**/timeline/events**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify([]),
+      body: JSON.stringify({
+        data: [],
+        page: 1,
+        pageSize: 12,
+        totalCount: 0,
+        totalPages: 0,
+      }),
     })
   })
 
-  await page.route('**/brokers?*', async (route) => {
+  await page.route(/\/brokers(?:\?.*)?$/, async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -375,18 +525,30 @@ type Rgba = { r: number; g: number; b: number; a: number }
 
 function parseCssColor(input: string): Rgba {
   const normalized = input.trim()
-  const match = normalized.match(/^rgba?\(([^)]+)\)$/i)
-  if (!match) {
-    throw new Error(`Unsupported CSS color: ${input}`)
+  const rgbaMatch = normalized.match(/^rgba?\(([^)]+)\)$/i)
+  if (rgbaMatch) {
+    const [r, g, b, a = '1'] = rgbaMatch[1].split(',').map((part) => part.trim())
+    return {
+      r: Number(r),
+      g: Number(g),
+      b: Number(b),
+      a: Number(a),
+    }
   }
 
-  const [r, g, b, a = '1'] = match[1].split(',').map((part) => part.trim())
-  return {
-    r: Number(r),
-    g: Number(g),
-    b: Number(b),
-    a: Number(a),
+  const srgbMatch = normalized.match(
+    /^color\(srgb\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+))?\)$/i,
+  )
+  if (srgbMatch) {
+    return {
+      r: Math.round(Number(srgbMatch[1]) * 255),
+      g: Math.round(Number(srgbMatch[2]) * 255),
+      b: Math.round(Number(srgbMatch[3]) * 255),
+      a: srgbMatch[4] == null ? 1 : Number(srgbMatch[4]),
+    }
   }
+
+  throw new Error(`Unsupported CSS color: ${input}`)
 }
 
 function compositeOver(fg: Rgba, bg: Rgba): Rgba {

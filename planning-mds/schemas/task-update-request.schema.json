@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://nebula.local/schemas/task-update-request.schema.json",
   "title": "TaskUpdateRequest",
-  "description": "Validation rules for updating a task.",
+  "description": "Validation rules for updating a task. F0005-aligned: assignedToUserId is uuid.",
   "type": "object",
   "minProperties": 1,
   "properties": {
@@ -26,9 +26,10 @@
       "type": ["string", "null"],
       "format": "date"
     },
-    "assignedTo": {
+    "assignedToUserId": {
       "type": "string",
-      "description": "If provided, must match authenticated subject in MVP."
+      "format": "uuid",
+      "description": "If provided, must match authenticated user's UserId in MVP."
     }
   },
   "additionalProperties": false

@@ -45,4 +45,9 @@ public class TaskRepository(AppDbContext db) : ITaskRepository
 
         return (tasks, totalCount);
     }
+
+    public async Task AddAsync(TaskItem task, CancellationToken ct = default)
+    {
+        await db.Tasks.AddAsync(task, ct);
+    }
 }
