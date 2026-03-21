@@ -1,14 +1,93 @@
-# Feature Assembly Plan (F0001 + F0002 + F0009 + F0010 + F0012 + F0013)
+# Feature Assembly Plan (F0001 + F0002 + F0009 + F0010 + F0012 + F0013 + F0015)
 
 **Owner:** Architect
 **Status:** Approved
-**Last Updated:** 2026-03-14
+**Last Updated:** 2026-03-21
 
 ## Goal
 
-Define the build order, role handoffs, and integration checkpoints for F0001 (Dashboard), F0002 (Broker Relationship Management), F0009 (Authentication + Role-Based Login), F0010 (Dashboard Opportunities Refactor), F0012 (Dashboard Storytelling Infographic Canvas), and F0013 (Dashboard Framed Storytelling Canvas).
+Define the build order, role handoffs, and integration checkpoints for F0001 (Dashboard), F0002 (Broker Relationship Management), F0009 (Authentication + Role-Based Login), F0010 (Dashboard Opportunities Refactor), F0012 (Dashboard Storytelling Infographic Canvas), F0013 (Dashboard Framed Storytelling Canvas), and F0015 (Frontend Quality Gates + Test Infrastructure).
 
 **Note:** F0010 frontend (Pipeline Board) and F0011 are abandoned — superseded by F0012, then F0013. F0012 is archived — superseded by F0013. Backend endpoints from F0010 and F0012 carry forward into F0013. See individual feature sections for details.
+
+---
+
+## F0015 — Frontend Quality Gates + Test Infrastructure
+
+**Updated:** 2026-03-21 — Planning kickoff; solution-side frontend validation feature created
+
+### Dependencies
+
+- Existing frontend runtime and tests under `experience/`
+- Existing strategy baseline in `planning-mds/architecture/TESTING-STRATEGY.md`
+- Existing lifecycle gate mechanism in `lifecycle-stage.yaml`
+- Existing evidence governance under `planning-mds/operations/evidence/`
+- Proven containerized Playwright/frontend rerun path established during F0013 remediation
+
+### Architecture Notes
+
+#### Boundary Split
+
+F0015 is a Nebula solution feature. It may consume stronger generic framework contracts if they land separately, but its implementation scope is solution-specific:
+
+| Scope | Lives In | Notes |
+|---|---|---|
+| Generic role/action/template changes | `agents/**` | Separate framework track; not owned by F0015 |
+| Nebula lifecycle, evidence, and tracker activation | `planning-mds/**`, `lifecycle-stage.yaml` | In scope for F0015 |
+| Nebula frontend tooling and tests | `experience/**` | In scope for F0015 |
+
+#### Runtime Execution Rule
+
+Frontend proof for this feature must follow the same runtime execution principle used elsewhere in the repo: validation evidence comes from the approved application runtime path, not from informal local assertions. Because host-side dependency behavior on this Windows-mounted workspace has been unreliable, F0015 should treat the containerized frontend runtime as a first-class execution path rather than a fallback of last resort.
+
+### Frontend Assembly Steps
+
+1. Add first-class frontend commands for integration, accessibility, and coverage validation.
+2. Configure shared frontend test setup for API mocking and accessibility assertions.
+3. Emit machine-readable frontend coverage artifacts from the standard runtime path.
+4. Backfill representative critical-path tests on auth and dashboard/brokers surfaces to prove the new tooling.
+
+### QA Assembly Steps
+
+1. Produce story-to-suite mapping for F0015 validation layers.
+2. Require evidence that distinguishes component/integration/a11y/coverage/visual checks.
+3. Execute one full frontend validation run in the approved runtime path and record the evidence package.
+
+### DevOps Assembly Steps
+
+1. Wire frontend quality checks into Nebula's lifecycle gates at the appropriate stages.
+2. Preserve a repeatable containerized execution path for frontend validation.
+3. Record lifecycle-gate and command output in the standard evidence package.
+
+### Dependency Order
+
+```text
+Step 0 (Architect):  feature scope + tracker sync + solution-side gate plan
+Step 1 (Frontend):   scripts/config + shared harness + representative backfill tests
+Step 2 (QE):         full frontend validation run + evidence capture
+Step 2 (DevOps):     lifecycle gate activation + repeatable runtime execution proof
+```
+
+### Risks and Blockers
+
+| Item | Severity | Mitigation | Owner |
+|------|----------|------------|-------|
+| Host `node_modules` / optional native package instability on mounted workspace | High | Keep containerized frontend runtime first-class for proof and CI parity | DevOps + QE |
+| Pre-existing auth/frontend test failures reduce confidence in the initial baseline | High | Backfill/stabilize critical auth and dashboard slices before broadening scope | Frontend + QE |
+| Visual smoke remains treated as sufficient proof by habit | Medium | Require distinct component/integration/coverage evidence in lifecycle/signoff | QE + Code Review |
+| Framework/solution responsibilities blur during implementation | Medium | Keep generic `agents/**` updates separate from F0015 solution changes | Architect |
+
+### Signoff Role Matrix
+
+| Role | Required | Rationale |
+|------|----------|-----------|
+| Quality Engineer | Yes | Validate full frontend run and evidence quality |
+| Code Reviewer | Yes | Validate test adequacy and gate behavior |
+| DevOps | Yes | Validate runtime execution path and lifecycle activation |
+| Architect | Yes | Accept solution-side gate architecture and boundary application |
+| Security Reviewer | No | No new authz/data-boundary contract is expected in scope |
+
+**Checkpoint F0015-A:** Nebula frontend validation is enforceable, evidence-backed, and repeatable in the approved runtime path.
 
 ---
 

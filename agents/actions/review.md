@@ -41,6 +41,7 @@ Execute these review agents **in parallel**:
    - Source code (backend, frontend, and `neuron/` when AI scope exists)
    - Test suites
    - Application runtime validation outputs (test, lint, SAST, dependency scan reports)
+   - Coverage artifacts and any explicit layer-skip justifications
    - `planning-mds/BLUEPRINT.md` (requirements and architecture)
    - `planning-mds/architecture/SOLUTION-PATTERNS.md`
    - `agents/frontend-developer/references/ux-audit-ruleset.md` (for frontend UX compliance checks)
@@ -96,10 +97,16 @@ Execute these review agents **in parallel**:
    - [ ] Naming conventions consistent
    - [ ] Error handling appropriate
 
+   ## Evidence Summary
+   - Runtime validation outputs reviewed: [list]
+   - Coverage artifact path(s): [path / missing]
+   - Layer exceptions / skips: [none / justified / missing justification]
+
    ## Test Quality
    - Unit test coverage: [percentage]%
    - Integration test coverage: [assessment]
    - E2E test coverage: [assessment]
+   - Fast-layer proof for changed behavior: [adequate / missing / justified]
    - Test quality: [Good / Needs improvement]
 
    ## Acceptance Criteria
@@ -338,7 +345,12 @@ Execute these review agents **in parallel**:
    total_medium = code_medium + security_medium
    total_low = code_low + security_low
 
-   IF total_critical > 0:
+   IF required_runtime_evidence_missing:
+     STATUS: ❌ BLOCKED
+     OPTIONS: ["Generate Missing Evidence", "Reject"]
+     APPROVE_ENABLED: false
+
+   ELSE IF total_critical > 0:
      STATUS: ❌ BLOCKED
      OPTIONS: ["Fix Critical", "Reject"]
      APPROVE_ENABLED: false
@@ -363,6 +375,7 @@ Execute these review agents **in parallel**:
    - [ ] OWASP Top 10 compliance acceptable
    - [ ] SOLUTION-PATTERNS.md followed
    - [ ] Test/scan evidence from application runtime containers attached
+   - [ ] Coverage/test evidence includes artifact paths and any layer exceptions are justified
    - [ ] Authorization correctly implemented
    - [ ] Audit logging complete
    ```

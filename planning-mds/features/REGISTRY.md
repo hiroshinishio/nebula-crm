@@ -1,6 +1,6 @@
 # Feature Registry
 
-**Next Available Feature Number:** F0015
+**Next Available Feature Number:** F0016
 
 **Planning Views:**
 - Roadmap sequencing (`Now / Next / Later`): `planning-mds/features/ROADMAP.md`
@@ -13,6 +13,7 @@
 |------------|------|--------|-------|--------|
 | F0004 | Task Center UI + Manager Assignment | Draft | Phase 1 | `F0004-task-center-ui-and-assignment/` |
 | F0014 | DevOps Smoke Test Automation | In Progress | Infrastructure | `F0014-devops-smoke-test-automation/` |
+| F0015 | Frontend Quality Gates + Test Infrastructure | Draft | Infrastructure | `F0015-frontend-quality-gates-and-test-infrastructure/` |
 
 ## Abandoned Features
 

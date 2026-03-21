@@ -168,6 +168,8 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - F0008: Broker Insights - Planned
 - [F0009: Authentication + Role-Based Login](features/archive/F0009-authentication-and-role-based-login/PRD.md) - Done (Archived; Phase 1)
 - [F0004: Task Center UI + Manager Assignment](features/F0004-task-center-ui-and-assignment/PRD.md) - Planned
+- [F0014: DevOps Smoke Test Automation](features/F0014-devops-smoke-test-automation/README.md) - In Progress (Infrastructure)
+- [F0015: Frontend Quality Gates + Test Infrastructure](features/F0015-frontend-quality-gates-and-test-infrastructure/PRD.md) - Planned (Infrastructure)
 - [F0010: Dashboard Opportunities Refactor (Pipeline Board + Insight Views)](features/archive/F0010-dashboard-opportunities-refactor/PRD.md) - Abandoned (Superseded by F0013)
 - [F0011: Dashboard Opportunities Flow-First Modernization (Connected Pipeline + Terminal Outcomes)](features/archive/F0011-dashboard-opportunities-flow-modernization/PRD.md) - Abandoned (Superseded by F0013)
 - [F0012: Dashboard Storytelling Infographic Refactor (Unified Canvas + Collapsible Rails)](features/archive/F0012-dashboard-storytelling-infographic-canvas/PRD.md) - Done (Archived)
@@ -206,6 +208,11 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - [F0009-S0003: Role-Based Entry and Protected Navigation](features/archive/F0009-authentication-and-role-based-login/F0009-S0003-role-based-entry-and-protected-navigation.md) - Done (Archived)
 - [F0009-S0004: BrokerUser Access Boundaries](features/archive/F0009-authentication-and-role-based-login/F0009-S0004-broker-user-access-boundaries.md) - Done (Archived)
 - [F0009-S0005: Seeded User Access Validation Matrix](features/archive/F0009-authentication-and-role-based-login/F0009-S0005-seeded-user-access-validation-matrix.md) - Done (Archived)
+
+**Infrastructure Stories (Feature F0015: Frontend Quality Gates + Test Infrastructure):**
+- [F0015-S0001: Establish frontend test infrastructure and commands](features/F0015-frontend-quality-gates-and-test-infrastructure/F0015-S0001-establish-frontend-test-infrastructure-and-commands.md) - Planned
+- [F0015-S0002: Activate Nebula frontend quality gates and evidence](features/F0015-frontend-quality-gates-and-test-infrastructure/F0015-S0002-activate-nebula-frontend-quality-gates-and-evidence.md) - Planned
+- [F0015-S0003: Backfill critical frontend coverage and record one full validation run](features/F0015-frontend-quality-gates-and-test-infrastructure/F0015-S0003-backfill-critical-frontend-coverage-and-record-full-validation-run.md) - Planned
 
 **MVP Stories (Feature F0010: Dashboard Opportunities Refactor):**
 - [F0010-S0001: Replace Sankey default with Pipeline Board](features/archive/F0010-dashboard-opportunities-refactor/F0010-S0001-replace-sankey-with-pipeline-board-default.md) - Done (Historical; superseded by F0013)

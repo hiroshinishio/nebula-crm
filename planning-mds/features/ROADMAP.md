@@ -25,6 +25,7 @@ This document is the working prioritization view for feature sequencing.
 
 | Feature | Phase | Why Next |
 |---------|-------|----------|
+| [F0015 — Frontend Quality Gates + Test Infrastructure](./F0015-frontend-quality-gates-and-test-infrastructure/README.md) | Infrastructure | Aligns Nebula's solution-side frontend validation with the documented test strategy before more UI work ships on visual smoke alone. |
 | F0006 — Submission Intake Workflow | MVP (planned) | Core workflow foundation needed before renewal and broker insights. |
 
 ## Later

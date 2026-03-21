@@ -42,6 +42,9 @@ Completion has two distinct checkpoints:
 - [ ] API hooks / data fetching
 - [ ] Form validation
 - [ ] Routing configured
+- [ ] Component/integration tests added or updated for changed behavior
+- [ ] Accessibility validation recorded (if frontend in scope)
+- [ ] Coverage artifact recorded (if coverage is part of project validation)
 - [ ] Responsive layout verified
 - [ ] Visual regression tests (if applicable)
 
@@ -50,6 +53,7 @@ Completion has two distinct checkpoints:
 - [ ] Seed data (if applicable)
 - [ ] Migration(s) applied
 - [ ] API documentation updated
+- [ ] Runtime validation evidence recorded
 - [ ] No TODOs remain in code
 
 ## Required Signoff Roles (Set in Planning)

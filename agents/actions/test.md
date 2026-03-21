@@ -25,6 +25,7 @@ Test Complete
 - The builder runtime orchestrates test planning and gate decisions; it remains stack-agnostic.
 - All test execution (unit, integration, E2E, performance) must run in application runtime containers (or CI jobs built from those container definitions).
 - Test coverage reports, pass/fail results, and performance baselines are produced by application runtime executions and cited as evidence in gates.
+- Layer-by-layer evidence must include artifact paths when available; summary prose alone is not sufficient evidence for a passing gate.
 
 ---
 
@@ -75,6 +76,11 @@ Test Complete
    - Integration: All API endpoints covered
    - E2E: All critical workflows covered
    - Performance: Baselines established for key operations
+
+   ## Evidence Artifacts
+   - Coverage artifact path(s): [expected files]
+   - Test execution report path(s): [expected files]
+   - Layer exceptions / skips: [none or justification]
 
    ## Test Infrastructure
    - Test data fixtures needed: [list]
@@ -132,12 +138,14 @@ Test Complete
    - Test pass/fail summary
    - Performance baseline report (when applicable)
    - Identify coverage gaps
+   - Record artifact paths for each executed layer
 
 **Completion Criteria for Step 2:**
 - [ ] All planned test suites written
 - [ ] Tests executed in application runtime containers
 - [ ] Coverage reports generated
 - [ ] Pass/fail results captured
+- [ ] Artifact paths recorded for executed layers
 
 ---
 
@@ -159,6 +167,9 @@ Quality Engineer validates test quality before presenting results:
 - [ ] Mocks/stubs accurately represent real behavior
 - [ ] Edge cases tested (empty lists, max values, nulls, boundary conditions)
 - [ ] Error scenarios tested (validation failures, not-found, unauthorized)
+- [ ] Required evidence artifacts exist and are linked
+- [ ] If a fast layer is skipped, the reason is explicit and defensible
+- [ ] If UI/runtime behavior changed, slower-layer-only proof is justified rather than assumed acceptable
 
 **If any check fails:**
 - Fix test quality issues
@@ -218,7 +229,19 @@ Quality Engineer validates test quality before presenting results:
 
    **Gate Decision Logic:**
    ```
-   IF failing_tests > 0:
+   IF required_artifacts_missing:
+     STATUS: ❌ BLOCKED
+     MESSAGE: "Required test evidence artifacts are missing."
+     OPTIONS: ["Generate Missing Evidence", "Cancel"]
+     APPROVE_ENABLED: false
+
+   ELSE IF missing_required_layer_evidence:
+     STATUS: ❌ BLOCKED
+     MESSAGE: "Required test layers are missing or unjustified."
+     OPTIONS: ["Add Missing Tests", "Cancel"]
+     APPROVE_ENABLED: false
+
+   ELSE IF failing_tests > 0:
      STATUS: ❌ BLOCKED
      MESSAGE: "Failing tests must be fixed."
      OPTIONS: ["Fix Failing Tests", "Cancel"]
@@ -251,6 +274,12 @@ Quality Engineer validates test quality before presenting results:
        "e2e": { "total": 8, "passing": 8, "failing": 0 },
        "performance": { "api_p95_ms": 142, "db_p95_ms": 35 }
      },
+     "artifacts": {
+       "coverage": ["coverage/lcov.info"],
+       "reports": ["test-results/unit.xml", "test-results/e2e.xml"]
+     },
+     "missing_artifacts": [],
+     "layer_exceptions": [],
      "coverage_target_pct": 80.0,
      "coverage_actual_pct": 87.5,
      "acceptance_criteria": { "covered": 15, "total": 15 },
@@ -284,6 +313,8 @@ Quality Engineer validates test quality before presenting results:
      - Re-present current state and allowed options
 
 **Gate Criteria:**
+- [ ] Required artifacts exist before approval is enabled
+- [ ] Required layers are present or explicitly justified
 - [ ] All tests passing (0 failures)
 - [ ] Coverage meets target or user explicitly accepts lower coverage
 - [ ] User decision logged
@@ -317,6 +348,11 @@ Quality:
   ✓ All acceptance criteria covered
   ✓ No flaky tests
 
+Evidence:
+  ✓ Coverage artifacts: [path(s)]
+  ✓ Test reports: [path(s)]
+  ✓ Layer exceptions: [none / listed]
+
 ═══════════════════════════════════════════════════════════
 Next Steps:
 ═══════════════════════════════════════════════════════════
@@ -344,6 +380,7 @@ Test suite complete! ✓
 - [ ] Self-review gate passed (test quality validated)
 - [ ] Quality gate passed (user accepted results)
 - [ ] Coverage reports saved as evidence
+- [ ] Artifact paths saved as evidence for executed layers
 
 ---
 
@@ -499,6 +536,7 @@ Agent Runtime: "Test suite complete!"
 - Focus on quality over quantity (good tests > many tests)
 - Prefer fast, focused tests over slow, broad tests
 - Follow the test pyramid: many unit, fewer integration, fewest E2E
+- Do not approve behavior changes on slow-layer evidence alone when faster-layer coverage is expected and missing
 - Keep tests maintainable (avoid brittle selectors, magic values)
 - All test execution runs in application runtime containers, not the builder runtime
 - Test code should follow the same quality standards as production code

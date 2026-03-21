@@ -40,6 +40,7 @@ Every run must include these files:
 - artifacts read
 - artifacts created/updated
 - file paths only; no ambiguous references
+- include report / coverage / log artifact paths when the action generates them
 
 3. `gate-decisions.md`
 - each approval/review gate encountered
@@ -49,10 +50,16 @@ Every run must include these files:
 4. `commands.log`
 - exact commands executed for validation and checks
 - include command exit codes
+- when testing or review actions run, capture layer-by-layer commands (unit/integration/e2e/a11y/coverage as applicable)
 
 5. `lifecycle-gates.log`
 - output of `python3 agents/scripts/run-lifecycle-gates.py`
 - if stage override is used, include the exact command
+
+If the action includes testing or review, the evidence package should also make these explicit in either `artifact-trace.md` or linked reports:
+- which validation layers were executed
+- artifact paths produced by those layers
+- any skipped layers and the justification
 
 ## Execution Procedure
 
