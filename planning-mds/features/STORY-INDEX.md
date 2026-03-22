@@ -2,7 +2,7 @@
 
 Auto-generated index of all user stories across feature folders.
 
-**Total Stories:** 50
+**Total Stories:** 56
 
 ---
 
@@ -116,6 +116,19 @@ Auto-generated index of all user stories across feature folders.
 
 ---
 
+## F0004 — Task Center UI + Manager Assignment
+
+| Story ID | Title | Priority | Phase | Persona |
+|----------|-------|----------|-------|---------|
+| [F0004-S0001](./F0004-task-center-ui-and-assignment/F0004-S0001-task-list-api-endpoint.md) | Paginated task list API with filters and views | Critical | Phase 1 | Distribution User, Underwriter, Relationship Manager, Program Manager, Distribution Manager, or Admin |
+| [F0004-S0002](./F0004-task-center-ui-and-assignment/F0004-S0002-user-search-api-endpoint.md) | User search API for assignee picker | High | Phase 1 | Distribution Manager or Admin |
+| [F0004-S0003](./F0004-task-center-ui-and-assignment/F0004-S0003-cross-user-task-authorization.md) | Cross-user task authorization for assign, reassign, and creator-based access | Critical | Phase 1 | Distribution Manager or Admin |
+| [F0004-S0004](./F0004-task-center-ui-and-assignment/F0004-S0004-task-center-list-and-filter-ui.md) | Task Center list view with tabs, filters, sort, and pagination | Critical | Phase 1 | Distribution User, Underwriter, Relationship Manager, Program Manager, Distribution Manager, or Admin |
+| [F0004-S0005](./F0004-task-center-ui-and-assignment/F0004-S0005-task-create-edit-ui-with-assignment.md) | Task create and edit UI with assignee picker for managers | High | Phase 1 | Distribution Manager or Admin |
+| [F0004-S0006](./F0004-task-center-ui-and-assignment/F0004-S0006-task-detail-panel-and-mobile-view.md) | Task detail side panel and mobile detail view | High | Phase 1 | Distribution User, Underwriter, Relationship Manager, Program Manager, Distribution Manager, or Admin |
+
+---
+
 ## F0015 — Frontend Quality Gates + Test Infrastructure
 
 | Story ID | Title | Priority | Phase | Persona |
@@ -133,7 +146,7 @@ Auto-generated index of all user stories across feature folders.
 | Infrastructure | 3 |
 | MVP | 37 |
 | MVP Hardening | 1 |
-| Phase 1 | 5 |
+| Phase 1 | 11 |
 | Unspecified | 4 |
 
 ---
@@ -142,8 +155,8 @@ Auto-generated index of all user stories across feature folders.
 
 | Priority | Count |
 |----------|-------|
-| Critical | 10 |
-| High | 27 |
+| Critical | 13 |
+| High | 30 |
 | Medium | 9 |
 
 ---

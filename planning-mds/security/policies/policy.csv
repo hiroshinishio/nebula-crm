@@ -241,6 +241,45 @@ p, Admin,               task, update, r.obj.assignee == r.sub.id
 p, Admin,               task, delete, r.obj.assignee == r.sub.id
 
 # ─────────────────────────────────────────────────────────────────────────────
+# §2.6a Task — Manager Assignment (F0004 delta)
+# DistributionManager and Admin can create tasks assigned to any active internal user.
+# They can also read, update, and delete tasks they created (CreatedByUserId match).
+# These rules supplement, not replace, the self-assigned rules in §2.8.
+# The enforcer uses OR semantics: access is granted if ANY matching row's condition is met.
+# Status changes remain assignee-only (application layer guard, not Casbin).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# DistributionManager — create (unrestricted, assignee validation at app layer)
+p, DistributionManager, task, create, true
+
+# DistributionManager — read/update/delete tasks they created
+p, DistributionManager, task, read,   r.obj.creator == r.sub.id
+p, DistributionManager, task, update, r.obj.creator == r.sub.id
+p, DistributionManager, task, delete, r.obj.creator == r.sub.id
+
+# Admin — create (unrestricted, assignee validation at app layer)
+p, Admin,               task, create, true
+
+# Admin — read/update/delete tasks they created
+p, Admin,               task, read,   r.obj.creator == r.sub.id
+p, Admin,               task, update, r.obj.creator == r.sub.id
+p, Admin,               task, delete, r.obj.creator == r.sub.id
+
+# ─────────────────────────────────────────────────────────────────────────────
+# §2.6b User — Search (F0004)
+# All internal roles can search UserProfile for display name resolution.
+# Sensitive fields (IdpIssuer, IdpSubject) are excluded from response.
+# Source: F0004-S0002, authorization-matrix.md §2.6b.
+# ─────────────────────────────────────────────────────────────────────────────
+
+p, DistributionUser,    user, search, true
+p, DistributionManager, user, search, true
+p, Underwriter,         user, search, true
+p, RelationshipManager, user, search, true
+p, ProgramManager,      user, search, true
+p, Admin,               user, search, true
+
+# ─────────────────────────────────────────────────────────────────────────────
 # §2.9 Activity Timeline Event — Broker Events
 # Read-only. No create/update/delete for any role (append-only, BLUEPRINT §1.4).
 # EntityType = Broker filter enforced at query layer (F0001-S0004 Validation Rules).
