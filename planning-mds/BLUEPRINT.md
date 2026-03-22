@@ -167,7 +167,7 @@ Status: This repository is currently focused on the agent builder framework. Pha
 - F0007: Renewal Pipeline - Planned
 - F0008: Broker Insights - Planned
 - [F0009: Authentication + Role-Based Login](features/archive/F0009-authentication-and-role-based-login/PRD.md) - Done (Archived; Phase 1)
-- [F0004: Task Center UI + Manager Assignment](features/F0004-task-center-ui-and-assignment/PRD.md) - Planned
+- [F0004: Task Center UI + Manager Assignment](features/F0004-task-center-ui-and-assignment/PRD.md) - Implementation-Ready (Phase 1)
 - [F0014: DevOps Smoke Test Automation](features/F0014-devops-smoke-test-automation/README.md) - In Progress (Infrastructure)
 - [F0015: Frontend Quality Gates + Test Infrastructure](features/archive/F0015-frontend-quality-gates-and-test-infrastructure/PRD.md) - Done (Archived)
 - [F0010: Dashboard Opportunities Refactor (Pipeline Board + Insight Views)](features/archive/F0010-dashboard-opportunities-refactor/PRD.md) - Abandoned (Superseded by F0013)

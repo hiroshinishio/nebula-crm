@@ -193,12 +193,63 @@ No requirements invented. Gaps are marked "Not yet specified" with a reference t
 | Admin | delete | **ALLOW** | Own tasks only. Soft delete only. | F0003-S0003 ACs |
 | ExternalUser | all | **DENY** | Task data is InternalOnly. | F0001-S0003 Data Visibility |
 
-**Constraints applying to all ALLOW decisions on Task:**
+**Constraints applying to all ALLOW decisions on Task (F0003 — self-assigned):**
 - A user may only create/update/delete tasks where `AssignedToUserId` equals their authenticated user's UserId. No cross-user assignment in MVP. (F0003-S0001, F0003-S0002, F0003-S0003)
 - A user may only read tasks where they are the assigned user. No cross-user task visibility in MVP. (F0001-S0003 AC Checklist, Non-Functional)
 - Dashboard list excludes Done tasks; `GET /tasks/{taskId}` may return any status for own tasks. (F0001-S0003 Validation Rules)
 - If a linked entity on a task has been soft-deleted, the task is still displayed but the entity name must show as "[Deleted]". (F0001-S0003 edge cases)
 - Read-only in dashboard context. No create, update, or delete from the dashboard widget in MVP. (F0001-S0003 out of scope)
+
+---
+
+### 2.6a Task — Manager Assignment (F0004 Delta)
+
+F0004 extends the self-assigned-only task model with creator-based access for DistributionManager and Admin.
+
+| Role | Action | Decision | Business Scope / Constraints | Story / AC Reference |
+|------|--------|----------|------------------------------|----------------------|
+| DistributionManager | create (assign to other) | **ALLOW** | Can assign tasks to any active internal user. Target user must exist and be active. | F0004-S0003 |
+| DistributionManager | read (created tasks) | **ALLOW** | Tasks where `CreatedByUserId` = authenticated user. | F0004-S0003 |
+| DistributionManager | update (created tasks) | **ALLOW** | Tasks where `CreatedByUserId` = authenticated user. Can edit fields and reassign. Cannot change status (assignee-only). | F0004-S0003 |
+| DistributionManager | delete (created tasks) | **ALLOW** | Tasks where `CreatedByUserId` = authenticated user. Soft delete only. | F0004-S0003 |
+| Admin | create (assign to other) | **ALLOW** | Same as DistributionManager. | F0004-S0003 |
+| Admin | read (created tasks) | **ALLOW** | Tasks where `CreatedByUserId` = authenticated user. | F0004-S0003 |
+| Admin | update (created tasks) | **ALLOW** | Same as DistributionManager. | F0004-S0003 |
+| Admin | delete (created tasks) | **ALLOW** | Same as DistributionManager. | F0004-S0003 |
+| DistributionUser | create (assign to other) | **DENY** | Self-assigned only. | F0004-S0003 |
+| Underwriter | create (assign to other) | **DENY** | Self-assigned only. | F0004-S0003 |
+| RelationshipManager | create (assign to other) | **DENY** | Self-assigned only. | F0004-S0003 |
+| ProgramManager | create (assign to other) | **DENY** | Self-assigned only. | F0004-S0003 |
+
+**Constraints applying to F0004 ALLOW decisions:**
+- Self-assigned task rules (§2.6) remain active. A request is allowed if it satisfies EITHER self-assigned rules OR creator-based rules (OR semantics in Casbin).
+- Creator-based access applies only when `CreatedByUserId = authenticated user`. Managers cannot access tasks created by other managers.
+- Reassignment: only the creator (DistributionManager/Admin) can change `AssignedToUserId`. Assignees cannot reassign.
+- Status change: only the current assignee (`AssignedToUserId = authenticated user`) can change status. Creator attempting status change on a task assigned to someone else returns 403 (`status_change_restricted`).
+- Assignee validation: target user must exist in UserProfile and have `IsActive = true`. Inactive assignee returns 422 (`inactive_assignee`). Non-existent user returns 422 (`invalid_assignee`).
+- Reassignment emits `TaskReassigned` timeline event with previous/new assignee details.
+- `GET /my/tasks` (dashboard widget) is unchanged and returns only self-assigned tasks (assignee-based).
+- `GET /tasks?view=assignedByMe` returns only creator-based tasks where assignee ≠ creator (requires DistributionManager/Admin role).
+
+---
+
+### 2.6b User — Search (F0004)
+
+| Role | Action | Decision | Business Scope / Constraints | Story / AC Reference |
+|------|--------|----------|------------------------------|----------------------|
+| DistributionUser | search | **ALLOW** | Search UserProfile by DisplayName/Email. | F0004-S0002 |
+| DistributionManager | search | **ALLOW** | Same. | F0004-S0002 |
+| Underwriter | search | **ALLOW** | Same. | F0004-S0002 |
+| RelationshipManager | search | **ALLOW** | Same. | F0004-S0002 |
+| ProgramManager | search | **ALLOW** | Same. | F0004-S0002 |
+| Admin | search | **ALLOW** | Same. | F0004-S0002 |
+| ExternalUser | search | **DENY** | No external access. | F0004-S0002 |
+| BrokerUser | search | **DENY** | No external access. | F0004-S0002 |
+
+**Constraints:**
+- Does not expose IdpIssuer, IdpSubject, or other sensitive UserProfile fields.
+- Default returns only active users (`IsActive = true`). `activeOnly=false` includes inactive for display purposes.
+- Minimum 2-character query required.
 
 ---
 

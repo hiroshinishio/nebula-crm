@@ -1,6 +1,6 @@
 # Feature Registry
 
-**Next Available Feature Number:** F0016
+**Next Available Feature Number:** F0033
 
 **Planning Views:**
 - Roadmap sequencing (`Now / Next / Later`): `planning-mds/features/ROADMAP.md`
@@ -25,9 +25,26 @@
 
 | Feature ID | Name | Status | Phase | Folder |
 |------------|------|--------|-------|--------|
-| F0006 | Submission Intake Workflow | Planned | MVP | `TBD` |
-| F0007 | Renewal Pipeline | Planned | MVP | `TBD` |
-| F0008 | Broker Insights | Planned | MVP | `TBD` |
+| F0006 | Submission Intake Workflow | Planned | MVP | `F0006-submission-intake-workflow/` |
+| F0007 | Renewal Pipeline | Planned | MVP | `F0007-renewal-pipeline/` |
+| F0008 | Broker Insights | Planned | MVP | `F0008-broker-insights/` |
+| F0016 | Account 360 & Insured Management | Planned | CRM Release MVP | `F0016-account-360-and-insured-management/` |
+| F0017 | Broker/MGA Hierarchy, Producer Ownership & Territory Management | Planned | CRM Release MVP+ | `F0017-broker-mga-hierarchy-and-producer-ownership/` |
+| F0018 | Policy Lifecycle & Policy 360 | Planned | CRM Release MVP | `F0018-policy-lifecycle-and-policy-360/` |
+| F0019 | Submission Quoting, Proposal & Approval Workflow | Planned | CRM Release MVP | `F0019-submission-quoting-proposal-and-approval/` |
+| F0020 | Document Management & ACORD Intake | Planned | CRM Release MVP | `F0020-document-management-and-acord-intake/` |
+| F0021 | Communication Hub & Activity Capture | Planned | CRM Release MVP | `F0021-communication-hub-and-activity-capture/` |
+| F0022 | Work Queues, Assignment Rules & Coverage Management | Planned | CRM Release MVP | `F0022-work-queues-assignment-rules-and-coverage-management/` |
+| F0023 | Global Search, Saved Views & Operational Reporting | Planned | CRM Release MVP | `F0023-global-search-saved-views-and-operational-reporting/` |
+| F0024 | Claims & Service Case Tracking | Planned | CRM Release MVP+ | `F0024-claims-and-service-case-tracking/` |
+| F0025 | Commission, Producer Splits & Revenue Tracking | Planned | Brokerage Platform Expansion | `F0025-commission-producer-splits-and-revenue-tracking/` |
+| F0026 | Billing, Invoicing & Reconciliation | Planned | Brokerage Platform Expansion | `F0026-billing-invoicing-and-reconciliation/` |
+| F0027 | COI, ACORD & Outbound Document Generation | Planned | CRM Release MVP+ | `F0027-coi-acord-and-outbound-document-generation/` |
+| F0028 | Carrier & Market Relationship Management | Planned | CRM Release MVP+ | `F0028-carrier-and-market-relationship-management/` |
+| F0029 | External Broker Collaboration Portal | Planned | Brokerage Platform Expansion | `F0029-external-broker-collaboration-portal/` |
+| F0030 | Integration Hub & Data Exchange | Planned | Brokerage Platform Expansion | `F0030-integration-hub-and-data-exchange/` |
+| F0031 | Data Import, Deduplication & Go-Live Migration | Planned | Release Enablement | `F0031-data-import-deduplication-and-go-live-migration/` |
+| F0032 | Admin Configuration & Reference Data Console | Planned | Platform Operations | `F0032-admin-configuration-and-reference-data-console/` |
 
 ## Archived Features
 

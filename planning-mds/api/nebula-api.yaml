@@ -1,10 +1,11 @@
 openapi: 3.0.3
 info:
   title: Nebula API
-  version: 0.3.1
+  version: 0.4.0
   description: |
     Public baseline API contract for the Nebula insurance CRM reference implementation.
-    Version 0.3.1 adds Submission/Renewal detail endpoints.
+    Version 0.4.0 adds Task Center list endpoint, user search endpoint, and cross-user
+    task assignment for DistributionManager/Admin (F0004).
 servers:
   - url: https://api.nebula.local
 security:
@@ -28,6 +29,8 @@ tags:
     description: Dashboard widget data endpoints (F0001)
   - name: Tasks
     description: Task CRUD for My Tasks widget and Task Center
+  - name: Users
+    description: User search for assignee picker (F0004)
   - name: Timeline
     description: Activity timeline event queries
 
@@ -951,8 +954,178 @@ paths:
           $ref: "#/components/responses/Forbidden"
 
   # ──────────────────────────────────────────────────────────────
-  # Task endpoints (NEW — F0001 + F0003)
+  # User endpoints (NEW — F0004)
   # ──────────────────────────────────────────────────────────────
+  /users:
+    get:
+      operationId: searchUsers
+      summary: Search users for assignee picker
+      description: |
+        Searches UserProfile by DisplayName and Email (case-insensitive substring).
+        Returns only active users by default. All internal roles have access.
+        Does not expose IdpIssuer or IdpSubject.
+      tags: [Users]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (min 2 characters). Searches DisplayName and Email.
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+        - name: activeOnly
+          in: query
+          required: false
+          description: If true (default), only active users returned.
+          schema:
+            type: boolean
+            default: true
+        - name: limit
+          in: query
+          required: false
+          description: Max results (default 20, max 50).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: Matching users
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - users
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  # ──────────────────────────────────────────────────────────────
+  # Task endpoints (F0001 + F0003 + F0004)
+  # ──────────────────────────────────────────────────────────────
+  /tasks:
+    get:
+      operationId: listTasks
+      summary: Paginated task list with filters and views
+      description: |
+        Returns a paginated, filterable list of tasks. Supports two views:
+        - myWork (default): tasks assigned to the authenticated user
+        - assignedByMe: tasks created by the authenticated user and assigned to others
+          (requires DistributionManager or Admin role)
+      tags: [Tasks]
+      parameters:
+        - name: view
+          in: query
+          required: false
+          description: View mode. myWork (default) or assignedByMe (DistributionManager/Admin only).
+          schema:
+            type: string
+            enum: [myWork, assignedByMe]
+            default: myWork
+        - name: status
+          in: query
+          required: false
+          description: Comma-separated status filter.
+          schema:
+            type: string
+        - name: priority
+          in: query
+          required: false
+          description: Comma-separated priority filter.
+          schema:
+            type: string
+        - name: dueDateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dueDateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: overdue
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: assigneeId
+          in: query
+          required: false
+          description: Filter by assignee UserId (assignedByMe view only).
+          schema:
+            type: string
+            format: uuid
+        - name: linkedEntityType
+          in: query
+          required: false
+          description: Comma-separated linked entity type filter.
+          schema:
+            type: string
+        - name: createdById
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: sort
+          in: query
+          required: false
+          description: Sort field.
+          schema:
+            type: string
+            enum: [dueDate, priority, createdAt, status]
+            default: dueDate
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: Paginated task list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, page, pageSize, totalCount, totalPages]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TaskListItem"
+                  page:
+                    type: integer
+                  pageSize:
+                    type: integer
+                  totalCount:
+                    type: integer
+                  totalPages:
+                    type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
   /my/tasks:
     get:
       operationId: getMyTasks
@@ -1000,8 +1173,11 @@ paths:
   /tasks:
     post:
       operationId: createTask
-      summary: Create a task (self-assigned only in MVP)
-      description: Task write endpoints are not registered (404) until F0003 is activated.
+      summary: Create a task
+      description: |
+        Creates a task. All internal roles can create self-assigned tasks.
+        DistributionManager and Admin can assign tasks to any active internal user (F0004).
+        Non-manager roles must set assignedToUserId to their own UserId.
       tags: [Tasks]
       requestBody:
         required: true
@@ -1047,8 +1223,11 @@ paths:
           $ref: "#/components/responses/NotFound"
     put:
       operationId: updateTask
-      summary: Update task (self-assigned only in MVP)
-      description: Task write endpoints are not registered (404) until F0003 is activated.
+      summary: Update task
+      description: |
+        Updates a task. Assignee can edit all fields including status.
+        Creator (DistributionManager/Admin) can edit fields and reassign, but cannot
+        change status on tasks assigned to others (F0004).
       tags: [Tasks]
       requestBody:
         required: true
@@ -1073,8 +1252,10 @@ paths:
           $ref: "#/components/responses/NotFound"
     delete:
       operationId: deleteTask
-      summary: Soft delete task (self-assigned only in MVP)
-      description: Task write endpoints are not registered (404) until F0003 is activated.
+      summary: Soft delete task
+      description: |
+        Soft-deletes a task. Assignee can delete own tasks. Creator (DistributionManager/Admin)
+        can delete tasks they created (F0004).
       tags: [Tasks]
       responses:
         "204":
@@ -2683,9 +2864,104 @@ components:
           type: boolean
           description: True if DueDate < today and status is not Done.
 
+    TaskListItem:
+      type: object
+      description: Task representation for the Task Center list view (F0004).
+      required:
+        - id
+        - title
+        - status
+        - priority
+        - assignedToUserId
+        - assignedToDisplayName
+        - createdByUserId
+        - createdByDisplayName
+        - isOverdue
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [Open, InProgress, Done]
+        priority:
+          type: string
+          enum: [Low, Normal, High, Urgent]
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+        assignedToUserId:
+          type: string
+          format: uuid
+        assignedToDisplayName:
+          type: string
+          description: Display name of assignee.
+        createdByUserId:
+          type: string
+          format: uuid
+        createdByDisplayName:
+          type: string
+          description: Display name of creator.
+        linkedEntityType:
+          type: string
+          nullable: true
+        linkedEntityId:
+          type: string
+          format: uuid
+          nullable: true
+        linkedEntityName:
+          type: string
+          nullable: true
+          description: Resolved display name of linked entity. "[Deleted]" if soft-deleted.
+        isOverdue:
+          type: boolean
+          description: True if DueDate < today and status is not Done.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    UserSummary:
+      type: object
+      description: User summary for assignee picker (F0004). Does not expose IdP details.
+      required:
+        - userId
+        - displayName
+        - email
+        - roles
+        - isActive
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+        isActive:
+          type: boolean
+
     TaskCreateRequest:
       type: object
-      description: Payload to create a task. In MVP, tasks are self-assigned only.
+      description: Payload to create a task. DistributionManager/Admin can assign to any active user (F0004).
       required:
         - title
         - assignedToUserId
@@ -2706,7 +2982,7 @@ components:
         assignedToUserId:
           type: string
           format: uuid
-          description: UserId (uuid) of user to assign. Must match authenticated user's UserId in MVP.
+          description: UserId (uuid) of user to assign. Must match authenticated user for non-manager roles. DistributionManager/Admin can specify any active user (F0004).
         linkedEntityType:
           type: string
         linkedEntityId:
@@ -2715,7 +2991,7 @@ components:
 
     TaskUpdateRequest:
       type: object
-      description: Payload to update a task. In MVP, tasks are self-assigned only.
+      description: Payload to update a task. Creator (DistributionManager/Admin) can change assignee. Only assignee can change status (F0004).
       required: []
       minProperties: 1
       properties:
@@ -2738,7 +3014,7 @@ components:
         assignedToUserId:
           type: string
           format: uuid
-          description: If provided, must match authenticated user's UserId in MVP.
+          description: If provided by assignee, must match own UserId. Creator (DistributionManager/Admin) can set to any active user for reassignment (F0004).
 
     # ── Timeline Schemas (NEW) ──────────────────────────────────
     TimelineEvent:
