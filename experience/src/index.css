@@ -11,12 +11,12 @@
   --text-primary: #e8e8e8;
   --text-secondary: #a0a8b4;
   --text-muted: #6e7a8a;
-  --accent-primary: #d8707e;
+  --accent-primary: #E8752E;
   --accent-secondary: #5080a5;
   --callout-border: color-mix(in srgb, #5080a5 70%, transparent);
   --accent-tertiary: #d4a054;
-  --ring: #d8707e;
-  --data-primary: #d8707e;
+  --ring: #F97316;
+  --data-primary: #E8752E;
   --data-secondary: #5080a5;
   --data-tertiary: #d4a054;
   --data-quaternary: #6aaa7a;
@@ -28,22 +28,22 @@
   --sidebar-border: var(--frame-border);
   --topbar-bg: #0c1520;
   --topbar-border: rgba(80, 128, 165, 0.30);
-  --sidebar-hover: rgba(216, 112, 126, 0.14);
-  --sidebar-active-bg: rgba(216, 112, 126, 0.24);
-  --sidebar-active-text: #f6d2ce;
-  --bg-glow-1: rgba(216, 112, 126, 0.12);
+  --sidebar-hover: rgba(232, 117, 46, 0.12);
+  --sidebar-active-bg: rgba(249, 115, 22, 0.28);
+  --sidebar-active-text: #ffdcc0;
+  --bg-glow-1: rgba(232, 117, 46, 0.14);
   --bg-glow-2: rgba(80, 128, 165, 0.10);
   --shell-inset-bg: #131f30;
   --shell-inset-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     inset 0 -2px 0 rgba(0, 0, 0, 0.55);
-  --effect-text-shadow-logo: 0 0 8px rgba(216, 112, 126, 0.44);
+  --effect-text-shadow-logo: 0 0 10px rgba(232, 117, 46, 0.50);
   --effect-shadow-alert-error: 0 0 20px rgba(201, 92, 92, 0.08);
   --effect-shadow-alert-warning: 0 0 20px rgba(217, 119, 6, 0.14);
   --effect-shadow-alert-info: 0 0 20px rgba(80, 128, 165, 0.18);
-  --effect-shadow-cta-brand: 0 0 12px rgba(216, 112, 126, 0.36);
+  --effect-shadow-cta-brand: 0 0 14px rgba(249, 115, 22, 0.44);
   --effect-shadow-task-overdue: 0 0 15px rgba(201, 92, 92, 0.06);
-  --effect-shadow-task-hover: 0 0 15px rgba(216, 112, 126, 0.22);
+  --effect-shadow-task-hover: 0 0 16px rgba(249, 115, 22, 0.30);
 }
 
 /* Light theme (pipeline4.png warm-cream editorial) */
@@ -61,7 +61,7 @@
   --accent-secondary: #4d8eaa;
   --callout-border: color-mix(in srgb, #d8707e 70%, transparent);
   --accent-tertiary: #c08840;
-  --ring: #c86a5e;
+  --ring: #d4564a;
   --data-primary: #c86a5e;
   --data-secondary: #4d8eaa;
   --data-tertiary: #c08840;
@@ -74,10 +74,10 @@
   --sidebar-border: var(--frame-border);
   --topbar-bg: #ede6dc;
   --topbar-border: rgba(106, 154, 184, 0.28);
-  --sidebar-hover: rgba(200, 106, 94, 0.10);
-  --sidebar-active-bg: rgba(200, 106, 94, 0.16);
+  --sidebar-hover: rgba(200, 106, 94, 0.12);
+  --sidebar-active-bg: rgba(212, 86, 74, 0.20);
   --sidebar-active-text: #8f4f49;
-  --bg-glow-1: rgba(200, 106, 94, 0.07);
+  --bg-glow-1: rgba(200, 106, 94, 0.09);
   --bg-glow-2: rgba(77, 142, 170, 0.06);
   --shell-inset-bg: #f8f4ee;
   --shell-inset-shadow:
@@ -87,9 +87,9 @@
   --effect-shadow-alert-error: 0 0 20px rgba(201, 92, 92, 0.08);
   --effect-shadow-alert-warning: 0 0 20px rgba(217, 119, 6, 0.10);
   --effect-shadow-alert-info: 0 0 20px rgba(77, 142, 170, 0.14);
-  --effect-shadow-cta-brand: 0 0 12px rgba(200, 106, 94, 0.20);
+  --effect-shadow-cta-brand: 0 0 12px rgba(212, 86, 74, 0.24);
   --effect-shadow-task-overdue: 0 0 15px rgba(201, 92, 92, 0.06);
-  --effect-shadow-task-hover: 0 0 15px rgba(200, 106, 94, 0.12);
+  --effect-shadow-task-hover: 0 0 15px rgba(212, 86, 74, 0.16);
 }
 
 /* Nebula CRM Design Tokens */

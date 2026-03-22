@@ -8,6 +8,7 @@ import { useOpportunityFlow } from '../hooks/useOpportunityFlow';
 import { useOpportunityOutcomes } from '../hooks/useOpportunityOutcomes';
 import { useOpportunityAging } from '../hooks/useOpportunityAging';
 import type { StoryChapter } from './storyTypes';
+import { MobilePipelineSummary } from './MobilePipelineSummary';
 import { VerticalTimeline } from './VerticalTimeline';
 
 const PERIOD_WINDOWS = [30, 90, 180, 365] as const;
@@ -112,7 +113,7 @@ export function StoryCanvas() {
           </div>
 
           <div
-            className="inline-flex w-full max-w-full items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] lg:w-auto"
+            className="hidden w-full max-w-full items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] lg:inline-flex lg:w-auto"
             role="tablist"
             aria-label="Story chapters"
           >
@@ -154,17 +155,27 @@ export function StoryCanvas() {
         )}
 
         {flowQuery.data && (
-          <VerticalTimeline
-            flow={flowQuery.data}
-            opportunities={opportunitiesQuery.data}
-            outcomes={outcomesQuery.data?.outcomes ?? []}
-            chapter={chapter}
-            periodDays={periodDays}
-            outcomesLoading={outcomesQuery.isLoading}
-            outcomesError={outcomesQuery.isError}
-            onRetryOutcomes={() => outcomesQuery.refetch()}
-            aging={agingQuery.data}
-          />
+          <>
+            <div className="hidden lg:block">
+              <VerticalTimeline
+                flow={flowQuery.data}
+                opportunities={opportunitiesQuery.data}
+                outcomes={outcomesQuery.data?.outcomes ?? []}
+                chapter={chapter}
+                periodDays={periodDays}
+                outcomesLoading={outcomesQuery.isLoading}
+                outcomesError={outcomesQuery.isError}
+                onRetryOutcomes={() => outcomesQuery.refetch()}
+                aging={agingQuery.data}
+              />
+            </div>
+            <div className="lg:hidden">
+              <MobilePipelineSummary
+                flow={flowQuery.data}
+                outcomes={outcomesQuery.data?.outcomes ?? []}
+              />
+            </div>
+          </>
         )}
       </section>
     </section>
