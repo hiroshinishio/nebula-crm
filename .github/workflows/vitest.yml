@@ -1,0 +1,73 @@
+name: Vitest
+
+on:
+  # Run tests on PRs to verify code doesn't break before merge
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+    paths:
+      - 'experience/src/**'
+      - 'experience/package.json'
+      - 'experience/pnpm-lock.yaml'
+      - 'experience/vite.config.ts'
+      - 'experience/tsconfig*.json'
+      - '!.github/workflows/**'
+  # Run tests after merge and collect coverage as canonical source of truth
+  push:
+    branches: [main]
+    paths:
+      - 'experience/src/**'
+      - 'experience/package.json'
+      - 'experience/pnpm-lock.yaml'
+      - 'experience/vite.config.ts'
+      - 'experience/tsconfig*.json'
+  # Allow manual trigger for debugging
+  workflow_dispatch:
+
+# Cancel older runs when new commits are pushed to the same PR/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experience
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: experience/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install coverage provider
+        run: pnpm add -D @vitest/coverage-v8
+
+      - name: Run tests
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pnpm vitest run
+          else
+            pnpm vitest run --coverage --coverage.reporter=lcov --coverage.reportsDirectory=coverage
+          fi
+
+      - name: Upload coverage report
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: experience/coverage/lcov.info

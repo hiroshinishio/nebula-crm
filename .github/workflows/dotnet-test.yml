@@ -1,0 +1,69 @@
+name: .NET Test
+
+on:
+  # Run tests on PRs to verify code doesn't break before merge
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+    paths:
+      - 'engine/**'
+      - '!.github/workflows/**'
+  # Run tests after merge and collect coverage as canonical source of truth
+  push:
+    branches: [main]
+    paths:
+      - 'engine/**'
+  # Allow manual trigger for debugging
+  workflow_dispatch:
+
+# Cancel older runs when new commits are pushed to the same PR/branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Nebula.slnx
+
+      - name: Build
+        run: dotnet build Nebula.slnx --no-restore
+
+      - name: Run tests
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            dotnet test Nebula.slnx --no-build --verbosity normal
+          else
+            dotnet test Nebula.slnx --no-build --verbosity normal \
+              --collect:"XPlat Code Coverage" \
+              --results-directory ./TestResults
+          fi
+
+      - name: Convert coverage to lcov
+        if: github.event_name != 'pull_request'
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:"./TestResults/**/coverage.cobertura.xml" \
+            -targetdir:"./coverage" \
+            -reporttypes:"lcov"
+
+      - name: Upload coverage report
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: engine/coverage/lcov.info
