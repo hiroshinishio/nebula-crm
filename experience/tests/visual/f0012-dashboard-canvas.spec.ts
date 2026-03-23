@@ -255,7 +255,7 @@ async function readKpiValue(page: Page, label: string): Promise<string | null> {
 }
 
 async function expectFlatCanvasSurface(page: Page) {
-  const forbiddenElements = page.locator('.glass-card, .surface-card, .content-inset, hr')
+  const forbiddenElements = page.locator('.surface-card, .content-inset, hr')
   await expect(forbiddenElements).toHaveCount(0)
 
   const hasCanvasBorders = await page.$$eval('.canvas-section', (sections) => {

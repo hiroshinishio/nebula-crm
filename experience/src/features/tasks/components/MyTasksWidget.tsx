@@ -8,7 +8,7 @@ export function MyTasksWidget() {
 
   return (
     <section
-      className="operational-panel rounded-xl p-4 md:p-5"
+      className="glass-card operational-panel rounded-xl p-4 md:p-5"
       aria-label="My tasks section"
     >
       <div className="mb-3">
