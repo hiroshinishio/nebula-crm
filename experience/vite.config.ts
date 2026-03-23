@@ -55,6 +55,13 @@ export default defineConfig(() => {
           {
             target: apiProxyTarget,
             changeOrigin: true,
+            // Let HTML navigation requests fall through to Vite's SPA fallback
+            // so /brokers, /dashboard etc. serve index.html instead of proxying.
+            bypass(req) {
+              if (req.headers.accept?.includes('text/html')) {
+                return '/index.html'
+              }
+            },
           },
         ]),
       ),

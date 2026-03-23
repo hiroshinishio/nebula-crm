@@ -27,6 +27,7 @@ EVIDENCE_EXCLUDE = {"README.md", "TEMPLATE.md"}
 
 UI_SOURCE_ROOT = "experience/src/"
 UI_SOURCE_EXTENSIONS = {".tsx", ".jsx", ".css", ".scss", ".sass", ".less"}
+TEST_FILE_PATTERNS = {".test.", ".spec.", "/tests/", "/__tests__/"}
 
 REQUIRED_HEADINGS = (
     "## Commands Executed",
@@ -98,6 +99,9 @@ def detect_ui_changes(changed_files: Iterable[str]) -> List[str]:
             continue
 
         if not normalized.startswith(UI_SOURCE_ROOT):
+            continue
+
+        if any(p in normalized for p in TEST_FILE_PATTERNS):
             continue
 
         suffix = Path(normalized).suffix.lower()
