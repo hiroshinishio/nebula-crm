@@ -45,7 +45,8 @@
 | QE evidence | `planning-mds/operations/evidence/f0004/qe-2026-03-22.md` | 2026-03-22 |
 | Security review | `planning-mds/operations/evidence/f0004/security-2026-03-22.md` | 2026-03-22 |
 | Architect review | `planning-mds/operations/evidence/f0004/architect-2026-03-22.md` | 2026-03-22 |
-| Artifact trace | `planning-mds/operations/evidence/f0004/artifact-trace.md` | 2026-03-22 |
+| PM closeout | `planning-mds/operations/evidence/f0004/pm-closeout-2026-03-23.md` | 2026-03-23 |
+| Artifact trace | `planning-mds/operations/evidence/f0004/artifact-trace.md` | 2026-03-23 |
 
 ## Implementation Files — Backend
 

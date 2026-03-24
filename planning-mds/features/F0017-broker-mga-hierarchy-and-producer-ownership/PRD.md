@@ -60,6 +60,46 @@ applies_to: product-manager
 - F0002 Broker & MGA Relationship Management
 - F0023 Global Search, Saved Views & Operational Reporting
 
+## Architecture & Solution Design
+
+### Solution Components
+
+- Extend the broker domain with hierarchy management services, producer ownership services, and territory assignment components instead of treating hierarchy as display-only metadata.
+- Add hierarchy-aware rollup services for production, workflow, and activity reporting across MGA, broker, and producer levels.
+- Introduce a territory and ownership policy component that can later be reused by queue routing, reporting, and access-control decisions.
+- Keep producer ownership separate from commission calculation so F0017 remains the structural model while F0025 owns the economics.
+
+### Data & Workflow Design
+
+- Model broker hierarchy using a self-referencing relationship, with room for materialized path or cached ancestry data if query depth becomes expensive.
+- Represent producer ownership and territory assignment as effective-dated relationships so historical attribution and rollup accuracy are preserved.
+- Add hierarchy-aware reporting projections rather than recalculating entire broker trees on each screen load.
+- Validate changes to prevent cycles, orphaned children, and overlapping territory rules that would undermine downstream routing and reporting.
+
+### API & Integration Design
+
+- Expose APIs for hierarchy traversal, ownership assignment, territory management, and hierarchy-aware search/report filtering.
+- Feed hierarchy and producer context into F0022 routing rules and F0023 reporting without making those modules recalculate structural relationships independently.
+- Support drill-down from MGA to broker to producer through consistent identifiers and filter semantics.
+- Keep external producer portal and carrier appointment integrations out of the initial boundary.
+
+### Security & Operational Considerations
+
+- Extend authorization checks to account for parent-child broker visibility, territory scoping, and producer-level ownership.
+- Audit all hierarchy and ownership changes because they affect access boundaries, reporting rollups, and future commission attribution.
+- Monitor rollup recalculation cost and consider asynchronous recomputation if hierarchy updates become expensive.
+- Preserve historical ownership snapshots or effective-dated reads so reports remain accurate after organizational changes.
+
+## Architecture Traceability
+
+**Taxonomy Reference:** [Feature Architecture Traceability Taxonomy](../../architecture/feature-architecture-traceability-taxonomy.md)
+
+| Classification | Artifact / Decision | ADR |
+|----------------|---------------------|-----|
+| Introduces: Feature-Local Component | Broker hierarchy service, producer ownership model, and territory rules | PRD only |
+| Extends: Cross-Cutting Component | Territory and ownership data become routing inputs for shared queue execution | [ADR-013](../../architecture/decisions/ADR-013-operational-routing-and-queue-engine.md) (Proposed) |
+| Reuses: Established Component/Pattern | Hierarchy-aware rollups across shared search and reporting surfaces | [ADR-014](../../architecture/decisions/ADR-014-search-index-and-saved-view-architecture.md) (Proposed) |
+
 ## Related User Stories
 
 - To be defined during refinement

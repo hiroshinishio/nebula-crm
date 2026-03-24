@@ -1,7 +1,8 @@
 # F0004 — Task Center UI + Manager Assignment — Status
 
-**Overall Status:** Done
+**Overall Status:** Archived
 **Last Updated:** 2026-03-23
+**Archived:** 2026-03-23
 
 ## Story Checklist
 
@@ -59,6 +60,7 @@ Backend stories (S0001–S0003) can be implemented in parallel. Frontend stories
 |------|----------|---------|------|-------|
 | Architect | Claude (Architect Agent) | PASS | 2026-03-23 | [architect-2026-03-22.md](../../operations/evidence/f0004/architect-2026-03-22.md) — Authorization model sound, backward-compatible, correctly layered |
 | Security Reviewer | Claude (Architect Agent) | PASS | 2026-03-23 | [security-2026-03-22.md](../../operations/evidence/f0004/security-2026-03-22.md) — No privilege escalation, IDOR prevented, Casbin policy correct |
+| Product Manager | Claude (Architect Agent) | ARCHIVE | 2026-03-23 | [pm-closeout-2026-03-23.md](../../operations/evidence/f0004/pm-closeout-2026-03-23.md) — All 8 success criteria met. 15/19 scope items delivered. 11 gaps documented as Phase 2 deferrals. |
 
 ## Closeout Summary
 
@@ -68,3 +70,13 @@ Backend stories (S0001–S0003) can be implemented in parallel. Frontend stories
 **Defects found and fixed:** 5 (see [code-review-2026-03-22.md](../../operations/evidence/f0004/code-review-2026-03-22.md))
 **Residual risks:** 4 accepted (priority sort alphabetical, LinkedEntityName null in list, rowVersion=0 status toggle, test data accumulation)
 **Artifact trace:** [artifact-trace.md](../../operations/evidence/f0004/artifact-trace.md)
+
+## PM Closeout
+
+**PM Review:** 2026-03-23 by Claude (Architect Agent — PM Closeout Pass)
+**PRD Success Criteria:** 8/8 met
+**Scope Delivered:** 15/19 items (79%)
+**Product Gaps:** 11 documented in [pm-closeout-2026-03-23.md](../../operations/evidence/f0004/pm-closeout-2026-03-23.md)
+**Phase 2 Deferrals (HIGH):** URL-synced filters, frontend component/E2E tests
+**Phase 2 Deferrals (MEDIUM):** Timeline section in detail, linked entity name in list, entity search picker, linked entity navigation in detail, server error toasts
+**Phase 2 Deferrals (LOW):** Form unsaved-state confirmation, mobile full-page detail, invalid sort → 400, title 255-char client validation

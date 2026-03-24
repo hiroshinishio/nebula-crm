@@ -60,6 +60,46 @@ applies_to: product-manager
 - F0018 Policy Lifecycle & Policy 360
 - F0022 Work Queues, Assignment Rules & Coverage Management
 
+## Architecture & Solution Design
+
+### Solution Components
+
+- Introduce a `Renewal` aggregate or renewal application layer that links expiring policies to renewal work ownership, due windows, outcomes, and related submissions.
+- Add a renewal orchestration component for reminder scheduling and escalation timing instead of embedding date math in UI code or ad hoc cron jobs.
+- Provide renewal worklist and pipeline projections optimized for due-date windows, ownership, and escalation visibility.
+- Keep renewal submission creation as a boundary action so the renewal module can trigger downstream intake or quoting work without duplicating those modules.
+
+### Data & Workflow Design
+
+- Model renewal lifecycle states explicitly, for example `Identified`, `Outreach`, `InReview`, `Quoted`, `Completed`, `Lost`, or equivalent business-approved states.
+- Store policy expiration date, target outreach dates, renewal owner, and last-touch timestamps as first-class fields because they drive SLA and escalation behavior.
+- Use Temporal for long-running reminder and escalation workflows, with workflow IDs stored for correlation to the renewal record.
+- Record all renewal transitions and reminder actions in append-only audit history so the team can explain why a renewal was or was not advanced on time.
+
+### API & Integration Design
+
+- Expose renewal list/detail/transition endpoints plus filtered views by due window, status, owner, and overdue condition.
+- Consume policy lifecycle data from F0018 as the authoritative source for effective dates, expiration dates, and policy relationships.
+- Allow renewal workflows to emit tasks, notifications, or queue handoff signals while keeping external carrier automation out of scope for this release.
+- Design the renewal workflow so scheduled reminders remain stable across restarts, retries, and deploys.
+
+### Security & Operational Considerations
+
+- Apply authorization based on account, broker, territory, and assigned team visibility, not only on the renewal owner field.
+- Add observability for Temporal workflow execution, reminder delivery failures, overdue renewals, and escalation counts.
+- Make reminder and escalation activities idempotent so retried workflows do not spam users or create duplicate tasks.
+- Index renewal queries on expiration date, owner, and status because list performance is central to the operating model.
+
+## Architecture Traceability
+
+**Taxonomy Reference:** [Feature Architecture Traceability Taxonomy](../../architecture/feature-architecture-traceability-taxonomy.md)
+
+| Classification | Artifact / Decision | ADR |
+|----------------|---------------------|-----|
+| Introduces: Feature-Local Component | Renewal aggregate, due-window worklists, and escalation handling | PRD only |
+| Introduces: Cross-Cutting Component | Durable workflow orchestration for reminder scheduling and escalations | [ADR-010](../../architecture/decisions/ADR-010-temporal-durable-workflow-orchestration.md) (Proposed) |
+| Introduces/Standardizes: Cross-Cutting Pattern | Renewal state machine with append-only transition and reminder audit history | [ADR-011](../../architecture/decisions/ADR-011-crm-workflow-state-machines-and-transition-history.md) (Proposed) |
+
 ## Related User Stories
 
 - To be defined during refinement
